@@ -1,0 +1,4 @@
+e2e::roundtrip_stored	0	33
+e2e::roundtrip_fixed_lazy	143	878
+e2e::roundtrip_fixed_greedy	143	670
+e2e::roundtrip_fixed_two_symbol_alphabet	124	1200
