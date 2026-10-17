@@ -273,6 +273,9 @@ fn huffman_depths<const N: usize, const M: usize>(weights: &[u64; N], m: usize, 
         id -= 1;
         depth[id] = depth[parent[id] as usize] + 1;
     }
+    // An explicit loop rather than `copy_from_slice`: a copy of symbolic
+    // length is far more expensive for the model checker.
+    #[allow(clippy::manual_memcpy)]
     for i in 0..m {
         depths[i] = depth[i];
     }

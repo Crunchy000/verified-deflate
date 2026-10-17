@@ -85,7 +85,7 @@ fn encode(data: &[u8], opts: &CompressOptions) -> Vec<u8> {
         return w.finish();
     }
     let mut matcher = Matcher::new(MatchConfig::for_level(opts.level));
-    let mut tokens = Vec::new();
+    let mut tokens = Vec::with_capacity(BLOCK_TOKENS.min(data.len() + 1));
     let mut pos = 0;
     loop {
         tokens.clear();

@@ -143,7 +143,11 @@ impl<'a> BitReader<'a> {
     #[inline]
     pub fn read_bit(&mut self) -> Result<u32, InflateError> {
         if self.nbits == 0 {
-            self.fill(1)?;
+            // The accumulator is empty, so load exactly one byte.
+            let b = *self.data.get(self.pos).ok_or(InflateError::UnexpectedEof)?;
+            self.acc = u64::from(b);
+            self.pos += 1;
+            self.nbits = 8;
         }
         let v = (self.acc & 1) as u32;
         self.acc >>= 1;

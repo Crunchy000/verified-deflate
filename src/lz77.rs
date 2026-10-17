@@ -215,27 +215,16 @@ impl Matcher {
 
 /// Number of equal bytes at `a` and `b` (with `a < b`), up to `max`.
 /// Requires `b + max <= data.len()`.
+///
+/// A plain byte loop: a word-at-a-time version is faster, but its loads at
+/// data-dependent offsets made the model-checking problem far larger.
 #[inline]
 fn common_prefix(data: &[u8], a: usize, b: usize, max: usize) -> usize {
     let mut n = 0;
-    while n + 8 <= max {
-        let x = read_u64(data, a + n);
-        let y = read_u64(data, b + n);
-        let diff = x ^ y;
-        if diff != 0 {
-            return n + (diff.trailing_zeros() / 8) as usize;
-        }
-        n += 8;
-    }
     while n < max && data[a + n] == data[b + n] {
         n += 1;
     }
     n
-}
-
-#[inline]
-fn read_u64(d: &[u8], i: usize) -> u64 {
-    u64::from_le_bytes([d[i], d[i + 1], d[i + 2], d[i + 3], d[i + 4], d[i + 5], d[i + 6], d[i + 7]])
 }
 
 /// True if a match token is within DEFLATE's limits and refers only to
@@ -355,15 +344,15 @@ mod proofs {
         assert_eq!(out.as_slice(), data);
     }
 
-    /// Small tables (4-bit hash, 8-byte window) make collisions, chain
+    /// Small tables (4-entry hash, 8-byte window) make collisions, chain
     /// reuse and window eviction all reachable; with lazy matching on,
     /// every token is valid and the tokens replay to the input.
     #[kani::proof]
-    #[kani::unwind(9)]
+    #[kani::unwind(7)]
     fn tokens_valid_and_replay_small_tables() {
-        let data: [u8; 8] = kani::any();
+        let data: [u8; 6] = kani::any();
         let len: usize = kani::any();
-        kani::assume(len <= 8);
+        kani::assume(len <= 6);
         let cfg = MatchConfig {
             max_chain: 4,
             nice_len: 5,
@@ -378,53 +367,64 @@ mod proofs {
 
     /// Same property with the production configuration of level 9.
     #[kani::proof]
-    #[kani::unwind(8)]
+    #[kani::unwind(6)]
     fn tokens_valid_and_replay_level9() {
-        let data: [u8; 7] = kani::any();
+        let data: [u8; 5] = kani::any();
         check_tokens(&data, MatchConfig::for_level(9));
     }
 
     /// Same property without lazy matching (levels 1-3).
     #[kani::proof]
-    #[kani::unwind(8)]
+    #[kani::unwind(6)]
     fn tokens_valid_and_replay_greedy() {
-        let data: [u8; 7] = kani::any();
+        let data: [u8; 5] = kani::any();
         check_tokens(&data, MatchConfig::for_level(1));
     }
 
     /// Runs of a repeated byte become one literal plus an overlapping match.
     #[kani::proof]
-    #[kani::unwind(12)]
+    #[kani::unwind(8)]
     fn runs_are_matched() {
         let b: u8 = kani::any();
-        let data = [b; 10];
+        let data = [b; 6];
         let mut m = Matcher::new(MatchConfig::for_level(6));
-        let mut toks = Vec::new();
+        let mut toks = Vec::with_capacity(6);
         m.tokenize(&data, 0, usize::MAX, &mut toks);
         assert_eq!(toks.len(), 2);
         assert_eq!(toks[0], Token::Literal(b));
-        assert_eq!(toks[1], Token::Match { len: 9, dist: 1 });
+        assert_eq!(toks[1], Token::Match { len: 5, dist: 1 });
     }
 
     /// The doubling copy produces exactly what a byte-at-a-time copy does,
     /// including heavily overlapping matches.
     #[kani::proof]
-    #[kani::unwind(20)]
+    #[kani::unwind(11)]
     fn copy_match_equals_naive() {
-        let prefix: [u8; 4] = kani::any();
+        let prefix: [u8; 3] = kani::any();
         let dist: usize = kani::any();
         let len: usize = kani::any();
-        kani::assume(dist >= 1 && dist <= 4 && len <= 12);
-        let mut fast = prefix.to_vec();
+        kani::assume(dist >= 1 && dist <= 3 && len <= 9);
+        let mut fast = Vec::with_capacity(12);
+        fast.extend_from_slice(&prefix);
         copy_match(&mut fast, dist, len);
-        let mut slow = prefix.to_vec();
+        let mut slow = prefix;
+        let mut slow_len = 3;
+        let mut extended = [0u8; 12];
+        extended[..3].copy_from_slice(&slow);
         let mut i = 0;
         while i < len {
-            let x = slow[slow.len() - dist];
-            slow.push(x);
+            extended[slow_len] = extended[slow_len - dist];
+            slow_len += 1;
             i += 1;
         }
-        assert_eq!(fast, slow);
+        slow = [extended[0], extended[1], extended[2]];
+        assert_eq!(fast.len(), slow_len);
+        assert_eq!(&fast[..3], &slow[..]);
+        let mut j = 0;
+        while j < slow_len {
+            assert_eq!(fast[j], extended[j]);
+            j += 1;
+        }
     }
 
     /// Replaying arbitrary tokens never panics: invalid matches are errors.

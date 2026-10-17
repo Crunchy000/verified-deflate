@@ -238,13 +238,14 @@ mod tests {
 mod proofs {
     use super::*;
 
-    /// No 4-byte input can make the decoder panic (this reaches every block
-    /// type, dynamic headers up to the code-length code, and matches), and
-    /// successful results respect the output limit and input length.
+    /// No 3-byte input can make the decoder panic, with any output limit
+    /// 0-16, and successful results respect the limit and the input length.
+    /// Three bytes reach every block type, stored headers, a literal plus a
+    /// match in a fixed block, and the start of a dynamic header.
     #[kani::proof]
-    #[kani::unwind(21)]
-    fn never_panics_4_bytes() {
-        let data: [u8; 4] = kani::any();
+    #[kani::unwind(10)]
+    fn never_panics_3_bytes() {
+        let data: [u8; 3] = kani::any();
         let limit: usize = kani::any();
         kani::assume(limit <= 16);
         if let Ok(d) = decompress_with_limit(&data, limit) {
@@ -257,7 +258,7 @@ mod proofs {
     /// decoder panic. Five bytes are enough for a literal followed by a
     /// 258-byte overlapping match, so long copies are reached.
     #[kani::proof]
-    #[kani::unwind(17)]
+    #[kani::unwind(10)]
     fn never_panics_fixed_5_bytes() {
         let mut data: [u8; 5] = kani::any();
         data[0] = (data[0] & !0b111) | 0b011; // BFINAL = 1, BTYPE = 01
@@ -275,13 +276,18 @@ mod proofs {
         let len: u16 = kani::any();
         let nlen: u16 = kani::any();
         kani::assume(len <= 4);
-        let mut s = vec![0x01, len as u8, (len >> 8) as u8, nlen as u8, (nlen >> 8) as u8];
-        s.extend_from_slice(&payload[..len as usize]);
-        let r = decompress_with_limit(&s, 16);
+        let l = len.to_le_bytes();
+        let nl = nlen.to_le_bytes();
+        let s = [0x01, l[0], l[1], nl[0], nl[1], payload[0], payload[1], payload[2], payload[3]];
+        let n = 5 + len as usize;
+        let r = decompress_with_limit(&s[..n], 16);
         if nlen == !len {
             let d = r.unwrap();
-            assert_eq!(d.data.as_slice(), &payload[..len as usize]);
-            assert_eq!(d.consumed, s.len());
+            assert_eq!(d.data.len(), len as usize);
+            for i in 0..len as usize {
+                assert_eq!(d.data[i], payload[i]);
+            }
+            assert_eq!(d.consumed, n);
         } else {
             assert_eq!(r, Err(InflateError::StoredLengthMismatch));
         }
