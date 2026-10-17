@@ -348,17 +348,40 @@ pub fn match_is_valid(len: usize, dist: usize, produced: usize) -> bool {
 /// overlap (that is how DEFLATE expresses runs). Requires
 /// `1 <= dist <= pos` and `pos + len <= buf.len()`.
 ///
-/// Copies in chunks with `copy_within`: once a multiple of `dist` bytes
-/// has been written, the output is periodic with period `dist`, so the
-/// next chunk (up to everything written so far plus `dist`) can be copied
-/// from the start of the source in one non-overlapping move. Runs of a
-/// single byte are a fill.
+/// Short copies (at most 16 bytes) whose source lies wholly before the
+/// destination are done inline with two word moves. Runs of a single byte
+/// are a fill. Otherwise the copy goes in chunks with `copy_within`: once a
+/// multiple of `dist` bytes has been written, the output is periodic with
+/// period `dist`, so the next chunk (up to everything written so far plus
+/// `dist`) can be copied from the start of the source in one
+/// non-overlapping move.
 #[inline]
 pub fn copy_within_buffer(buf: &mut [u8], pos: usize, dist: usize, len: usize) {
     let src = pos - dist;
     if dist == 1 {
         let b = buf[src];
         buf[pos..pos + len].fill(b);
+        return;
+    }
+    if len <= 16 && dist >= len {
+        // A short copy whose source lies wholly before its destination:
+        // two (possibly overlapping) words, both loaded before either is
+        // stored, cover it exactly without a call to memmove.
+        if len >= 8 {
+            let a = word8(buf, src);
+            let b = word8(buf, src + len - 8);
+            buf[pos..pos + 8].copy_from_slice(&a);
+            buf[pos + len - 8..pos + len].copy_from_slice(&b);
+        } else if len >= 4 {
+            let a = word4(buf, src);
+            let b = word4(buf, src + len - 4);
+            buf[pos..pos + 4].copy_from_slice(&a);
+            buf[pos + len - 4..pos + len].copy_from_slice(&b);
+        } else {
+            for i in 0..len {
+                buf[pos + i] = buf[src + i];
+            }
+        }
         return;
     }
     let mut copied = 0;
@@ -368,6 +391,20 @@ pub fn copy_within_buffer(buf: &mut [u8], pos: usize, dist: usize, len: usize) {
         buf.copy_within(src..src + chunk, pos + copied);
         copied += chunk;
     }
+}
+
+/// The 8 bytes at `buf[i..]`.
+#[inline(always)]
+fn word8(buf: &[u8], i: usize) -> [u8; 8] {
+    let w = &buf[i..i + 8];
+    [w[0], w[1], w[2], w[3], w[4], w[5], w[6], w[7]]
+}
+
+/// The 4 bytes at `buf[i..]`.
+#[inline(always)]
+fn word4(buf: &[u8], i: usize) -> [u8; 4] {
+    let w = &buf[i..i + 4];
+    [w[0], w[1], w[2], w[3]]
 }
 
 /// Reference version of [`copy_within_buffer`]: the byte-by-byte loop that
@@ -628,6 +665,27 @@ mod proofs {
         for i in 0..12 {
             if i >= pos && i < pos + len {
                 assert_eq!(buf[i], buf[i - dist]);
+            } else {
+                assert_eq!(buf[i], before[i]);
+            }
+        }
+    }
+
+    /// The inline path for short non-overlapping copies (up to 16 bytes)
+    /// meets the same specification, on a buffer large enough to reach
+    /// every case of it.
+    #[kani::proof]
+    #[kani::unwind(33)]
+    fn short_copy_meets_spec() {
+        let before: [u8; 32] = kani::any();
+        let pos: usize = kani::any_where(|&p: &usize| p <= 32);
+        let len: usize = kani::any_where(|&l: &usize| l <= 16 && l <= 32 - pos);
+        let dist: usize = kani::any_where(|&d: &usize| d >= 1 && d >= len && d <= pos);
+        let mut buf = before;
+        copy_within_buffer(&mut buf, pos, dist, len);
+        for i in 0..32 {
+            if i >= pos && i < pos + len {
+                assert_eq!(buf[i], before[i - dist]);
             } else {
                 assert_eq!(buf[i], before[i]);
             }
