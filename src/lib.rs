@@ -41,7 +41,7 @@
 
 #![forbid(unsafe_code)]
 // Proof harnesses spell out bounds as explicit comparisons, like a spec.
-#![cfg_attr(kani, allow(clippy::manual_range_contains))]
+#![cfg_attr(kani, allow(clippy::manual_range_contains, clippy::needless_range_loop))]
 
 pub mod bitio;
 pub mod crc32;
