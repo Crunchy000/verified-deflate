@@ -249,28 +249,35 @@ fn build_lengths_in<const N: usize, const M: usize>(
 
 /// Depth of each leaf in a Huffman tree over `weights[..m]` (`2 <= m <= N`).
 ///
-/// Nodes `0..m` are the leaves; each merge creates the next node id, larger
-/// than both children's, so the root is the last node and depths can be
-/// filled in by walking ids downwards.
+/// The two-queue method: leaves sorted by weight form one queue, merged
+/// nodes (created in non-decreasing weight order) form the other, and each
+/// step merges the two lightest fronts. O(m log m) for the sort, then
+/// linear. Nodes `0..m` are the leaves; each merge creates the next node
+/// id, larger than both children's, so the root is the last node and
+/// depths can be filled in by walking ids downwards.
 fn huffman_depths<const N: usize, const M: usize>(weights: &[u64; N], m: usize, depths: &mut [u32; N]) {
     debug_assert!((2..=N).contains(&m) && M >= 2 * N);
+    let mut order = [0u16; N];
     let mut w = [0u64; M];
     let mut parent = [0u16; M];
-    let mut active = [0u16; N];
+    // Explicit loops rather than `copy_from_slice`: a copy of symbolic
+    // length is far more expensive for the model checker.
+    #[allow(clippy::manual_memcpy)]
     for i in 0..m {
+        order[i] = i as u16;
         w[i] = weights[i];
-        active[i] = i as u16;
     }
-    let mut n_active = m;
+    sort_by_weight(&mut order[..m], weights);
+    // Leaf queue: order[leaf..m]. Merged queue: node ids merged..next.
+    let mut leaf = 0;
+    let mut merged = m;
     let mut next = m;
-    while n_active > 1 {
-        let a = take_min(&mut active, &mut n_active, &w);
-        let b = take_min(&mut active, &mut n_active, &w);
+    while (m - leaf) + (next - merged) > 1 {
+        let a = take_lightest(&order[..m], &mut leaf, &mut merged, next, &w);
+        let b = take_lightest(&order[..m], &mut leaf, &mut merged, next, &w);
         w[next] = w[a].saturating_add(w[b]);
         parent[a] = next as u16;
         parent[b] = next as u16;
-        active[n_active] = next as u16;
-        n_active += 1;
         next += 1;
     }
     let mut depth = [0u32; M];
@@ -287,24 +294,100 @@ fn huffman_depths<const N: usize, const M: usize>(weights: &[u64; N], m: usize, 
     }
 }
 
-/// Removes and returns the active node with the smallest weight.
-fn take_min(active: &mut [u16], n_active: &mut usize, w: &[u64]) -> usize {
-    let mut best = 0;
-    for i in 1..*n_active {
-        if w[active[i] as usize] < w[active[best] as usize] {
-            best = i;
-        }
+/// Takes the lighter of the two queue fronts (a leaf on ties).
+#[inline]
+fn take_lightest(order: &[u16], leaf: &mut usize, merged: &mut usize, next: usize, w: &[u64]) -> usize {
+    let leaf_ok = *leaf < order.len();
+    let merged_ok = *merged < next;
+    if leaf_ok && (!merged_ok || w[order[*leaf] as usize] <= w[*merged]) {
+        *leaf += 1;
+        order[*leaf - 1] as usize
+    } else {
+        *merged += 1;
+        *merged - 1
     }
-    let id = active[best];
-    *n_active -= 1;
-    active[best] = active[*n_active];
-    id as usize
 }
 
-/// Canonical Huffman decoder using per-length counts and a symbol list
-/// sorted by code (the representation used by zlib's `puff.c`).
+/// Sorts symbol indices by (weight, index) with heapsort: O(n log n) and
+/// no allocation. `sort_by_weight_sorts` proves it; the length-builder
+/// proofs use [`sort_by_weight_spec`] in its place.
+fn sort_by_weight(idx: &mut [u16], w: &[u64]) {
+    let n = idx.len();
+    let mut start = n / 2;
+    while start > 0 {
+        start -= 1;
+        sift_down(idx, start, n, w);
+    }
+    let mut end = n;
+    while end > 1 {
+        end -= 1;
+        idx.swap(0, end);
+        sift_down(idx, 0, end, w);
+    }
+}
+
+/// The specification of [`sort_by_weight`] for distinct indices (as
+/// `huffman_depths` passes): the permutation of `idx` sorted by
+/// (weight, index). Keys are distinct, so that permutation exists and is
+/// unique; choosing it nondeterministically under that assumption is
+/// exactly the function's behaviour, without its loops.
+#[cfg(kani)]
+#[cfg_attr(kani_sample, allow(dead_code))] // stubs are not applied when sampling
+fn sort_by_weight_spec(idx: &mut [u16], w: &[u64]) {
+    let n = idx.len();
+    assert!(n <= 8, "sort_by_weight_spec models at most 8 entries");
+    let mut orig = [0u16; 8];
+    let mut taken = [false; 8];
+    #[allow(clippy::manual_memcpy)] // a symbolic-length copy costs the model checker more
+    for i in 0..n {
+        orig[i] = idx[i];
+    }
+    for i in 0..n {
+        let p: usize = kani::any_where(|&p: &usize| p < n);
+        kani::assume(!taken[p]);
+        taken[p] = true;
+        idx[i] = orig[p];
+    }
+    for i in 1..n {
+        let (a, b) = (idx[i - 1], idx[i]);
+        kani::assume((w[a as usize], a) < (w[b as usize], b));
+    }
+}
+
+#[inline]
+fn heavier(a: u16, b: u16, w: &[u64]) -> bool {
+    (w[a as usize], a) > (w[b as usize], b)
+}
+
+fn sift_down(idx: &mut [u16], mut root: usize, end: usize, w: &[u64]) {
+    loop {
+        let mut child = 2 * root + 1;
+        if child >= end {
+            return;
+        }
+        if child + 1 < end && heavier(idx[child + 1], idx[child], w) {
+            child += 1;
+        }
+        if heavier(idx[child], idx[root], w) {
+            idx.swap(root, child);
+            root = child;
+        } else {
+            return;
+        }
+    }
+}
+
+/// Bits looked up at once by [`Decoder::decode`]'s table. Codes up to
+/// this long (all fixed-Huffman codes, and nearly all dynamic ones) decode
+/// with one lookup; longer ones fall back to the canonical bit-by-bit walk.
+pub const FAST_BITS: u32 = 10;
+const FAST_SIZE: usize = 1 << FAST_BITS;
+
+/// Canonical Huffman decoder, bit by bit: per-length counts plus a symbol
+/// list sorted by code, as in zlib's `puff.c`. This is the reference
+/// decoder; [`Decoder`] adds a lookup table on top of it.
 #[derive(Clone, Debug)]
-pub struct Decoder {
+pub struct Canonical {
     /// `count[l]` = number of symbols with code length `l` (`count[0]` unused).
     count: [u16; MAX_CODE_LEN + 1],
     /// Coded symbols ordered by (length, symbol), i.e. by canonical code.
@@ -315,7 +398,7 @@ pub struct Decoder {
     left: u16,
 }
 
-impl Decoder {
+impl Canonical {
     /// A decoder with no codes (every decode fails).
     pub const EMPTY: Self = Self { count: [0; MAX_CODE_LEN + 1], symbol: [0; MAX_SYMBOLS], coded: 0, left: 1 << 15 };
 
@@ -407,13 +490,13 @@ impl Decoder {
         self.coded == 1 && self.count[1] == 1
     }
 
-    /// Reads one symbol. Fails with `UnexpectedEof` if the input runs out
-    /// and `InvalidSymbol` if the bits match no code.
+    /// Reads one symbol bit by bit. Fails with `UnexpectedEof` if the input
+    /// runs out and `InvalidSymbol` if the bits match no code.
     ///
     /// The fifteen per-length steps are written out rather than looped, so
     /// that the model checker's loop bound for the callers does not have to
     /// cover them.
-    #[inline]
+    #[inline(never)]
     #[allow(unused_assignments)]
     pub fn decode(&self, br: &mut BitReader<'_>) -> Result<u16, InflateError> {
         // Invariant at each step: first <= code, first is the smallest
@@ -450,6 +533,130 @@ impl Decoder {
         step!(14);
         step!(15);
         Err(InflateError::InvalidSymbol)
+    }
+}
+
+/// Huffman decoder: the [`Canonical`] decoder plus a lookup table indexed
+/// by the next `fast_bits` input bits. [`decode`](Self::decode) uses the
+/// table and falls back to the canonical walk. Kani proves the two decode
+/// identically, so everything proven about the canonical decoder carries
+/// over.
+#[derive(Clone, Debug)]
+pub struct Decoder {
+    canon: Canonical,
+    /// `fast[bits]` = `(len << 12) | symbol` for the code that the low
+    /// `len` of `bits` spell (bit-reversed), or 0 if no code of at most
+    /// `fast_bits` bits matches.
+    fast: [u16; FAST_SIZE],
+    /// Table width in bits, at most [`FAST_BITS`].
+    fast_bits: u32,
+}
+
+impl Decoder {
+    /// A decoder with no codes (every decode fails).
+    pub const EMPTY: Self = Self { canon: Canonical::EMPTY, fast: [0; FAST_SIZE], fast_bits: FAST_BITS };
+
+    /// Like [`new`](Self::new) with a lookup table of `fast_bits` bits
+    /// (clamped to [`FAST_BITS`]). Proofs use small tables.
+    pub const fn with_fast_bits(lengths: &[u8], fast_bits: u32) -> Result<Self, HuffmanError> {
+        let mut d = Self::EMPTY;
+        match d.rebuild_with_fast_bits(lengths, fast_bits) {
+            Ok(()) => Ok(d),
+            Err(e) => Err(e),
+        }
+    }
+
+    /// Builds a decoder for the given code lengths (see [`Canonical::new`]).
+    pub const fn new(lengths: &[u8]) -> Result<Self, HuffmanError> {
+        let mut d = Self::EMPTY;
+        match d.rebuild(lengths) {
+            Ok(()) => Ok(d),
+            Err(e) => Err(e),
+        }
+    }
+
+    /// Rebuilds this decoder in place for new code lengths. On error the
+    /// decoder decodes nothing.
+    pub const fn rebuild(&mut self, lengths: &[u8]) -> Result<(), HuffmanError> {
+        self.rebuild_with_fast_bits(lengths, FAST_BITS)
+    }
+
+    /// [`rebuild`](Self::rebuild) with a lookup table of `fast_bits` bits.
+    pub const fn rebuild_with_fast_bits(&mut self, lengths: &[u8], fast_bits: u32) -> Result<(), HuffmanError> {
+        self.fast = [0; FAST_SIZE];
+        let fb = if fast_bits > FAST_BITS { FAST_BITS } else { fast_bits };
+        self.fast_bits = fb;
+        if let Err(e) = self.canon.rebuild(lengths) {
+            return Err(e);
+        }
+        // Each code of at most fb bits fills every entry whose low bits
+        // spell it (codes are packed bit-reversed). The codes are the
+        // canonical ones, assigned in symbol order within each length.
+        let count = &self.canon.count;
+        let mut next = [0u32; MAX_CODE_LEN + 1];
+        let mut code = 0u32;
+        let mut len = 1;
+        while len <= MAX_CODE_LEN {
+            code = (code + count[len - 1] as u32) << 1;
+            next[len] = code;
+            len += 1;
+        }
+        let mut s = 0;
+        while s < lengths.len() {
+            let l = lengths[s] as usize;
+            if l != 0 {
+                let c = next[l];
+                next[l] += 1;
+                if l as u32 <= fb {
+                    let mut idx = crate::bitio::reverse_bits(c as u16, l as u32) as usize;
+                    while idx < (1 << fb) {
+                        self.fast[idx] = ((l as u16) << 12) | s as u16;
+                        idx += 1 << l;
+                    }
+                }
+            }
+            s += 1;
+        }
+        Ok(())
+    }
+
+    /// True when the code is complete (Kraft sum exactly 1).
+    pub const fn is_complete(&self) -> bool {
+        self.canon.is_complete()
+    }
+
+    /// Number of symbols with a code.
+    pub const fn coded_symbols(&self) -> usize {
+        self.canon.coded_symbols()
+    }
+
+    /// True for a code with exactly one symbol, of length 1: the only
+    /// incomplete code DEFLATE decoders (zlib included) accept.
+    pub const fn is_single_unit_code(&self) -> bool {
+        self.canon.is_single_unit_code()
+    }
+
+    /// Reads one symbol. Fails with `UnexpectedEof` if the input runs out
+    /// and `InvalidSymbol` if the bits match no code.
+    ///
+    /// One table lookup decodes any code of at most `fast_bits` bits that
+    /// is fully present in the input; everything else (longer codes, input
+    /// running out, invalid bits) goes to the canonical walk, which decides
+    /// it exactly as if the table were not there.
+    #[inline(always)]
+    pub fn decode(&self, br: &mut BitReader<'_>) -> Result<u16, InflateError> {
+        let e = self.fast[br.peek(self.fast_bits) as usize];
+        let len = u32::from(e >> 12);
+        if len != 0 && len <= br.available() {
+            br.consume(len);
+            return Ok(e & 0x0fff);
+        }
+        self.canon.decode(br)
+    }
+
+    /// Reads one symbol with the canonical walk only (the reference).
+    pub fn decode_slow(&self, br: &mut BitReader<'_>) -> Result<u16, InflateError> {
+        self.canon.decode(br)
     }
 }
 
@@ -551,6 +758,7 @@ mod proofs {
     /// path. (`build_lengths` runs this same generic function with larger
     /// scratch arrays.)
     #[kani::proof]
+    #[kani::stub(sort_by_weight, sort_by_weight_spec)]
     #[kani::unwind(11)]
     fn build_lengths_complete_and_limited() {
         let f: [u8; 5] = kani::any();
@@ -564,6 +772,7 @@ mod proofs {
 
     /// The same over the full `u32` frequency range, for three symbols.
     #[kani::proof]
+    #[kani::stub(sort_by_weight, sort_by_weight_spec)]
     #[kani::unwind(8)]
     fn build_lengths_full_range_frequencies() {
         let freqs: [u32; 3] = kani::any();
@@ -577,6 +786,7 @@ mod proofs {
     /// The tightest feasible case: four symbols in two bits, where every
     /// skewed distribution needs repair.
     #[kani::proof]
+    #[kani::stub(sort_by_weight, sort_by_weight_spec)]
     #[kani::unwind(11)]
     fn build_lengths_tight_limit() {
         let f: [u8; 4] = kani::any();
@@ -589,6 +799,7 @@ mod proofs {
     /// Requests that cannot be met are refused rather than producing a bad
     /// code: five used symbols cannot fit in two bits.
     #[kani::proof]
+    #[kani::stub(sort_by_weight, sort_by_weight_spec)]
     #[kani::unwind(11)]
     fn build_lengths_rejects_impossible_limit() {
         let f: [u8; 5] = kani::any();
@@ -600,13 +811,38 @@ mod proofs {
         assert_eq!(build_lengths_in::<5, 10>(&freqs, 2, &mut lengths), Err(HuffmanError::LimitTooSmall));
     }
 
+    /// The heapsort behind the length builder sorts: for any weights and
+    /// any 0-5 distinct indices, the result is a permutation of them
+    /// sorted by (weight, index), which is what `sort_by_weight_spec`
+    /// (used by the builder proofs) assumes.
+    #[kani::proof]
+    #[kani::unwind(7)]
+    fn sort_by_weight_sorts() {
+        let w: [u64; 5] = kani::any();
+        let n: usize = kani::any_where(|&n: &usize| n <= 5);
+        let mut idx = [0u16, 1, 2, 3, 4];
+        sort_by_weight(&mut idx[..n], &w);
+        for i in 0..n {
+            assert!((idx[i] as usize) < n);
+            for j in 0..i {
+                assert_ne!(idx[i], idx[j]);
+            }
+            if i > 0 {
+                let (a, b) = (idx[i - 1], idx[i]);
+                assert!((w[a as usize], a) < (w[b as usize], b));
+            }
+        }
+    }
+
     /// The decoder builder never panics, and accepts exactly the lengths
     /// whose Kraft sum is at most 1.
     #[kani::proof]
     #[kani::unwind(17)]
     fn decoder_new_never_panics() {
         let lengths: [u8; 8] = kani::any();
-        let res = Decoder::new(&lengths);
+        // A 4-bit table keeps the fill loop small; `new` runs the same code
+        // with a 10-bit table.
+        let res = Decoder::with_fast_bits(&lengths, 4);
         match kraft_sum(&lengths) {
             Err(_) => assert!(res.is_err()),
             Ok(k) => {
@@ -627,7 +863,9 @@ mod proofs {
         let lengths: [u8; N] = any_lengths(MAX_CODE_LEN as u8);
         let mut codes = [0u16; N];
         kani::assume(canonical_codes(&lengths, &mut codes).is_ok());
-        let dec = Decoder::new(&lengths).unwrap();
+        // The canonical (reference) decoder; `fast_decode_matches_slow`
+        // shows the table-driven `Decoder` agrees with it.
+        let dec = Canonical::new(&lengths).unwrap();
         let s: usize = kani::any_where(|&s: &usize| s < N);
         kani::assume(lengths[s] != 0);
         // Pack the code as `BitWriter::write_bits` does (proven in `bitio`),
@@ -647,12 +885,54 @@ mod proofs {
     #[kani::unwind(17)]
     fn decode_arbitrary_bits() {
         let lengths: [u8; N] = any_lengths(MAX_CODE_LEN as u8);
-        let Ok(dec) = Decoder::new(&lengths) else { return };
+        // The canonical decoder, as in `encode_then_decode_symbol`.
+        let Ok(dec) = Canonical::new(&lengths) else { return };
         let data: [u8; 2] = kani::any();
         let mut r = BitReader::new(&data);
         if let Ok(s) = dec.decode(&mut r) {
             assert!((s as usize) < N);
             assert!(lengths[s as usize] != 0);
+        }
+    }
+
+    /// The table-driven decoder is the bit-by-bit reference decoder: for
+    /// any valid lengths over 4 symbols (up to 6 bits), any table width of
+    /// 1-4 bits, and any 0-1 bytes of input, `decode` and `decode_slow`
+    /// return the same result and, on success, consume the same number of
+    /// bits. Codes shorter than, as long as and longer than the table, and
+    /// input ending mid-code, are all covered.
+    #[kani::proof]
+    #[kani::unwind(17)]
+    fn fast_decode_matches_slow() {
+        let lengths: [u8; 4] = any_lengths(6);
+        let fast_bits: u32 = kani::any_where(|&b: &u32| (1..=4).contains(&b));
+        let Ok(dec) = Decoder::with_fast_bits(&lengths, fast_bits) else { return };
+        let data: [u8; 1] = kani::any();
+        let len: usize = kani::any_where(|&l: &usize| l <= 1);
+        check_fast_matches_slow(&dec, &data[..len]);
+    }
+
+    /// The same for 5 symbols of up to 9 bits and 0-2 bytes of input.
+    #[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
+    #[kani::proof]
+    #[kani::unwind(17)]
+    fn fast_decode_matches_slow_wide() {
+        let lengths: [u8; 5] = any_lengths(9);
+        let fast_bits: u32 = kani::any_where(|&b: &u32| (1..=4).contains(&b));
+        let Ok(dec) = Decoder::with_fast_bits(&lengths, fast_bits) else { return };
+        let data: [u8; 2] = kani::any();
+        let len: usize = kani::any_where(|&l: &usize| l <= 2);
+        check_fast_matches_slow(&dec, &data[..len]);
+    }
+
+    fn check_fast_matches_slow(dec: &Decoder, data: &[u8]) {
+        let mut fast = BitReader::new(data);
+        let mut slow = BitReader::new(data);
+        let a = dec.decode(&mut fast);
+        let b = dec.decode_slow(&mut slow);
+        assert_eq!(a, b);
+        if a.is_ok() {
+            assert_eq!(fast.bits_remaining(), slow.bits_remaining());
         }
     }
 }

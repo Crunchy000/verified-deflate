@@ -39,3 +39,7 @@ unexpected_cfgs = { level = "warn", check-cfg = ["cfg(kani)", "cfg(kani_sample)"
 [profile.release]
 codegen-units = 1
 lto = "thin"
+
+[profile.profiling]
+inherits = "release"
+debug = true

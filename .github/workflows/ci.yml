@@ -9,6 +9,10 @@ on:
         description: "Only verify these Kani modules (comma-separated prefixes, e.g. zip,crc32); empty = all"
         required: false
         default: ""
+      harnesses:
+        description: "Only verify harnesses whose names match this extended regex (e.g. 'decode|sort'); empty = all"
+        required: false
+        default: ""
       harness_timeout:
         description: "Per-harness time limit in seconds"
         required: false
@@ -72,7 +76,7 @@ jobs:
       - run: .github/scripts/run-and-report.sh msrv cargo build --lib --bins
 
   kani:
-    name: Kani ${{ matrix.module }}
+    name: Kani ${{ matrix.module }}${{ matrix.part && format(' ({0})', matrix.part) || '' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -84,7 +88,13 @@ jobs:
           - { module: "bitio::proofs::", file: src/bitio.rs }
           - { module: "crc32::proofs::", file: src/crc32.rs }
           - { module: "tables::proofs::", file: src/tables.rs }
-          - { module: "huffman::proofs::", file: src/huffman.rs }
+          # The Huffman proofs take about 40 minutes in sequence, so they
+          # are split across three jobs (each runner has 16 GB and runs one
+          # proof at a time). The last part takes every harness not named
+          # by the others.
+          - { module: "huffman::proofs::", part: "lengths 1", file: src/huffman.rs, flags: "-Z stubbing", only: "^build_lengths_(complete_and_limited|full_range_frequencies)$" }
+          - { module: "huffman::proofs::", part: "lengths 2", file: src/huffman.rs, flags: "-Z stubbing", only: "^(build_lengths_(tight_limit|rejects_impossible_limit)|sort_by_weight_sorts)$" }
+          - { module: "huffman::proofs::", part: "codes", file: src/huffman.rs, flags: "-Z stubbing", skip: "^(build_lengths_(complete_and_limited|full_range_frequencies|tight_limit|rejects_impossible_limit)|sort_by_weight_sorts)$" }
           - { module: "lz77::proofs::", file: src/lz77.rs, flags: "-Z stubbing --no-memory-safety-checks" }
           - { module: "deflate::proofs::", file: src/deflate.rs, flags: "-Z stubbing --no-memory-safety-checks" }
           - { module: "inflate::proofs::", file: src/inflate.rs, flags: "-Z stubbing --no-memory-safety-checks" }
@@ -130,13 +140,17 @@ jobs:
         if: steps.sel.outputs.run == 'true'
         env:
           KANI_HARNESS_TIMEOUT: ${{ github.event.inputs.harness_timeout || '1800' }}
+          KANI_HARNESS_FILTER: ${{ github.event.inputs.harnesses }}
+          KANI_SHARD_ONLY: ${{ matrix.only }}
+          KANI_SHARD_SKIP: ${{ matrix.skip }}
           KANI_EXTRA_FLAGS: ${{ matrix.flags }}
           KANI_EXTENDED: ${{ github.event.inputs.extended == 'true' && '1' || '0' }}
           GITHUB_TOKEN: ${{ github.token }}
           MODULE: ${{ matrix.module }}
+          PART: ${{ matrix.part }}
         run: |
           if [ "${{ github.event.inputs.publish_logs }}" = "true" ]; then
-            export PUBLISH_BRANCH="ci-logs/$(printf '%s' "$MODULE" | tr -c 'a-z0-9' '-')"
+            export PUBLISH_BRANCH="ci-logs/$(printf '%s%s' "$MODULE" "$PART" | tr -c 'a-z0-9' '-')"
           fi
           .github/scripts/kani_module.sh "${{ matrix.module }}" "${{ matrix.file }}"
       - name: Report

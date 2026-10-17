@@ -19,30 +19,35 @@ reference zlib and Info-ZIP.
 
 ## Verification
 
-46 Kani harnesses sit next to the code they check and run in CI on every
+54 Kani harnesses sit next to the code they check and run in CI on every
 push. For every input up to the stated sizes, they prove these
 properties:
 
 - Bit-level I/O round-trips, and reads fail cleanly at end of input.
-- CRC-32's table step equals eight bitwise steps for every register and
-  byte, so the CRC is correct for inputs of any length.
+- CRC-32 is correct for inputs of any length: its eight-byte
+  (slicing-by-8) step equals eight table steps, and the table step equals
+  eight bitwise steps, for every register value and input.
 - The length and distance code tables are correct for **every** length
   (3–258) and distance (1–32768).
 - Canonical Huffman codes are prefix-free. Generated code lengths always
   form a complete code within the length limit. Huffman encode-then-decode
-  is the identity, and decoding arbitrary bits never panics.
+  is the identity, decoding arbitrary bits never panics, and the
+  table-driven decoder returns exactly what the bit-by-bit decoder does.
 - LZ77 tokens are always valid and describe exactly the input, for every
-  hash function. The overlapping match copy meets its specification.
+  hash function. The word-at-a-time match comparison equals a byte loop,
+  and the match copy meets its specification.
 - The encoder's code-length run-length coding is undone by the decoder's
   own routine.
 - Stored streams round-trip end to end.
 - ZIP headers round-trip. Every slice the archive parser takes is in
   bounds, for archives of any size. Name validation blocks path traversal.
 
-Seven larger harnesses are gated behind the `kani-extended` feature
+Ten larger harnesses are gated behind the `kani-extended` feature
 because they need more memory or time than a CI runner has: whole-stream
-decoder no-panic, fixed-Huffman round trips, and a whole-archive round
-trip. Dynamic-Huffman blocks are covered
+decoder no-panic, fixed-Huffman round trips, a whole-archive round trip,
+single-query forms of the CRC slicing lemma (which CI proves by
+linearity instead), and the Huffman table-decoder equivalence at larger
+bounds. Dynamic-Huffman blocks are covered
 compositionally rather than end to end.
 [VERIFICATION.md](VERIFICATION.md) lists every harness, its bounds, the
 modelling choices behind it, and what is **not** proven.
@@ -88,19 +93,43 @@ vzip extract -d /tmp/out out.zip
 
 ## Performance
 
-These are rough numbers from `cargo run --release --example bench` on 10 MB
-of generated text, against zlib 1.3 on the same machine:
+Throughput in MB/s from `cargo run --release --example bench` (best of
+three runs), against zlib 1.3 on the same inputs and machine, a 2-core
+2.8 GHz Xeon VM. The inputs are 8 MB each of generated text, this crate's
+own source code and binary log records, and 4 MB of random bytes.
+Compressed sizes are within 0.2 percentage points of zlib's at every level.
 
-| level | ratio | compress | decompress | zlib ratio | zlib compress | zlib decompress |
-|---|---|---|---|---|---|---|
-| 1 | 20.7% | 85 MB/s | 95 MB/s | 21.7% | 93 MB/s | 228 MB/s |
-| 6 | 15.1% | 19 MB/s | 180 MB/s | 15.1% | 29 MB/s | 401 MB/s |
-| 9 | 13.7% | 2.4 MB/s | 180 MB/s | 13.7% | 3.8 MB/s | 369 MB/s |
+| input | level | compress | zlib | decompress | zlib |
+|---|---|---|---|---|---|
+| text | 1 | 105 | 111 | 221 | 253 |
+| text | 6 | 17.5 | 26.0 | 402 | 402 |
+| text | 9 | 2.7 | 3.6 | 573 | 434 |
+| source | 1 | 92 | 85 | 238 | 253 |
+| source | 6 | 25.3 | 27.4 | 289 | 284 |
+| source | 9 | 6.5 | 9.1 | 260 | 281 |
+| records | 1 | 139 | 111 | 367 | 430 |
+| records | 6 | 33.6 | 37.8 | 410 | 453 |
+| random | 6 | 38.5 | 33.7 | 2675 | 1967 |
 
-Compression ratios match zlib. Speed was traded for checkability in a few
-places: Huffman codes are decoded bit by bit, like zlib's `puff.c`;
-matches are compared and copied byte by byte; and the CRC uses one table
-rather than eight. Each of these keeps the model-checking problems small.
+CRC-32 runs at about 1.7 GB/s (zlib: 3.0 GB/s).
+
+The fast paths are verified like the rest of the code. Each is either
+proved directly or proved equal to a simple reference version, which the
+larger proofs then use in its place:
+
+- Huffman codes decode through a 10-bit lookup table, proved equal to the
+  bit-by-bit canonical decoder (zlib's `puff.c` method).
+- Match candidates are compared eight bytes at a time, proved equal to a
+  byte loop. Short match copies are word moves, proved to meet the LZ77
+  copy specification.
+- CRC-32 uses slicing-by-8, proved equal to the one-table method, which is
+  proved equal to the bitwise definition.
+- The Huffman length builder sorts with a heapsort, proved to sort.
+
+The main remaining gap is the hash-chain walk at levels 6–9: about 17
+instructions per candidate against zlib's 10, mostly bounds checks and a
+distance check on every chain entry, which makes it impossible for a
+corrupted chain to produce an invalid match.
 
 ## Limitations
 

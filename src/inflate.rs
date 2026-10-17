@@ -40,7 +40,7 @@ pub fn decompress(input: &[u8]) -> Result<Vec<u8>, InflateError> {
 pub fn decompress_with_limit(input: &[u8], max_output: usize) -> Result<Decompressed, InflateError> {
     let mut st = State {
         br: BitReader::new(input),
-        out: Output::new(max_output),
+        out: Output::new(input.len(), max_output),
         lit: Decoder::EMPTY,
         dist: Decoder::EMPTY,
         lengths: [0; NUM_LITLEN + NUM_DIST],
@@ -64,8 +64,9 @@ pub fn decompress_with_limit(input: &[u8], max_output: usize) -> Result<Decompre
     Ok(Decompressed { consumed: st.br.bytes_consumed(), data: st.out.finish() })
 }
 
-/// Initial output buffer size.
+/// Initial output buffer size bounds.
 const INITIAL_CAPACITY: usize = 4096;
+const MAX_INITIAL_CAPACITY: usize = 1 << 26;
 
 const FIXED_LIT: Decoder = match Decoder::new(&fixed_litlen_lengths()) {
     Ok(d) => d,
@@ -86,8 +87,14 @@ pub(crate) struct Output {
 }
 
 impl Output {
-    fn new(limit: usize) -> Self {
-        Self { buf: vec![0; INITIAL_CAPACITY], len: 0, limit }
+    /// An empty output for a stream of `input_len` bytes, with room for as
+    /// many bytes as the input has (more is added as needed, by doubling),
+    /// but never more than `limit`, so a caller that knows the exact size,
+    /// as a ZIP reader does, gets an exact buffer.
+    fn new(input_len: usize, limit: usize) -> Self {
+        let cap = input_len.clamp(INITIAL_CAPACITY, MAX_INITIAL_CAPACITY);
+        let cap = if cap < limit { cap } else { limit };
+        Self { buf: vec![0; cap], len: 0, limit }
     }
 
     /// Makes room for `n` more bytes, failing if that would exceed the
@@ -105,10 +112,11 @@ impl Output {
 
     #[cold]
     pub(crate) fn grow(&mut self, n: usize) {
-        let want = (self.len + n).max(self.buf.len().saturating_mul(2));
-        let mut bigger = vec![0; want];
-        bigger[..self.len].copy_from_slice(&self.buf[..self.len]);
-        self.buf = bigger;
+        // At least double, but never past the limit (`reserve` has checked
+        // that `len + n` is within it). Resizing in place lets the
+        // allocator extend the block, so only the new part is zeroed.
+        let want = (self.len + n).max(self.buf.len().saturating_mul(2)).min(self.limit);
+        self.buf.resize(want, 0);
     }
 
     fn finish(mut self) -> Vec<u8> {
@@ -307,6 +315,7 @@ mod proofs {
     /// Two bytes reach every block type's header handling, a fixed-block
     /// literal and end-of-block, and every early-EOF path.
     #[kani::stub(Output::grow, grow_is_unreachable)]
+    #[kani::stub(crate::lz77::copy_within_buffer, crate::lz77::copy_within_buffer_ref)]
     #[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
     #[kani::proof]
     #[kani::unwind(5)]
@@ -340,6 +349,7 @@ mod proofs {
     /// literal followed by a length-258 match code; the limit keeps copies
     /// short while every decoding path is still taken.
     #[kani::stub(Output::grow, grow_is_unreachable)]
+    #[kani::stub(crate::lz77::copy_within_buffer, crate::lz77::copy_within_buffer_ref)]
     #[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
     #[kani::proof]
     #[kani::unwind(9)]

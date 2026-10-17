@@ -5,7 +5,7 @@ weakest:
 
 1. **Kani proofs**: bounded model checking of the real code, for *every*
    input up to the stated size. Each harness is a `#[kani::proof]` function
-   next to the code it checks. 46 harnesses run in CI on every push; 7
+   next to the code it checks. 54 harnesses run in CI on every push; 10
    more are too large for CI runners and are gated behind the
    `kani-extended` feature (see below).
 2. **Safe Rust**: `#![forbid(unsafe_code)]`, so memory safety comes from
@@ -28,19 +28,22 @@ weakest:
 ```sh
 cargo install --locked kani-verifier --version 0.68.0
 cargo kani setup
-cargo kani                                         # every CI harness
-cargo kani --harness huffman::proofs::             # one module
+cargo kani -Z stubbing                             # every CI harness
+cargo kani --harness crc32::proofs::               # one module
 cargo kani -Z stubbing --harness lz77::proofs::    # modules that use stubs
 cargo kani -Z stubbing --features kani-extended    # include the large ones
 ```
 
-CI (`.github/workflows/ci.yml`) runs each module as its own job, and each
-harness as its own process. A harness gets 16 GiB of memory and 30
+CI (`.github/workflows/ci.yml`) runs each module as its own job (the
+slow Huffman module as three), and each harness as its own process. A harness gets 16 GiB of memory and 30
 minutes, and the job summary reports per-harness results. On GitHub's
-standard runners the whole CI suite verifies in about 45 minutes of wall
+standard runners the whole CI suite verifies in about 25 minutes of wall
 time across parallel jobs. Most harnesses take seconds; the slowest, the
-Huffman length builder and encode/decode round trip, take about 8 minutes
-and peak at about 12 GiB.
+Huffman length builder, encode/decode round trip and table-decoder
+equivalence, take 7–10 minutes and peak at about 10.7 GiB. A manual run of the workflow can select modules
+and harnesses (by name pattern), change the time limit, include the
+extended set, and publish each harness's log to a `ci-logs/*` branch as
+soon as it finishes.
 
 Without Kani, the harnesses can still be compiled and *sampled* with
 random inputs. This is a smoke test, not a proof; see `tools/kani-sample`.
@@ -70,6 +73,23 @@ one either preserves the claim or is stated in the claim.
 - **Growth stub.** Decoder harnesses whose output fits in the initial
   buffer replace `Output::grow` with a panic, so Kani must also prove
   that growth is unreachable.
+- **Reference versions of fast paths.** Each speed-oriented routine has a
+  plain reference version, and a dedicated harness ties the two together.
+  The word-at-a-time `common_prefix` is proved equal to a byte loop. The
+  match copy `copy_within_buffer` is proved to meet a specification that
+  determines its result uniquely, which the byte-loop reference
+  `copy_within_buffer_ref` also meets. Larger harnesses replace the fast
+  routine with its reference, whose model is much smaller; the claim is
+  unchanged because the two compute the same function. In the same way,
+  the Huffman decoder's property harnesses run on `Canonical`, the
+  bit-by-bit decoder, and `fast_decode_matches_slow` proves the
+  table-driven `Decoder` (which wraps a `Canonical`) equal to it.
+- **Specification stub for sorting.** The Huffman length builder's
+  harnesses replace its heapsort with the heapsort's specification: the
+  permutation of the input sorted by (weight, index), chosen
+  nondeterministically. The keys are distinct, so that permutation exists
+  and is unique, and the stub is exactly the function's behaviour.
+  `sort_by_weight_sorts` proves the heapsort meets it.
 - **Exact-capacity instantiations.** The Huffman length builder is generic
   over its scratch capacity. The proofs run it with capacity equal to the
   alphabet size; `build_lengths` runs the same code with capacity 32 or
@@ -84,8 +104,11 @@ one either preserves the claim or is stated in the claim.
 Several implementation choices were made to keep the code checkable. The
 tokenizer and the code-length run-length coder take one step per input
 position and write into caller-provided slices. The decoder writes its
-output by index and rebuilds Huffman decoders in place. Huffman decoding
-steps are written out rather than looped. None of these changes behaviour;
+output by index and rebuilds Huffman decoders in place. The slow Huffman
+decoding steps are written out rather than looped. The bit reader's
+`read_bits` loads only the bytes a read needs, so concrete header bits in
+a proof are never mixed with symbolic payload bytes (only the Huffman
+table lookup reads eight bytes ahead). None of these changes behaviour;
 the zlib interop tests confirm the output is unchanged.
 
 ## What is proven (in CI)
@@ -105,7 +128,9 @@ the zlib interop tests confirm the output is unchanged.
 | Harness | Property |
 |---|---|
 | `table_matches_definition` | All 256 table entries equal the bitwise definition. |
-| `table_step_equals_bitwise_step` | For **every** 32-bit register and **every** byte, the table step equals eight bitwise steps. `update` and the reference `update_bitwise` are the same fold over these steps, so they agree on inputs of every length. |
+| `table_step_equals_bitwise_step` | For **every** 32-bit register and **every** byte, the table step equals eight bitwise steps. |
+| `slicing_tables_follow_recurrence` | Each of the seven further slicing-by-8 tables is the previous one followed by a zero byte. |
+| `byte_step_is_linear`, `lanes_are_linear`, `eight_byte_step_matches_on_a_basis` | For **every** register and **every** eight bytes, the eight-byte step equals eight table steps. As one query this is too hard for the solver, so it is proved by linearity. The first two harnesses prove, for all inputs, that both sides are GF(2)-linear in their 96 input bits. The third checks that they agree on all 96 basis vectors. Linear maps that agree on a basis are equal. With the previous rows, `update` (eight bytes at a time, then byte by byte) equals the reference `update_bitwise` on inputs of every length: both are folds over the input of steps proved equal. |
 | `update_matches_reference` | Whole computations agree directly for 0–4 bytes and any starting value. |
 | `streaming_is_concatenation` | Hashing in two pieces, split anywhere, equals hashing the whole. |
 
@@ -131,6 +156,8 @@ the zlib interop tests confirm the output is unchanged.
 | `decoder_new_never_panics` | For any lengths (0–255) over 8 symbols, the decoder builder never panics. It accepts exactly the lengths whose Kraft sum is ≤ 1 and reports completeness exactly. |
 | `encode_then_decode_symbol` | For any valid lengths over 6 symbols and any coded symbol, packing its canonical code as the encoder does and decoding returns that symbol. Exactly its length is consumed. |
 | `decode_arbitrary_bits` | Decoding arbitrary bits with any accepted lengths never panics, and only yields symbols that have codes. |
+| `fast_decode_matches_slow` | For any valid lengths over 4 symbols (up to 6 bits), any lookup-table width of 1–4 bits and any 0–1 bytes of input, the table-driven decoder returns exactly what the bit-by-bit decoder returns and consumes the same bits. This covers codes shorter than, as long as and longer than the table, and input ending mid-code. (The two harnesses above check the bit-by-bit decoder.) |
+| `sort_by_weight_sorts` | For any weights and any 0–5 distinct indices, the length builder's heapsort returns them sorted by (weight, index). The length-builder harnesses above use this as a specification stub. |
 
 ### LZ77 (`lz77`)
 
@@ -140,7 +167,9 @@ the zlib interop tests confirm the output is unchanged.
 | `tokens_valid_and_replay_level9` | Same with level 9's search parameters. |
 | `tokens_valid_and_replay_greedy` | Same with level 1's greedy parameters. |
 | `runs_are_matched` | Six equal bytes become one literal and one overlapping match. |
+| `common_prefix_matches_reference` | The word-at-a-time match comparison equals the byte-by-byte loop, for any two inputs of up to 20 bytes. The tokenizer harnesses above use the byte loop. |
 | `copy_within_buffer_meets_spec` | For every position, distance and length that fit a 12-byte buffer, each written byte equals the byte `dist` earlier and nothing else changes. This includes heavily overlapping copies. |
+| `short_copy_meets_spec` | The same for the inline path for short copies whose source lies wholly before the destination, on a 32-byte buffer that reaches every case of it (up to 16 bytes). |
 | `replay_arbitrary_tokens` | Replaying arbitrary tokens never panics; invalid matches are errors. |
 
 ### Encoder (`deflate`)
@@ -194,6 +223,9 @@ machine or further restructuring of the decoder.
 | `e2e::roundtrip_fixed_greedy` | Any 3 bytes round-trip through fixed Huffman with the greedy matcher. |
 | `e2e::roundtrip_fixed_two_symbol_alphabet` | Any 6 bytes over a two-symbol alphabet round-trip with level 9. |
 | `e2e::zip_roundtrip_stored` | A one-entry archive of any 3 bytes, stored, reads back exactly and passes its CRC check. |
+| `huffman::proofs::fast_decode_matches_slow_wide` | The table-driven decoder equals the bit-by-bit one for 5 symbols of up to 9 bits and 0–2 bytes of input. |
+| `crc32::proofs::eight_byte_step_equals_table_steps` | The eight-byte CRC step lemma as a single query. CI proves it by linearity instead (see above). |
+| `crc32::proofs::four_byte_lanes_equal_table_steps` | Its four-byte half as a single query. |
 
 ## What is not proven
 

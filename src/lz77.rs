@@ -45,7 +45,10 @@ pub struct MatchConfig {
     /// When the current match is at least this long, the lazy look-ahead
     /// search examines only a quarter of `max_chain`.
     pub good_len: usize,
-    /// Only try the lazy look-ahead for matches shorter than this.
+    /// With `lazy`, only try the look-ahead for matches shorter than this.
+    /// Without it, positions inside a match longer than this are not added
+    /// to the hash chains, which saves time on long matches (zlib uses the
+    /// same field both ways).
     pub max_lazy: usize,
     /// Defer a match by one byte if the next position has a longer one.
     pub lazy: bool,
@@ -61,9 +64,9 @@ impl MatchConfig {
     pub const fn for_level(level: u8) -> Self {
         // (max_chain, nice_len, good_len, max_lazy, lazy), after zlib's table.
         let (max_chain, nice_len, good_len, max_lazy, lazy) = match level {
-            0 | 1 => (4, 8, 4, 0, false),
-            2 => (8, 16, 4, 0, false),
-            3 => (32, 32, 4, 0, false),
+            0 | 1 => (4, 8, 4, 4, false),
+            2 => (8, 16, 4, 5, false),
+            3 => (32, 32, 4, 6, false),
             4 => (16, 16, 4, 4, true),
             5 => (32, 32, 8, 16, true),
             6 => (128, 128, 8, 16, true),
@@ -108,55 +111,123 @@ impl Matcher {
         (v.wrapping_mul(0x9E37_79B1) >> self.hash_shift) as usize
     }
 
-    /// Records `pos` in the hash chains (if three bytes are available there).
+    /// Hash bucket of `pos`, or `None` if fewer than three bytes remain.
     #[inline]
-    fn insert(&mut self, data: &[u8], pos: usize) {
+    fn bucket(&self, data: &[u8], pos: usize) -> Option<usize> {
         if pos + MIN_MATCH > data.len() {
-            return;
+            None
+        } else {
+            Some(self.hash(data, pos))
         }
-        let h = self.hash(data, pos);
-        self.prev[pos & (self.window - 1)] = self.head[h];
-        self.head[h] = (pos as u32).wrapping_add(1);
     }
 
-    /// Longest match at `pos` strictly longer than `longer_than`, as
-    /// `(len, dist)`. Requires `pos < data.len()`.
-    fn longest_match(&self, data: &[u8], pos: usize, longer_than: usize, max_chain: usize) -> Option<(usize, usize)> {
-        let avail = data.len() - pos;
-        if avail < MIN_MATCH {
+    /// Records `pos` (whose bucket is `h`) in the hash chains.
+    #[inline]
+    fn insert_at(&mut self, pos: usize, h: Option<usize>) {
+        if let Some(h) = h {
+            self.prev[pos & (self.window - 1)] = self.head[h];
+            self.head[h] = (pos as u32).wrapping_add(1);
+        }
+    }
+
+    /// Distances a match at `pos` may use: `1..=max_dist(pos)`.
+    #[inline]
+    fn max_dist(&self, pos: usize) -> usize {
+        if pos < self.window {
+            pos
+        } else {
+            self.window
+        }
+    }
+
+    /// Distance from `pos` back to chain entry `cand` (a position plus one,
+    /// modulo 2^32). An empty entry (0) or one at or after `pos` gives a
+    /// distance of 0 or more than `pos`, so a single comparison
+    /// `dist.wrapping_sub(1) < max_dist(pos)` accepts exactly the usable
+    /// entries.
+    #[inline]
+    fn dist_to(pos: usize, cand: u32) -> usize {
+        (pos as u32).wrapping_sub(cand.wrapping_sub(1)) as usize
+    }
+
+    /// Longest match at `pos` (whose bucket is `h`) strictly longer than
+    /// `longer_than`, as `(len, dist)`. Requires `pos < data.len()`.
+    ///
+    /// The common case of no usable candidate is decided here, inline; the
+    /// chain search itself is out of line.
+    #[inline(always)]
+    fn find_match(
+        &self,
+        data: &[u8],
+        pos: usize,
+        h: Option<usize>,
+        longer_than: usize,
+        max_chain: usize,
+    ) -> Option<(usize, usize)> {
+        let cand = self.head[h?];
+        if Self::dist_to(pos, cand).wrapping_sub(1) >= self.max_dist(pos) {
             return None;
         }
+        self.longest_match(data, pos, cand, longer_than, max_chain)
+    }
+
+    /// The chain search behind [`Self::find_match`], starting from chain
+    /// entry `cand`.
+    #[inline(never)]
+    fn longest_match(
+        &self,
+        data: &[u8],
+        pos: usize,
+        cand: u32,
+        longer_than: usize,
+        max_chain: usize,
+    ) -> Option<(usize, usize)> {
+        let avail = data.len() - pos;
         let max_len = if avail < MAX_MATCH { avail } else { MAX_MATCH };
         if longer_than >= max_len {
             return None;
         }
+        // The bytes a match must equal. Every candidate is compared against
+        // a slice of the same length, so most bounds checks disappear.
+        let cur = &data[pos..pos + max_len];
         let mut best_len = longer_than;
         let mut best_dist = 0;
-        let mut cand = self.head[self.hash(data, pos)];
+        // The byte a candidate needs to beat the best match so far.
+        let mut scan_end = cur[best_len];
+        let mut cand = cand;
         let mut chain = max_chain;
-        let mut last_dist = 0;
-        while cand != 0 && chain > 0 {
-            // Positions are stored as pos + 1 modulo 2^32; any candidate that
-            // is not strictly older than the last, inside the window and
-            // inside the data is discarded (this also rules out cycles).
-            let dist = (pos as u32).wrapping_sub(cand - 1) as usize;
-            if dist <= last_dist || dist > self.window || dist > pos {
+        let max_dist = self.max_dist(pos);
+        let prev = &self.prev[..];
+        if prev.is_empty() {
+            return None;
+        }
+        // prev.len() is the window size, a power of two; masking by
+        // prev.len() - 1 also needs no bounds check.
+        let wmask = prev.len() - 1;
+        while chain > 0 {
+            // An empty entry, one at or after `pos`, or one outside the
+            // window ends the search. `chain` bounds the loop even if the
+            // chains were to contain a cycle.
+            let dist = Self::dist_to(pos, cand);
+            if dist.wrapping_sub(1) >= max_dist {
                 break;
             }
-            last_dist = dist;
             let cpos = pos - dist;
-            // best_len < max_len, so both indices are in bounds.
-            if data[cpos + best_len] == data[pos + best_len] {
-                let len = common_prefix(data, cpos, pos, max_len);
+            // best_len < max_len, so cpos + best_len < pos + max_len <= n.
+            // Checking the byte that would extend the best match first
+            // rejects most candidates with one comparison.
+            if data[cpos + best_len] == scan_end {
+                let len = common_prefix(&data[cpos..cpos + max_len], cur);
                 if len > best_len {
                     best_len = len;
                     best_dist = dist;
                     if len >= self.cfg.nice_len || len == max_len {
                         break;
                     }
+                    scan_end = cur[best_len];
                 }
             }
-            cand = self.prev[cpos & (self.window - 1)];
+            cand = prev[cpos & wmask];
             chain -= 1;
         }
         if best_dist == 0 || best_len < MIN_MATCH {
@@ -186,19 +257,24 @@ impl Matcher {
         // position at a time (rather than jumping by match lengths) keeps
         // each data index a plain loop counter, which keeps the model
         // checker's problem small.
+        // Whether positions inside the last emitted match go in the chains.
+        let mut insert_inside = true;
         for pos in start..n {
             if pos < next {
-                self.insert(data, pos);
+                if insert_inside {
+                    self.insert_at(pos, self.bucket(data, pos));
+                }
                 continue;
             }
+            let h = self.bucket(data, pos);
             if emitted == max_tokens {
                 return (pos, emitted);
             }
             let found = match pending.take() {
                 Some(m) => Some(m),
-                None => self.longest_match(data, pos, MIN_MATCH - 1, self.cfg.max_chain),
+                None => self.find_match(data, pos, h, MIN_MATCH - 1, self.cfg.max_chain),
             };
-            self.insert(data, pos);
+            self.insert_at(pos, h);
             let Some((len, dist)) = found else {
                 out[emitted] = Token::Literal(data[pos]);
                 emitted += 1;
@@ -207,7 +283,7 @@ impl Matcher {
             };
             if self.cfg.lazy && len < self.cfg.max_lazy && pos + 1 < n {
                 let chain = if len >= self.cfg.good_len { self.cfg.max_chain / 4 + 1 } else { self.cfg.max_chain };
-                if let Some(m) = self.longest_match(data, pos + 1, len, chain) {
+                if let Some(m) = self.find_match(data, pos + 1, self.bucket(data, pos + 1), len, chain) {
                     // Better match one byte later: emit a literal instead.
                     out[emitted] = Token::Literal(data[pos]);
                     emitted += 1;
@@ -219,20 +295,43 @@ impl Matcher {
             out[emitted] = Token::Match { len: len as u16, dist: dist as u16 };
             emitted += 1;
             next = pos + len;
+            insert_inside = self.cfg.lazy || len <= self.cfg.max_lazy;
         }
         (next, emitted)
     }
 }
 
-/// Number of equal bytes at `a` and `b` (with `a < b`), up to `max`.
-/// Requires `b + max <= data.len()`.
+/// Length of the common prefix of `x` and `y` (at most the shorter length).
 ///
-/// A plain byte loop: a word-at-a-time version is faster, but its loads at
-/// data-dependent offsets made the model-checking problem far larger.
+/// Compares eight bytes at a time; the first differing byte is found from
+/// the XOR's trailing zeros. Kani proves this equal to the byte-by-byte
+/// [`common_prefix_ref`] (and the tokenizer harnesses use the reference,
+/// which keeps their models small).
 #[inline]
-fn common_prefix(data: &[u8], a: usize, b: usize, max: usize) -> usize {
+pub(crate) fn common_prefix(x: &[u8], y: &[u8]) -> usize {
+    let max = if x.len() < y.len() { x.len() } else { y.len() };
     let mut n = 0;
-    while n < max && data[a + n] == data[b + n] {
+    while n + 8 <= max {
+        let (Some(a), Some(b)) = (x[n..].first_chunk::<8>(), y[n..].first_chunk::<8>()) else {
+            break;
+        };
+        let diff = u64::from_le_bytes(*a) ^ u64::from_le_bytes(*b);
+        if diff != 0 {
+            return n + (diff.trailing_zeros() / 8) as usize;
+        }
+        n += 8;
+    }
+    while n < max && x[n] == y[n] {
+        n += 1;
+    }
+    n
+}
+
+/// Reference version of [`common_prefix`]: a plain byte loop.
+#[cfg_attr(not(any(kani, test)), allow(dead_code))]
+pub(crate) fn common_prefix_ref(x: &[u8], y: &[u8]) -> usize {
+    let mut n = 0;
+    while n < x.len() && n < y.len() && x[n] == y[n] {
         n += 1;
     }
     n
@@ -246,11 +345,74 @@ pub fn match_is_valid(len: usize, dist: usize, produced: usize) -> bool {
 
 /// The LZ77 copy on a buffer: writes `buf[pos..pos + len]`, each byte
 /// equal to the byte `dist` positions earlier. Source and destination may
-/// overlap (that is how DEFLATE expresses runs); copying front to back makes
-/// every byte read already final. Requires `1 <= dist <= pos` and
-/// `pos + len <= buf.len()`.
+/// overlap (that is how DEFLATE expresses runs). Requires
+/// `1 <= dist <= pos` and `pos + len <= buf.len()`.
+///
+/// Short copies (at most 16 bytes) whose source lies wholly before the
+/// destination are done inline with two word moves. Runs of a single byte
+/// are a fill. Otherwise the copy goes in chunks with `copy_within`: once a
+/// multiple of `dist` bytes has been written, the output is periodic with
+/// period `dist`, so the next chunk (up to everything written so far plus
+/// `dist`) can be copied from the start of the source in one
+/// non-overlapping move.
 #[inline]
 pub fn copy_within_buffer(buf: &mut [u8], pos: usize, dist: usize, len: usize) {
+    let src = pos - dist;
+    if dist == 1 {
+        let b = buf[src];
+        buf[pos..pos + len].fill(b);
+        return;
+    }
+    if len <= 16 && dist >= len {
+        // A short copy whose source lies wholly before its destination:
+        // two (possibly overlapping) words, both loaded before either is
+        // stored, cover it exactly without a call to memmove.
+        if len >= 8 {
+            let a = word8(buf, src);
+            let b = word8(buf, src + len - 8);
+            buf[pos..pos + 8].copy_from_slice(&a);
+            buf[pos + len - 8..pos + len].copy_from_slice(&b);
+        } else if len >= 4 {
+            let a = word4(buf, src);
+            let b = word4(buf, src + len - 4);
+            buf[pos..pos + 4].copy_from_slice(&a);
+            buf[pos + len - 4..pos + len].copy_from_slice(&b);
+        } else {
+            for i in 0..len {
+                buf[pos + i] = buf[src + i];
+            }
+        }
+        return;
+    }
+    let mut copied = 0;
+    while copied < len {
+        let avail = dist + copied;
+        let chunk = if len - copied < avail { len - copied } else { avail };
+        buf.copy_within(src..src + chunk, pos + copied);
+        copied += chunk;
+    }
+}
+
+/// The 8 bytes at `buf[i..]`.
+#[inline(always)]
+fn word8(buf: &[u8], i: usize) -> [u8; 8] {
+    let w = &buf[i..i + 8];
+    [w[0], w[1], w[2], w[3], w[4], w[5], w[6], w[7]]
+}
+
+/// The 4 bytes at `buf[i..]`.
+#[inline(always)]
+fn word4(buf: &[u8], i: usize) -> [u8; 4] {
+    let w = &buf[i..i + 4];
+    [w[0], w[1], w[2], w[3]]
+}
+
+/// Reference version of [`copy_within_buffer`]: the byte-by-byte loop that
+/// is the specification. `copy_within_buffer_meets_spec` proves the fast
+/// version produces the same (unique) result; harnesses that only need the
+/// copy's effect use this one, whose model is much smaller.
+#[cfg_attr(not(any(kani, test)), allow(dead_code))]
+pub(crate) fn copy_within_buffer_ref(buf: &mut [u8], pos: usize, dist: usize, len: usize) {
     for i in pos..pos + len {
         buf[i] = buf[i - dist];
     }
@@ -329,6 +491,36 @@ mod tests {
     }
 
     #[test]
+    fn common_prefix_matches_reference_exhaustively() {
+        let mut data = [7u8; 64];
+        data[40] = 1;
+        data[57] = 2;
+        for a in 0..64 {
+            for b in a + 1..64 {
+                for max in 0..=64 - b {
+                    let (x, y) = (&data[a..a + max], &data[b..b + max]);
+                    assert_eq!(common_prefix(x, y), common_prefix_ref(x, y));
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn copy_within_buffer_matches_reference_exhaustively() {
+        let before: Vec<u8> = (0..40u8).map(|i| i.wrapping_mul(37)).collect();
+        for pos in 1..=40 {
+            for dist in 1..=pos {
+                for len in 0..=40 - pos {
+                    let (mut a, mut b) = (before.clone(), before.clone());
+                    copy_within_buffer(&mut a, pos, dist, len);
+                    copy_within_buffer_ref(&mut b, pos, dist, len);
+                    assert_eq!(a, b, "pos {pos} dist {dist} len {len}");
+                }
+            }
+        }
+    }
+
+    #[test]
     fn copy_match_matches_naive() {
         for dist in 1..20 {
             for len in 3..80 {
@@ -391,6 +583,7 @@ mod proofs {
     /// For any 4 bytes, with a 2-entry chain limit, lazy matching and
     /// every possible hash function: every token is valid and the tokens
     /// replay to the input.
+    #[kani::stub(common_prefix, common_prefix_ref)]
     #[kani::proof]
     #[kani::stub(Matcher::hash, any_bucket)]
     #[kani::unwind(5)]
@@ -409,6 +602,7 @@ mod proofs {
     }
 
     /// Same property for any 4 bytes with level 9's search parameters.
+    #[kani::stub(common_prefix, common_prefix_ref)]
     #[kani::proof]
     #[kani::stub(Matcher::hash, any_bucket)]
     #[kani::unwind(5)]
@@ -418,6 +612,7 @@ mod proofs {
     }
 
     /// Same property for any 4 bytes with level 1's greedy parameters.
+    #[kani::stub(common_prefix, common_prefix_ref)]
     #[kani::proof]
     #[kani::stub(Matcher::hash, any_bucket)]
     #[kani::unwind(5)]
@@ -427,6 +622,7 @@ mod proofs {
     }
 
     /// Runs of a repeated byte become one literal plus an overlapping match.
+    #[kani::stub(common_prefix, common_prefix_ref)]
     #[kani::proof]
     #[kani::unwind(8)]
     fn runs_are_matched() {
@@ -438,6 +634,19 @@ mod proofs {
         assert_eq!(count, 2);
         assert_eq!(toks[0], Token::Literal(b));
         assert_eq!(toks[1], Token::Match { len: 5, dist: 1 });
+    }
+
+    /// The word-at-a-time prefix comparison equals the byte loop for any
+    /// two slices of up to 20 bytes (so the 8-byte path runs up to twice,
+    /// followed by every tail length).
+    #[kani::proof]
+    #[kani::unwind(21)]
+    fn common_prefix_matches_reference() {
+        let x: [u8; 20] = kani::any();
+        let y: [u8; 20] = kani::any();
+        let lx: usize = kani::any_where(|&l: &usize| l <= 20);
+        let ly: usize = kani::any_where(|&l: &usize| l <= 20);
+        assert_eq!(common_prefix(&x[..lx], &y[..ly]), common_prefix_ref(&x[..lx], &y[..ly]));
     }
 
     /// The buffer copy meets the LZ77 specification for every distance and
@@ -462,8 +671,31 @@ mod proofs {
         }
     }
 
-    /// Replaying arbitrary tokens never panics: invalid matches are errors.
+    /// The inline path for short non-overlapping copies (up to 16 bytes)
+    /// meets the same specification, on a buffer large enough to reach
+    /// every case of it.
     #[kani::proof]
+    #[kani::unwind(33)]
+    fn short_copy_meets_spec() {
+        let before: [u8; 32] = kani::any();
+        let pos: usize = kani::any_where(|&p: &usize| p <= 32);
+        let len: usize = kani::any_where(|&l: &usize| l <= 16 && l <= 32 - pos);
+        let dist: usize = kani::any_where(|&d: &usize| d >= 1 && d >= len && d <= pos);
+        let mut buf = before;
+        copy_within_buffer(&mut buf, pos, dist, len);
+        for i in 0..32 {
+            if i >= pos && i < pos + len {
+                assert_eq!(buf[i], before[i - dist]);
+            } else {
+                assert_eq!(buf[i], before[i]);
+            }
+        }
+    }
+
+    /// Replaying arbitrary tokens never panics: invalid matches are errors.
+    /// (The copy itself is checked by `copy_within_buffer_meets_spec`.)
+    #[kani::proof]
+    #[kani::stub(copy_within_buffer, copy_within_buffer_ref)]
     #[kani::unwind(6)]
     fn replay_arbitrary_tokens() {
         let kinds: [bool; 2] = kani::any();

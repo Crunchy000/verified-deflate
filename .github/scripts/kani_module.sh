@@ -30,6 +30,18 @@ for m in re.finditer(pat, src):
     print(name)
 PY
 )
+# Optionally only the harnesses whose names match an extended regex: one
+# from a manual run (KANI_HARNESS_FILTER), and one per CI job when a module
+# is split across several jobs (KANI_SHARD_ONLY / KANI_SHARD_SKIP). A split
+# module's last job uses SKIP, so a new harness always runs somewhere.
+for f in "${KANI_HARNESS_FILTER:-}" "${KANI_SHARD_ONLY:-}"; do
+  if [ -n "$f" ]; then
+    names=$(printf '%s\n' "$names" | grep -E -- "$f" || true)
+  fi
+done
+if [ -n "${KANI_SHARD_SKIP:-}" ]; then
+  names=$(printf '%s\n' "$names" | grep -Ev -- "$KANI_SHARD_SKIP" || true)
+fi
 if [ "${KANI_EXTENDED:-0}" = "1" ]; then
   KANI_EXTRA_FLAGS="${KANI_EXTRA_FLAGS:-} --features kani-extended"
 fi
