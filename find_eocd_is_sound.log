@@ -1,0 +1,959 @@
+Kani Rust Verifier 0.68.0 (cargo plugin)
+CBMC 6.11.0
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+warning: Found the following unsupported constructs:
+             - caller_location (1)
+             - foreign function (1)
+         
+         Verification will fail if one or more of these constructs is reachable.
+         See https://model-checking.github.io/kani/rust-feature-support.html for more details.
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.76s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+Checking harness zip::proofs::find_eocd_is_sound...
+CBMC 6.11.0 (cbmc-6.11.0)
+CBMC version 6.11.0 (cbmc-6.11.0) 64-bit x86_64 linux
+Reading GOTO program from file /home/runner/work/verified-deflate/verified-deflate/target/kani/x86_64-unknown-linux-gnu/debug/build/verified-deflate/5b302130810a7ea9/out/verified_deflate-5b302130810a7ea9__RNvNtNtCsk0OmT2SdITd_16verified_deflate3zip6proofs18find_eocd_is_sound.out
+Generating GOTO Program
+Adding CPROVER library (x86_64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+Running with 16 object bits, 48 offset bits (user-specified)
+Starting Bounded Model Checking
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 50 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2641 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 177 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 69 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2641 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 177 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 413 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip9find_eocd.0 iteration 1 file src/zip.rs line 754 column 5 function zip::find_eocd thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip9find_eocd.0 iteration 2 file src/zip.rs line 754 column 5 function zip::find_eocd thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip9find_eocd.0 iteration 3 file src/zip.rs line 754 column 5 function zip::find_eocd thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip9find_eocd.0 iteration 4 file src/zip.rs line 754 column 5 function zip::find_eocd thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip9find_eocd.0 iteration 5 file src/zip.rs line 754 column 5 function zip::find_eocd thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip9find_eocd.0 iteration 6 file src/zip.rs line 754 column 5 function zip::find_eocd thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip9find_eocd.0 iteration 7 file src/zip.rs line 754 column 5 function zip::find_eocd thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip9find_eocd.0 iteration 8 file src/zip.rs line 754 column 5 function zip::find_eocd thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip9find_eocd.0 iteration 9 file src/zip.rs line 754 column 5 function zip::find_eocd thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip9find_eocd.0 iteration 10 file src/zip.rs line 754 column 5 function zip::find_eocd thread 0
+Not unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip9find_eocd.0 iteration 11 file src/zip.rs line 754 column 5 function zip::find_eocd thread 0
+aborting path on assume(false) at file src/zip.rs line 1053 column 5 function zip::proofs::find_eocd_is_sound thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs line 872 column 5 function alloc::raw_vec::RawVecInner::deallocate thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs line 872 column 5 function alloc::raw_vec::RawVecInner::deallocate thread 0
+Runtime Symex: 0.622096s
+size of program expression: 18854 steps
+simple slicing removed 550 assignments
+Generated 966 VCC(s), 431 remaining after simplification
+Runtime Postprocess Equation: 0.00310261s
+Passing problem to propositional reduction
+converting SSA
+Runtime Convert SSA: 0.295999s
+Running propositional reduction
+Post-processing
+Runtime Post-process: 0.007299s
+Solving with CaDiCaL 3.0.0
+311863 variables, 722331 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 1.33758s
+Runtime decision procedure: 1.64104s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+311864 variables, 722332 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.0853926s
+Runtime decision procedure: 0.093085s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+311865 variables, 722333 clauses
+SAT checker: instance is UNSATISFIABLE
+Runtime Solver: 0.35546s
+Runtime decision procedure: 0.357546s
+
+RESULTS:
+Check 1: std::alloc::Layout::is_size_align_valid.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:69:5 in function std::alloc::Layout::is_size_align_valid
+
+Check 2: zip::find_eocd.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:751:16 in function zip::find_eocd
+
+Check 3: zip::find_eocd.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:755:43 in function zip::find_eocd
+
+Check 4: zip::find_eocd.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:755:90 in function zip::find_eocd
+
+Check 5: zip::find_eocd.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:755:43 in function zip::find_eocd
+
+Check 6: zip::find_eocd.assertion.5
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:762:9 in function zip::find_eocd
+
+Check 7: core::slice::index::slice_index_fail::do_panic::runtime.assertion.4
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:50:9 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 8: core::num::<impl usize>::checked_sub.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to compute `unchecked_sub` which would overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:1096:31 in function core::num::<impl usize>::checked_sub
+
+Check 9: __rust_dealloc.assertion.1
+	 - Status: SUCCESS
+	 - Description: "Alignment is power of two"
+	 - Location: ../../../.kani/kani-0.68.0/library/kani/kani_lib.c:83 in function __rust_dealloc
+
+Check 10: __rust_dealloc.assertion.2
+	 - Status: SUCCESS
+	 - Description: "rust_dealloc must be called on an object whose allocated size matches its layout"
+	 - Location: ../../../.kani/kani-0.68.0/library/kani/kani_lib.c:85 in function __rust_dealloc
+
+Check 11: core::panicking::panic_nounwind_fmt::runtime.unsupported_construct.1
+	 - Status: SUCCESS
+	 - Description: "call to foreign "Rust" function `_RNvCskSgPeDzUGbv_7___rustc17rust_begin_unwind` is not currently supported by Kani. Please post your example at https://github.com/model-checking/kani/issues/new/choose"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panicking.rs:110:17 in function core::panicking::panic_nounwind_fmt::runtime
+
+Check 12: alloc::raw_vec::RawVecInner::deallocate.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:872:5 in function alloc::raw_vec::RawVecInner::deallocate
+
+Check 13: zip::u32_at.assertion.1
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/zip.rs:112:25 in function zip::u32_at
+
+Check 14: zip::u32_at.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:112:33 in function zip::u32_at
+
+Check 15: zip::u32_at.assertion.3
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/zip.rs:112:31 in function zip::u32_at
+
+Check 16: zip::u32_at.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:112:43 in function zip::u32_at
+
+Check 17: zip::u32_at.assertion.5
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/zip.rs:112:41 in function zip::u32_at
+
+Check 18: zip::u32_at.assertion.6
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:112:53 in function zip::u32_at
+
+Check 19: zip::u32_at.assertion.7
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/zip.rs:112:51 in function zip::u32_at
+
+Check 20: core::slice::index::slice_index_fail::do_panic::runtime.assertion.3
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:69:5 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 21: std::ptr::drop_in_place::<[u8]>.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "misaligned pointer to reference cast: address must be a multiple of its type's alignment"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/mod.rs:843:24 in function std::ptr::drop_in_place::<[u8]>
+
+Check 22: std::ptr::drop_in_place::<[u8]>.safety_check.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/mod.rs:843:24 in function std::ptr::drop_in_place::<[u8]>
+
+Check 23: core::num::<impl usize>::unchecked_mul.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to compute `unchecked_mul` which would overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:1401:17 in function core::num::<impl usize>::unchecked_mul
+
+Check 24: kani::mem::cbmc::same_allocation.unsupported_construct.1
+	 - Status: SUCCESS
+	 - Description: "Kani does not support reasoning about pointer to unallocated memory"
+	 - Location: library/kani/src/lib.rs:57:1 in function kani::mem::cbmc::same_allocation
+
+Check 25: <usize as kani::rustc_intrinsics::ToISize>::to_isize.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: library/kani_core/src/models.rs:203:17 in function <usize as kani::rustc_intrinsics::ToISize>::to_isize
+
+Check 26: <usize as kani::rustc_intrinsics::ToISize>::to_isize.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "Offset value overflows isize"
+	 - Location: library/kani/src/lib.rs:57:1 in function <usize as kani::rustc_intrinsics::ToISize>::to_isize
+
+Check 27: <usize as kani::rustc_intrinsics::ToISize>::to_isize.assertion.1
+	 - Status: SUCCESS
+	 - Description: "internal error: entered unreachable code"
+	 - Location: library/kani/src/lib.rs:57:1 in function <usize as kani::rustc_intrinsics::ToISize>::to_isize
+
+Check 28: core::slice::index::slice_index_fail::do_panic::runtime.assertion.2
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:59:9 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 29: zip::proofs::find_eocd_is_sound.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: src/zip.rs:1053:5 in function zip::proofs::find_eocd_is_sound
+
+Check 30: zip::proofs::find_eocd_is_sound.assertion.1
+	 - Status: SUCCESS
+	 - Description: "assertion failed: u32_at(d, i) == EOCD_SIG"
+	 - Location: src/zip.rs:1059:13 in function zip::proofs::find_eocd_is_sound
+
+Check 31: zip::proofs::find_eocd_is_sound.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:1060:24 in function zip::proofs::find_eocd_is_sound
+
+Check 32: zip::proofs::find_eocd_is_sound.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:1060:68 in function zip::proofs::find_eocd_is_sound
+
+Check 33: zip::proofs::find_eocd_is_sound.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:1060:24 in function zip::proofs::find_eocd_is_sound
+
+Check 34: zip::proofs::find_eocd_is_sound.assertion.5
+	 - Status: SUCCESS
+	 - Description: "assertion failed: i + EndOfCentralDirectory::SIZE + u16_at(d, i + 20) as usize == len"
+	 - Location: src/zip.rs:1060:13 in function zip::proofs::find_eocd_is_sound
+
+Check 35: zip::u16_at.assertion.1
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/zip.rs:108:25 in function zip::u16_at
+
+Check 36: zip::u16_at.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:108:33 in function zip::u16_at
+
+Check 37: zip::u16_at.assertion.3
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/zip.rs:108:31 in function zip::u16_at
+
+Check 38: std::alloc::Layout::max_size_for_alignment.assertion.1
+	 - Status: UNREACHABLE
+	 - Description: "attempt to add with overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:97:32 in function std::alloc::Layout::max_size_for_alignment
+
+Check 39: std::alloc::Layout::max_size_for_alignment.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to compute `unchecked_sub` which would overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:97:18 in function std::alloc::Layout::max_size_for_alignment
+
+Check 40: core::slice::index::slice_index_fail::do_panic::runtime.assertion.1
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:41:9 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 41: std::panic::Location::<'_>::caller.unsupported_construct.1
+	 - Status: SUCCESS
+	 - Description: "caller_location is not currently supported by Kani. Please post your example at https://github.com/model-checking/kani/issues/374"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic/location.rs:181:9 in function std::panic::Location::<'_>::caller
+
+Check 42: <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:405:5 in function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 43: <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "misaligned pointer to reference cast: address must be a multiple of its type's alignment"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:411:22 in function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 44: <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index.safety_check.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:411:22 in function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 45: std::fmt::Arguments::<'_>::from_str.assertion.1
+	 - Status: UNREACHABLE
+	 - Description: "attempt to shift left with overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/mod.rs:820:38 in function std::fmt::Arguments::<'_>::from_str
+
+Check 46: kani::rustc_intrinsics::offset::<u8, *const u8, usize>.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "Offset in bytes overflows isize"
+	 - Location: library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::offset::<u8, *const u8, usize>
+
+Check 47: kani::rustc_intrinsics::offset::<u8, *const u8, usize>.safety_check.2
+	 - Status: SUCCESS
+	 - Description: "Offset result address must equal original pointer address plus offset"
+	 - Location: library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::offset::<u8, *const u8, usize>
+
+Check 48: kani::rustc_intrinsics::offset::<u8, *const u8, usize>.safety_check.3
+	 - Status: SUCCESS
+	 - Description: "Offset result and original pointer must point to the same allocation"
+	 - Location: library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::offset::<u8, *const u8, usize>
+
+Check 49: alloc::raw_vec::RawVecInner::non_null::<u8>.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:611:9 in function alloc::raw_vec::RawVecInner::non_null::<u8>
+
+Check 50: alloc::raw_vec::RawVecInner::non_null::<u8>.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:611:9 in function alloc::raw_vec::RawVecInner::non_null::<u8>
+
+Check 51: alloc::raw_vec::RawVecInner::non_null::<u8>.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:611:9 in function alloc::raw_vec::RawVecInner::non_null::<u8>
+
+Check 52: alloc::raw_vec::RawVecInner::non_null::<u8>.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:611:9 in function alloc::raw_vec::RawVecInner::non_null::<u8>
+
+Check 53: alloc::raw_vec::RawVecInner::non_null::<u8>.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:611:9 in function alloc::raw_vec::RawVecInner::non_null::<u8>
+
+Check 54: alloc::raw_vec::RawVecInner::non_null::<u8>.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:611:9 in function alloc::raw_vec::RawVecInner::non_null::<u8>
+
+Check 55: std::ptr::drop_glue::<std::result::Result<usize, zip::ZipError>>.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/mod.rs:848:1 in function std::ptr::drop_glue::<std::result::Result<usize, zip::ZipError>>
+
+Check 56: std::ptr::drop_glue::<std::result::Result<usize, zip::ZipError>>.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/mod.rs:848:1 in function std::ptr::drop_glue::<std::result::Result<usize, zip::ZipError>>
+
+Check 57: std::ptr::drop_glue::<std::result::Result<usize, zip::ZipError>>.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/mod.rs:848:1 in function std::ptr::drop_glue::<std::result::Result<usize, zip::ZipError>>
+
+Check 58: std::ptr::drop_glue::<std::result::Result<usize, zip::ZipError>>.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/mod.rs:848:1 in function std::ptr::drop_glue::<std::result::Result<usize, zip::ZipError>>
+
+Check 59: std::ptr::drop_glue::<std::result::Result<usize, zip::ZipError>>.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/mod.rs:848:1 in function std::ptr::drop_glue::<std::result::Result<usize, zip::ZipError>>
+
+Check 60: std::ptr::drop_glue::<std::result::Result<usize, zip::ZipError>>.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/mod.rs:848:1 in function std::ptr::drop_glue::<std::result::Result<usize, zip::ZipError>>
+
+Check 61: std::ptr::drop_glue::<zip::ZipError>.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/mod.rs:848:1 in function std::ptr::drop_glue::<zip::ZipError>
+
+Check 62: std::ptr::drop_glue::<zip::ZipError>.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/mod.rs:848:1 in function std::ptr::drop_glue::<zip::ZipError>
+
+Check 63: std::ptr::drop_glue::<zip::ZipError>.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/mod.rs:848:1 in function std::ptr::drop_glue::<zip::ZipError>
+
+Check 64: std::ptr::drop_glue::<zip::ZipError>.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/mod.rs:848:1 in function std::ptr::drop_glue::<zip::ZipError>
+
+Check 65: std::ptr::drop_glue::<zip::ZipError>.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/mod.rs:848:1 in function std::ptr::drop_glue::<zip::ZipError>
+
+Check 66: std::ptr::drop_glue::<zip::ZipError>.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/mod.rs:848:1 in function std::ptr::drop_glue::<zip::ZipError>
+
+Check 67: std::mem::Alignment::new.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/mem/alignment.rs:175:13 in function std::mem::Alignment::new
+
+Check 68: std::alloc::Layout::is_size_align_valid.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:70:31 in function std::alloc::Layout::is_size_align_valid
+
+Check 69: std::alloc::Layout::size.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:176:9 in function std::alloc::Layout::size
+
+Check 70: std::alloc::Layout::size.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:176:9 in function std::alloc::Layout::size
+
+Check 71: std::alloc::Layout::size.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:176:9 in function std::alloc::Layout::size
+
+Check 72: std::alloc::Layout::size.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:176:9 in function std::alloc::Layout::size
+
+Check 73: std::alloc::Layout::size.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:176:9 in function std::alloc::Layout::size
+
+Check 74: std::alloc::Layout::size.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:176:9 in function std::alloc::Layout::size
+
+Check 75: std::alloc::Layout::align.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:188:9 in function std::alloc::Layout::align
+
+Check 76: std::alloc::Layout::align.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:188:9 in function std::alloc::Layout::align
+
+Check 77: std::alloc::Layout::align.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:188:9 in function std::alloc::Layout::align
+
+Check 78: std::alloc::Layout::align.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:188:9 in function std::alloc::Layout::align
+
+Check 79: std::alloc::Layout::align.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:188:9 in function std::alloc::Layout::align
+
+Check 80: std::alloc::Layout::align.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:188:9 in function std::alloc::Layout::align
+
+Check 81: std::alloc::Layout::alignment.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:198:9 in function std::alloc::Layout::alignment
+
+Check 82: std::alloc::Layout::alignment.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:198:9 in function std::alloc::Layout::alignment
+
+Check 83: std::alloc::Layout::alignment.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:198:9 in function std::alloc::Layout::alignment
+
+Check 84: std::alloc::Layout::alignment.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:198:9 in function std::alloc::Layout::alignment
+
+Check 85: std::alloc::Layout::alignment.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:198:9 in function std::alloc::Layout::alignment
+
+Check 86: std::alloc::Layout::alignment.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/alloc/layout.rs:198:9 in function std::alloc::Layout::alignment
+
+Check 87: alloc::raw_vec::RawVecInner::current_memory.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:631:39 in function alloc::raw_vec::RawVecInner::current_memory
+
+Check 88: alloc::raw_vec::RawVecInner::current_memory.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:631:39 in function alloc::raw_vec::RawVecInner::current_memory
+
+Check 89: alloc::raw_vec::RawVecInner::current_memory.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:631:39 in function alloc::raw_vec::RawVecInner::current_memory
+
+Check 90: alloc::raw_vec::RawVecInner::current_memory.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:631:39 in function alloc::raw_vec::RawVecInner::current_memory
+
+Check 91: alloc::raw_vec::RawVecInner::current_memory.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:631:39 in function alloc::raw_vec::RawVecInner::current_memory
+
+Check 92: alloc::raw_vec::RawVecInner::current_memory.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:631:39 in function alloc::raw_vec::RawVecInner::current_memory
+
+Check 93: alloc::raw_vec::RawVecInner::current_memory.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:632:13 in function alloc::raw_vec::RawVecInner::current_memory
+
+Check 94: alloc::raw_vec::RawVecInner::current_memory.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:639:67 in function alloc::raw_vec::RawVecInner::current_memory
+
+Check 95: alloc::raw_vec::RawVecInner::current_memory.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:639:67 in function alloc::raw_vec::RawVecInner::current_memory
+
+Check 96: alloc::raw_vec::RawVecInner::current_memory.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:639:67 in function alloc::raw_vec::RawVecInner::current_memory
+
+Check 97: alloc::raw_vec::RawVecInner::current_memory.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:639:67 in function alloc::raw_vec::RawVecInner::current_memory
+
+Check 98: alloc::raw_vec::RawVecInner::current_memory.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:639:67 in function alloc::raw_vec::RawVecInner::current_memory
+
+Check 99: alloc::raw_vec::RawVecInner::current_memory.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:639:67 in function alloc::raw_vec::RawVecInner::current_memory
+
+Check 100: alloc::raw_vec::RawVecInner::current_memory.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:641:23 in function alloc::raw_vec::RawVecInner::current_memory
+
+Check 101: alloc::raw_vec::RawVecInner::current_memory.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:641:23 in function alloc::raw_vec::RawVecInner::current_memory
+
+Check 102: alloc::raw_vec::RawVecInner::current_memory.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:641:23 in function alloc::raw_vec::RawVecInner::current_memory
+
+Check 103: alloc::raw_vec::RawVecInner::current_memory.pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:641:23 in function alloc::raw_vec::RawVecInner::current_memory
+
+Check 104: alloc::raw_vec::RawVecInner::current_memory.pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:641:23 in function alloc::raw_vec::RawVecInner::current_memory
+
+Check 105: alloc::raw_vec::RawVecInner::current_memory.pointer_dereference.19
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:641:23 in function alloc::raw_vec::RawVecInner::current_memory
+
+Check 106: alloc::raw_vec::RawVecInner::deallocate.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:874:38 in function alloc::raw_vec::RawVecInner::deallocate
+
+Check 107: zip::u16_at.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:108:25 in function zip::u16_at
+
+Check 108: zip::u16_at.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:108:25 in function zip::u16_at
+
+Check 109: zip::u16_at.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:108:25 in function zip::u16_at
+
+Check 110: zip::u16_at.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:108:25 in function zip::u16_at
+
+Check 111: zip::u16_at.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:108:25 in function zip::u16_at
+
+Check 112: zip::u16_at.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:108:25 in function zip::u16_at
+
+Check 113: zip::u16_at.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:108:31 in function zip::u16_at
+
+Check 114: zip::u16_at.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:108:31 in function zip::u16_at
+
+Check 115: zip::u16_at.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:108:31 in function zip::u16_at
+
+Check 116: zip::u16_at.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:108:31 in function zip::u16_at
+
+Check 117: zip::u16_at.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:108:31 in function zip::u16_at
+
+Check 118: zip::u16_at.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:108:31 in function zip::u16_at
+
+Check 119: zip::u32_at.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:112:25 in function zip::u32_at
+
+Check 120: zip::u32_at.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:112:25 in function zip::u32_at
+
+Check 121: zip::u32_at.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:112:25 in function zip::u32_at
+
+Check 122: zip::u32_at.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:112:25 in function zip::u32_at
+
+Check 123: zip::u32_at.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:112:25 in function zip::u32_at
+
+Check 124: zip::u32_at.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:112:25 in function zip::u32_at
+
+Check 125: zip::u32_at.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:112:31 in function zip::u32_at
+
+Check 126: zip::u32_at.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:112:31 in function zip::u32_at
+
+Check 127: zip::u32_at.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:112:31 in function zip::u32_at
+
+Check 128: zip::u32_at.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:112:31 in function zip::u32_at
+
+Check 129: zip::u32_at.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:112:31 in function zip::u32_at
+
+Check 130: zip::u32_at.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:112:31 in function zip::u32_at
+
+Check 131: zip::u32_at.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:112:41 in function zip::u32_at
+
+Check 132: zip::u32_at.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:112:41 in function zip::u32_at
+
+Check 133: zip::u32_at.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:112:41 in function zip::u32_at
+
+Check 134: zip::u32_at.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:112:41 in function zip::u32_at
+
+Check 135: zip::u32_at.pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:112:41 in function zip::u32_at
+
+Check 136: zip::u32_at.pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:112:41 in function zip::u32_at
+
+Check 137: zip::u32_at.pointer_dereference.19
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:112:51 in function zip::u32_at
+
+Check 138: zip::u32_at.pointer_dereference.20
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:112:51 in function zip::u32_at
+
+Check 139: zip::u32_at.pointer_dereference.21
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:112:51 in function zip::u32_at
+
+Check 140: zip::u32_at.pointer_dereference.22
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:112:51 in function zip::u32_at
+
+Check 141: zip::u32_at.pointer_dereference.23
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:112:51 in function zip::u32_at
+
+Check 142: zip::u32_at.pointer_dereference.24
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:112:51 in function zip::u32_at
+
+Check 143: zip::find_eocd.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:757:20 in function zip::find_eocd
+
+Check 144: zip::proofs::find_eocd_is_sound.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:1058:24 in function zip::proofs::find_eocd_is_sound
+
+Check 145: <std::vec::Vec<u8> as std::ops::Drop>::drop.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:4361:42 in function <std::vec::Vec<u8> as std::ops::Drop>::drop
+
+Check 146: <std::vec::Vec<u8> as std::ops::Drop>::drop.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:4361:42 in function <std::vec::Vec<u8> as std::ops::Drop>::drop
+
+Check 147: <std::vec::Vec<u8> as std::ops::Drop>::drop.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:4361:42 in function <std::vec::Vec<u8> as std::ops::Drop>::drop
+
+Check 148: <std::vec::Vec<u8> as std::ops::Drop>::drop.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:4361:42 in function <std::vec::Vec<u8> as std::ops::Drop>::drop
+
+Check 149: <std::vec::Vec<u8> as std::ops::Drop>::drop.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:4361:42 in function <std::vec::Vec<u8> as std::ops::Drop>::drop
+
+Check 150: <std::vec::Vec<u8> as std::ops::Drop>::drop.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:4361:42 in function <std::vec::Vec<u8> as std::ops::Drop>::drop
+
+Check 151: __rust_dealloc.precondition_instance.1
+	 - Status: SUCCESS
+	 - Description: "free argument must be NULL or valid pointer"
+	 - Location: ../../../.kani/kani-0.68.0/library/kani/kani_lib.c:87 in function __rust_dealloc
+
+Check 152: __rust_dealloc.precondition_instance.2
+	 - Status: SUCCESS
+	 - Description: "free argument must be dynamic object"
+	 - Location: ../../../.kani/kani-0.68.0/library/kani/kani_lib.c:87 in function __rust_dealloc
+
+Check 153: __rust_dealloc.precondition_instance.3
+	 - Status: SUCCESS
+	 - Description: "free argument has offset zero"
+	 - Location: ../../../.kani/kani-0.68.0/library/kani/kani_lib.c:87 in function __rust_dealloc
+
+Check 154: __rust_dealloc.precondition_instance.4
+	 - Status: SUCCESS
+	 - Description: "double free"
+	 - Location: ../../../.kani/kani-0.68.0/library/kani/kani_lib.c:87 in function __rust_dealloc
+
+Check 155: __rust_dealloc.precondition_instance.5
+	 - Status: SUCCESS
+	 - Description: "free called for new[] object"
+	 - Location: ../../../.kani/kani-0.68.0/library/kani/kani_lib.c:87 in function __rust_dealloc
+
+Check 156: __rust_dealloc.precondition_instance.6
+	 - Status: SUCCESS
+	 - Description: "free called for stack-allocated object"
+	 - Location: ../../../.kani/kani-0.68.0/library/kani/kani_lib.c:87 in function __rust_dealloc
+
+Check 157: zip::find_eocd.unwind.0
+	 - Status: SUCCESS
+	 - Description: "unwinding assertion loop 0"
+	 - Location: src/zip.rs:754:5 in function zip::find_eocd
+
+
+SUMMARY:
+ ** 0 of 157 failed (2 unreachable)
+
+VERIFICATION:- SUCCESSFUL
+Verification Time: 5.5571394s
+
+WARNING: Kani could not produce a concrete playback for `zip::proofs::find_eocd_is_sound` because there were no failing panic checks or satisfiable cover statements.
+INFO: The concrete playback feature never generated unit tests because there were no failing harnesses.
+Manual Harness Summary:
+Complete - 1 successfully verified harnesses, 0 failures, 1 total.
+	Command being timed: "timeout 1200 cargo kani --harness zip::proofs::find_eocd_is_sound --exact -Z concrete-playback --concrete-playback=print"
+	User time (seconds): 7.04
+	System time (seconds): 0.86
+	Percent of CPU this job got: 106%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:07.41
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 398560
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 249556
+	Voluntary context switches: 17519
+	Involuntary context switches: 68
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 20632
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

@@ -1,0 +1,1663 @@
+Kani Rust Verifier 0.68.0 (cargo plugin)
+CBMC 6.11.0
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.49s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+Checking harness zip::proofs::dos_datetime_roundtrip...
+CBMC 6.11.0 (cbmc-6.11.0)
+CBMC version 6.11.0 (cbmc-6.11.0) 64-bit x86_64 linux
+Reading GOTO program from file /home/runner/work/verified-deflate/verified-deflate/target/kani/x86_64-unknown-linux-gnu/debug/build/verified-deflate/8ed1b662a7d0b142/out/verified_deflate-8ed1b662a7d0b142__RNvNtNtCsk0OmT2SdITd_16verified_deflate3zip6proofs22dos_datetime_roundtrip.out
+Generating GOTO Program
+Adding CPROVER library (x86_64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+Running with 16 object bits, 48 offset bits (user-specified)
+Starting Bounded Model Checking
+Runtime Symex: 0.0446261s
+size of program expression: 1715 steps
+simple slicing removed 12 assignments
+Generated 375 VCC(s), 25 remaining after simplification
+Runtime Postprocess Equation: 9.1442e-05s
+Passing problem to propositional reduction
+converting SSA
+Runtime Convert SSA: 0.0154827s
+Running propositional reduction
+Post-processing
+Runtime Post-process: 5.741e-06s
+Solving with CaDiCaL 3.0.0
+22759 variables, 29403 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.0362842s
+Runtime decision procedure: 0.052317s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+22760 variables, 29404 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.0030595s
+Runtime decision procedure: 0.00340198s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+22761 variables, 29405 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.00249112s
+Runtime decision procedure: 0.00283608s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+22762 variables, 29406 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.0023482s
+Runtime decision procedure: 0.00266468s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+22763 variables, 29407 clauses
+SAT checker: instance is UNSATISFIABLE
+Runtime Solver: 0.00151239s
+Runtime decision procedure: 0.00165378s
+
+RESULTS:
+Check 1: zip::DosDateTime::to_dos.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to shift left with overflow"
+	 - Location: src/zip.rs:227:20 in function zip::DosDateTime::to_dos
+
+Check 2: zip::DosDateTime::to_dos.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to shift left with overflow"
+	 - Location: src/zip.rs:227:49 in function zip::DosDateTime::to_dos
+
+Check 3: zip::DosDateTime::to_dos.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:227:79 in function zip::DosDateTime::to_dos
+
+Check 4: zip::DosDateTime::to_dos.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:227:79 in function zip::DosDateTime::to_dos
+
+Check 5: zip::DosDateTime::to_dos.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to shift left with overflow"
+	 - Location: src/zip.rs:228:20 in function zip::DosDateTime::to_dos
+
+Check 6: zip::DosDateTime::to_dos.assertion.5
+	 - Status: SUCCESS
+	 - Description: "attempt to shift left with overflow"
+	 - Location: src/zip.rs:228:67 in function zip::DosDateTime::to_dos
+
+Check 7: zip::DosDateTime::is_valid.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:222:16 in function zip::DosDateTime::is_valid
+
+Check 8: zip::DosDateTime::is_valid.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:222:16 in function zip::DosDateTime::is_valid
+
+Check 9: zip::proofs::dos_datetime_roundtrip.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:1101:19 in function zip::proofs::dos_datetime_roundtrip
+
+Check 10: zip::proofs::dos_datetime_roundtrip.assertion.2
+	 - Status: SUCCESS
+	 - Description: "assertion failed: DosDateTime::from_dos(time, date) == t"
+	 - Location: src/zip.rs:1110:9 in function zip::proofs::dos_datetime_roundtrip
+
+Check 11: <std::ops::RangeInclusive<u8> as std::ops::RangeBounds<u8>>::contains::<u8>.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: src/lib.rs:0:0 in function <std::ops::RangeInclusive<u8> as std::ops::RangeBounds<u8>>::contains::<u8>
+
+Check 12: zip::is_leap.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:156:6 in function zip::is_leap
+
+Check 13: zip::is_leap.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:156:6 in function zip::is_leap
+
+Check 14: zip::is_leap.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:156:6 in function zip::is_leap
+
+Check 15: zip::is_leap.arithmetic_overflow.2
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:156:6 in function zip::is_leap
+
+Check 16: zip::is_leap.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:156:20 in function zip::is_leap
+
+Check 17: zip::is_leap.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:156:20 in function zip::is_leap
+
+Check 18: zip::is_leap.arithmetic_overflow.3
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:156:20 in function zip::is_leap
+
+Check 19: zip::is_leap.arithmetic_overflow.4
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:156:20 in function zip::is_leap
+
+Check 20: zip::is_leap.assertion.5
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:156:37 in function zip::is_leap
+
+Check 21: zip::is_leap.assertion.6
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:156:37 in function zip::is_leap
+
+Check 22: zip::is_leap.arithmetic_overflow.5
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:156:37 in function zip::is_leap
+
+Check 23: zip::is_leap.arithmetic_overflow.6
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:156:37 in function zip::is_leap
+
+Check 24: zip::proofs::dos_datetime_roundtrip::{closure#5}.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:1106:58 in function zip::proofs::dos_datetime_roundtrip::{closure#5}
+
+Check 25: zip::proofs::dos_datetime_roundtrip::{closure#5}.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:1106:58 in function zip::proofs::dos_datetime_roundtrip::{closure#5}
+
+Check 26: zip::DosDateTime::from_dos.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: src/zip.rs:236:26 in function zip::DosDateTime::from_dos
+
+Check 27: zip::DosDateTime::from_dos.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:236:19 in function zip::DosDateTime::from_dos
+
+Check 28: zip::DosDateTime::from_dos.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: src/zip.rs:237:21 in function zip::DosDateTime::from_dos
+
+Check 29: zip::DosDateTime::from_dos.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: src/zip.rs:239:19 in function zip::DosDateTime::from_dos
+
+Check 30: zip::DosDateTime::from_dos.assertion.5
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: src/zip.rs:240:22 in function zip::DosDateTime::from_dos
+
+Check 31: zip::DosDateTime::from_dos.assertion.6
+	 - Status: SUCCESS
+	 - Description: "attempt to multiply with overflow"
+	 - Location: src/zip.rs:241:21 in function zip::DosDateTime::from_dos
+
+Check 32: zip::proofs::dos_datetime_roundtrip::{closure#0}.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:1101:54 in function zip::proofs::dos_datetime_roundtrip::{closure#0}
+
+Check 33: zip::proofs::dos_datetime_roundtrip::{closure#0}.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:1101:54 in function zip::proofs::dos_datetime_roundtrip::{closure#0}
+
+Check 34: zip::proofs::dos_datetime_roundtrip::{closure#0}.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:1101:54 in function zip::proofs::dos_datetime_roundtrip::{closure#0}
+
+Check 35: zip::proofs::dos_datetime_roundtrip::{closure#0}.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:1101:54 in function zip::proofs::dos_datetime_roundtrip::{closure#0}
+
+Check 36: zip::proofs::dos_datetime_roundtrip::{closure#0}.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:1101:54 in function zip::proofs::dos_datetime_roundtrip::{closure#0}
+
+Check 37: zip::proofs::dos_datetime_roundtrip::{closure#0}.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:1101:54 in function zip::proofs::dos_datetime_roundtrip::{closure#0}
+
+Check 38: zip::proofs::dos_datetime_roundtrip::{closure#2}.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:1103:36 in function zip::proofs::dos_datetime_roundtrip::{closure#2}
+
+Check 39: zip::proofs::dos_datetime_roundtrip::{closure#2}.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:1103:36 in function zip::proofs::dos_datetime_roundtrip::{closure#2}
+
+Check 40: zip::proofs::dos_datetime_roundtrip::{closure#2}.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:1103:36 in function zip::proofs::dos_datetime_roundtrip::{closure#2}
+
+Check 41: zip::proofs::dos_datetime_roundtrip::{closure#2}.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:1103:36 in function zip::proofs::dos_datetime_roundtrip::{closure#2}
+
+Check 42: zip::proofs::dos_datetime_roundtrip::{closure#2}.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:1103:36 in function zip::proofs::dos_datetime_roundtrip::{closure#2}
+
+Check 43: zip::proofs::dos_datetime_roundtrip::{closure#2}.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:1103:36 in function zip::proofs::dos_datetime_roundtrip::{closure#2}
+
+Check 44: zip::proofs::dos_datetime_roundtrip::{closure#3}.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:1104:37 in function zip::proofs::dos_datetime_roundtrip::{closure#3}
+
+Check 45: zip::proofs::dos_datetime_roundtrip::{closure#3}.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:1104:37 in function zip::proofs::dos_datetime_roundtrip::{closure#3}
+
+Check 46: zip::proofs::dos_datetime_roundtrip::{closure#3}.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:1104:37 in function zip::proofs::dos_datetime_roundtrip::{closure#3}
+
+Check 47: zip::proofs::dos_datetime_roundtrip::{closure#3}.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:1104:37 in function zip::proofs::dos_datetime_roundtrip::{closure#3}
+
+Check 48: zip::proofs::dos_datetime_roundtrip::{closure#3}.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:1104:37 in function zip::proofs::dos_datetime_roundtrip::{closure#3}
+
+Check 49: zip::proofs::dos_datetime_roundtrip::{closure#3}.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:1104:37 in function zip::proofs::dos_datetime_roundtrip::{closure#3}
+
+Check 50: zip::proofs::dos_datetime_roundtrip::{closure#4}.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:1105:39 in function zip::proofs::dos_datetime_roundtrip::{closure#4}
+
+Check 51: zip::proofs::dos_datetime_roundtrip::{closure#4}.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:1105:39 in function zip::proofs::dos_datetime_roundtrip::{closure#4}
+
+Check 52: zip::proofs::dos_datetime_roundtrip::{closure#4}.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:1105:39 in function zip::proofs::dos_datetime_roundtrip::{closure#4}
+
+Check 53: zip::proofs::dos_datetime_roundtrip::{closure#4}.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:1105:39 in function zip::proofs::dos_datetime_roundtrip::{closure#4}
+
+Check 54: zip::proofs::dos_datetime_roundtrip::{closure#4}.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:1105:39 in function zip::proofs::dos_datetime_roundtrip::{closure#4}
+
+Check 55: zip::proofs::dos_datetime_roundtrip::{closure#4}.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:1105:39 in function zip::proofs::dos_datetime_roundtrip::{closure#4}
+
+Check 56: zip::proofs::dos_datetime_roundtrip::{closure#5}.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:1106:39 in function zip::proofs::dos_datetime_roundtrip::{closure#5}
+
+Check 57: zip::proofs::dos_datetime_roundtrip::{closure#5}.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:1106:39 in function zip::proofs::dos_datetime_roundtrip::{closure#5}
+
+Check 58: zip::proofs::dos_datetime_roundtrip::{closure#5}.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:1106:39 in function zip::proofs::dos_datetime_roundtrip::{closure#5}
+
+Check 59: zip::proofs::dos_datetime_roundtrip::{closure#5}.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:1106:39 in function zip::proofs::dos_datetime_roundtrip::{closure#5}
+
+Check 60: zip::proofs::dos_datetime_roundtrip::{closure#5}.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:1106:39 in function zip::proofs::dos_datetime_roundtrip::{closure#5}
+
+Check 61: zip::proofs::dos_datetime_roundtrip::{closure#5}.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:1106:39 in function zip::proofs::dos_datetime_roundtrip::{closure#5}
+
+Check 62: zip::proofs::dos_datetime_roundtrip::{closure#1}.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:1102:38 in function zip::proofs::dos_datetime_roundtrip::{closure#1}
+
+Check 63: zip::proofs::dos_datetime_roundtrip::{closure#1}.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:1102:38 in function zip::proofs::dos_datetime_roundtrip::{closure#1}
+
+Check 64: zip::proofs::dos_datetime_roundtrip::{closure#1}.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:1102:38 in function zip::proofs::dos_datetime_roundtrip::{closure#1}
+
+Check 65: zip::proofs::dos_datetime_roundtrip::{closure#1}.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:1102:38 in function zip::proofs::dos_datetime_roundtrip::{closure#1}
+
+Check 66: zip::proofs::dos_datetime_roundtrip::{closure#1}.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:1102:38 in function zip::proofs::dos_datetime_roundtrip::{closure#1}
+
+Check 67: zip::proofs::dos_datetime_roundtrip::{closure#1}.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:1102:38 in function zip::proofs::dos_datetime_roundtrip::{closure#1}
+
+Check 68: zip::DosDateTime::to_dos.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:227:22 in function zip::DosDateTime::to_dos
+
+Check 69: zip::DosDateTime::to_dos.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:227:22 in function zip::DosDateTime::to_dos
+
+Check 70: zip::DosDateTime::to_dos.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:227:22 in function zip::DosDateTime::to_dos
+
+Check 71: zip::DosDateTime::to_dos.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:227:22 in function zip::DosDateTime::to_dos
+
+Check 72: zip::DosDateTime::to_dos.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:227:22 in function zip::DosDateTime::to_dos
+
+Check 73: zip::DosDateTime::to_dos.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:227:22 in function zip::DosDateTime::to_dos
+
+Check 74: zip::DosDateTime::to_dos.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:227:51 in function zip::DosDateTime::to_dos
+
+Check 75: zip::DosDateTime::to_dos.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:227:51 in function zip::DosDateTime::to_dos
+
+Check 76: zip::DosDateTime::to_dos.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:227:51 in function zip::DosDateTime::to_dos
+
+Check 77: zip::DosDateTime::to_dos.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:227:51 in function zip::DosDateTime::to_dos
+
+Check 78: zip::DosDateTime::to_dos.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:227:51 in function zip::DosDateTime::to_dos
+
+Check 79: zip::DosDateTime::to_dos.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:227:51 in function zip::DosDateTime::to_dos
+
+Check 80: zip::DosDateTime::to_dos.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:227:80 in function zip::DosDateTime::to_dos
+
+Check 81: zip::DosDateTime::to_dos.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:227:80 in function zip::DosDateTime::to_dos
+
+Check 82: zip::DosDateTime::to_dos.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:227:80 in function zip::DosDateTime::to_dos
+
+Check 83: zip::DosDateTime::to_dos.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:227:80 in function zip::DosDateTime::to_dos
+
+Check 84: zip::DosDateTime::to_dos.pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:227:80 in function zip::DosDateTime::to_dos
+
+Check 85: zip::DosDateTime::to_dos.pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:227:80 in function zip::DosDateTime::to_dos
+
+Check 86: zip::DosDateTime::to_dos.pointer_dereference.19
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:228:22 in function zip::DosDateTime::to_dos
+
+Check 87: zip::DosDateTime::to_dos.pointer_dereference.20
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:228:22 in function zip::DosDateTime::to_dos
+
+Check 88: zip::DosDateTime::to_dos.pointer_dereference.21
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:228:22 in function zip::DosDateTime::to_dos
+
+Check 89: zip::DosDateTime::to_dos.pointer_dereference.22
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:228:22 in function zip::DosDateTime::to_dos
+
+Check 90: zip::DosDateTime::to_dos.pointer_dereference.23
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:228:22 in function zip::DosDateTime::to_dos
+
+Check 91: zip::DosDateTime::to_dos.pointer_dereference.24
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:228:22 in function zip::DosDateTime::to_dos
+
+Check 92: zip::DosDateTime::to_dos.pointer_dereference.25
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:228:69 in function zip::DosDateTime::to_dos
+
+Check 93: zip::DosDateTime::to_dos.pointer_dereference.26
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:228:69 in function zip::DosDateTime::to_dos
+
+Check 94: zip::DosDateTime::to_dos.pointer_dereference.27
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:228:69 in function zip::DosDateTime::to_dos
+
+Check 95: zip::DosDateTime::to_dos.pointer_dereference.28
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:228:69 in function zip::DosDateTime::to_dos
+
+Check 96: zip::DosDateTime::to_dos.pointer_dereference.29
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:228:69 in function zip::DosDateTime::to_dos
+
+Check 97: zip::DosDateTime::to_dos.pointer_dereference.30
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:228:69 in function zip::DosDateTime::to_dos
+
+Check 98: zip::DosDateTime::to_dos.pointer_dereference.31
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:228:96 in function zip::DosDateTime::to_dos
+
+Check 99: zip::DosDateTime::to_dos.pointer_dereference.32
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:228:96 in function zip::DosDateTime::to_dos
+
+Check 100: zip::DosDateTime::to_dos.pointer_dereference.33
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:228:96 in function zip::DosDateTime::to_dos
+
+Check 101: zip::DosDateTime::to_dos.pointer_dereference.34
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:228:96 in function zip::DosDateTime::to_dos
+
+Check 102: zip::DosDateTime::to_dos.pointer_dereference.35
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:228:96 in function zip::DosDateTime::to_dos
+
+Check 103: zip::DosDateTime::to_dos.pointer_dereference.36
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:228:96 in function zip::DosDateTime::to_dos
+
+Check 104: zip::DosDateTime::is_valid.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:213:9 in function zip::DosDateTime::is_valid
+
+Check 105: zip::DosDateTime::is_valid.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:213:9 in function zip::DosDateTime::is_valid
+
+Check 106: zip::DosDateTime::is_valid.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:213:9 in function zip::DosDateTime::is_valid
+
+Check 107: zip::DosDateTime::is_valid.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:213:9 in function zip::DosDateTime::is_valid
+
+Check 108: zip::DosDateTime::is_valid.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:213:9 in function zip::DosDateTime::is_valid
+
+Check 109: zip::DosDateTime::is_valid.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:213:9 in function zip::DosDateTime::is_valid
+
+Check 110: zip::DosDateTime::is_valid.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:214:16 in function zip::DosDateTime::is_valid
+
+Check 111: zip::DosDateTime::is_valid.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:214:16 in function zip::DosDateTime::is_valid
+
+Check 112: zip::DosDateTime::is_valid.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:214:16 in function zip::DosDateTime::is_valid
+
+Check 113: zip::DosDateTime::is_valid.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:214:16 in function zip::DosDateTime::is_valid
+
+Check 114: zip::DosDateTime::is_valid.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:214:16 in function zip::DosDateTime::is_valid
+
+Check 115: zip::DosDateTime::is_valid.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:214:16 in function zip::DosDateTime::is_valid
+
+Check 116: zip::DosDateTime::is_valid.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:215:16 in function zip::DosDateTime::is_valid
+
+Check 117: zip::DosDateTime::is_valid.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:215:16 in function zip::DosDateTime::is_valid
+
+Check 118: zip::DosDateTime::is_valid.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:215:16 in function zip::DosDateTime::is_valid
+
+Check 119: zip::DosDateTime::is_valid.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:215:16 in function zip::DosDateTime::is_valid
+
+Check 120: zip::DosDateTime::is_valid.pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:215:16 in function zip::DosDateTime::is_valid
+
+Check 121: zip::DosDateTime::is_valid.pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:215:16 in function zip::DosDateTime::is_valid
+
+Check 122: zip::DosDateTime::is_valid.pointer_dereference.19
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:216:16 in function zip::DosDateTime::is_valid
+
+Check 123: zip::DosDateTime::is_valid.pointer_dereference.20
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:216:16 in function zip::DosDateTime::is_valid
+
+Check 124: zip::DosDateTime::is_valid.pointer_dereference.21
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:216:16 in function zip::DosDateTime::is_valid
+
+Check 125: zip::DosDateTime::is_valid.pointer_dereference.22
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:216:16 in function zip::DosDateTime::is_valid
+
+Check 126: zip::DosDateTime::is_valid.pointer_dereference.23
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:216:16 in function zip::DosDateTime::is_valid
+
+Check 127: zip::DosDateTime::is_valid.pointer_dereference.24
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:216:16 in function zip::DosDateTime::is_valid
+
+Check 128: zip::DosDateTime::is_valid.pointer_dereference.25
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:217:16 in function zip::DosDateTime::is_valid
+
+Check 129: zip::DosDateTime::is_valid.pointer_dereference.26
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:217:16 in function zip::DosDateTime::is_valid
+
+Check 130: zip::DosDateTime::is_valid.pointer_dereference.27
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:217:16 in function zip::DosDateTime::is_valid
+
+Check 131: zip::DosDateTime::is_valid.pointer_dereference.28
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:217:16 in function zip::DosDateTime::is_valid
+
+Check 132: zip::DosDateTime::is_valid.pointer_dereference.29
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:217:16 in function zip::DosDateTime::is_valid
+
+Check 133: zip::DosDateTime::is_valid.pointer_dereference.30
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:217:16 in function zip::DosDateTime::is_valid
+
+Check 134: zip::DosDateTime::is_valid.pointer_dereference.31
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:218:16 in function zip::DosDateTime::is_valid
+
+Check 135: zip::DosDateTime::is_valid.pointer_dereference.32
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:218:16 in function zip::DosDateTime::is_valid
+
+Check 136: zip::DosDateTime::is_valid.pointer_dereference.33
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:218:16 in function zip::DosDateTime::is_valid
+
+Check 137: zip::DosDateTime::is_valid.pointer_dereference.34
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:218:16 in function zip::DosDateTime::is_valid
+
+Check 138: zip::DosDateTime::is_valid.pointer_dereference.35
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:218:16 in function zip::DosDateTime::is_valid
+
+Check 139: zip::DosDateTime::is_valid.pointer_dereference.36
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:218:16 in function zip::DosDateTime::is_valid
+
+Check 140: zip::DosDateTime::is_valid.pointer_dereference.37
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:218:42 in function zip::DosDateTime::is_valid
+
+Check 141: zip::DosDateTime::is_valid.pointer_dereference.38
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:218:42 in function zip::DosDateTime::is_valid
+
+Check 142: zip::DosDateTime::is_valid.pointer_dereference.39
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:218:42 in function zip::DosDateTime::is_valid
+
+Check 143: zip::DosDateTime::is_valid.pointer_dereference.40
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:218:42 in function zip::DosDateTime::is_valid
+
+Check 144: zip::DosDateTime::is_valid.pointer_dereference.41
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:218:42 in function zip::DosDateTime::is_valid
+
+Check 145: zip::DosDateTime::is_valid.pointer_dereference.42
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:218:42 in function zip::DosDateTime::is_valid
+
+Check 146: zip::DosDateTime::is_valid.pointer_dereference.43
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:218:60 in function zip::DosDateTime::is_valid
+
+Check 147: zip::DosDateTime::is_valid.pointer_dereference.44
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:218:60 in function zip::DosDateTime::is_valid
+
+Check 148: zip::DosDateTime::is_valid.pointer_dereference.45
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:218:60 in function zip::DosDateTime::is_valid
+
+Check 149: zip::DosDateTime::is_valid.pointer_dereference.46
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:218:60 in function zip::DosDateTime::is_valid
+
+Check 150: zip::DosDateTime::is_valid.pointer_dereference.47
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:218:60 in function zip::DosDateTime::is_valid
+
+Check 151: zip::DosDateTime::is_valid.pointer_dereference.48
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:218:60 in function zip::DosDateTime::is_valid
+
+Check 152: zip::DosDateTime::is_valid.pointer_dereference.49
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:219:16 in function zip::DosDateTime::is_valid
+
+Check 153: zip::DosDateTime::is_valid.pointer_dereference.50
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:219:16 in function zip::DosDateTime::is_valid
+
+Check 154: zip::DosDateTime::is_valid.pointer_dereference.51
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:219:16 in function zip::DosDateTime::is_valid
+
+Check 155: zip::DosDateTime::is_valid.pointer_dereference.52
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:219:16 in function zip::DosDateTime::is_valid
+
+Check 156: zip::DosDateTime::is_valid.pointer_dereference.53
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:219:16 in function zip::DosDateTime::is_valid
+
+Check 157: zip::DosDateTime::is_valid.pointer_dereference.54
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:219:16 in function zip::DosDateTime::is_valid
+
+Check 158: zip::DosDateTime::is_valid.pointer_dereference.55
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:220:16 in function zip::DosDateTime::is_valid
+
+Check 159: zip::DosDateTime::is_valid.pointer_dereference.56
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:220:16 in function zip::DosDateTime::is_valid
+
+Check 160: zip::DosDateTime::is_valid.pointer_dereference.57
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:220:16 in function zip::DosDateTime::is_valid
+
+Check 161: zip::DosDateTime::is_valid.pointer_dereference.58
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:220:16 in function zip::DosDateTime::is_valid
+
+Check 162: zip::DosDateTime::is_valid.pointer_dereference.59
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:220:16 in function zip::DosDateTime::is_valid
+
+Check 163: zip::DosDateTime::is_valid.pointer_dereference.60
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:220:16 in function zip::DosDateTime::is_valid
+
+Check 164: zip::DosDateTime::is_valid.pointer_dereference.61
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:221:16 in function zip::DosDateTime::is_valid
+
+Check 165: zip::DosDateTime::is_valid.pointer_dereference.62
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:221:16 in function zip::DosDateTime::is_valid
+
+Check 166: zip::DosDateTime::is_valid.pointer_dereference.63
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:221:16 in function zip::DosDateTime::is_valid
+
+Check 167: zip::DosDateTime::is_valid.pointer_dereference.64
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:221:16 in function zip::DosDateTime::is_valid
+
+Check 168: zip::DosDateTime::is_valid.pointer_dereference.65
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:221:16 in function zip::DosDateTime::is_valid
+
+Check 169: zip::DosDateTime::is_valid.pointer_dereference.66
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:221:16 in function zip::DosDateTime::is_valid
+
+Check 170: zip::DosDateTime::is_valid.pointer_dereference.67
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:222:16 in function zip::DosDateTime::is_valid
+
+Check 171: zip::DosDateTime::is_valid.pointer_dereference.68
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:222:16 in function zip::DosDateTime::is_valid
+
+Check 172: zip::DosDateTime::is_valid.pointer_dereference.69
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:222:16 in function zip::DosDateTime::is_valid
+
+Check 173: zip::DosDateTime::is_valid.pointer_dereference.70
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:222:16 in function zip::DosDateTime::is_valid
+
+Check 174: zip::DosDateTime::is_valid.pointer_dereference.71
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:222:16 in function zip::DosDateTime::is_valid
+
+Check 175: zip::DosDateTime::is_valid.pointer_dereference.72
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:222:16 in function zip::DosDateTime::is_valid
+
+Check 176: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2422:28 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le
+
+Check 177: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2422:28 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le
+
+Check 178: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2422:28 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le
+
+Check 179: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2422:28 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le
+
+Check 180: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2422:28 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le
+
+Check 181: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2422:28 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le
+
+Check 182: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2422:35 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le
+
+Check 183: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2422:35 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le
+
+Check 184: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2422:35 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le
+
+Check 185: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2422:35 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le
+
+Check 186: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2422:35 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le
+
+Check 187: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2422:35 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::le
+
+Check 188: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2418:28 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt
+
+Check 189: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2418:28 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt
+
+Check 190: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2418:28 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt
+
+Check 191: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2418:28 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt
+
+Check 192: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2418:28 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt
+
+Check 193: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2418:28 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt
+
+Check 194: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2418:35 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt
+
+Check 195: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2418:35 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt
+
+Check 196: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2418:35 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt
+
+Check 197: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2418:35 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt
+
+Check 198: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2418:35 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt
+
+Check 199: std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2418:35 in function std::cmp::impls::<impl std::cmp::PartialOrd for &u8>::lt
+
+Check 200: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2194:50 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le
+
+Check 201: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2194:50 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le
+
+Check 202: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2194:50 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le
+
+Check 203: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2194:50 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le
+
+Check 204: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2194:50 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le
+
+Check 205: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2194:50 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le
+
+Check 206: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2194:59 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le
+
+Check 207: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2194:59 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le
+
+Check 208: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2194:59 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le
+
+Check 209: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2194:59 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le
+
+Check 210: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2194:59 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le
+
+Check 211: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2194:59 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::le
+
+Check 212: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:50 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt
+
+Check 213: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:50 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt
+
+Check 214: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:50 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt
+
+Check 215: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:50 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt
+
+Check 216: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:50 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt
+
+Check 217: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:50 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt
+
+Check 218: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:59 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt
+
+Check 219: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:59 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt
+
+Check 220: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:59 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt
+
+Check 221: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:59 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt
+
+Check 222: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:59 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt
+
+Check 223: std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:59 in function std::cmp::impls::<impl std::cmp::PartialOrd for u8>::lt
+
+Check 224: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:136:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 225: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:136:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 226: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:136:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 227: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:136:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 228: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:136:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 229: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:136:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 230: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:136:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 231: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:136:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 232: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:136:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 233: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:136:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 234: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:136:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 235: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:136:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 236: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:138:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 237: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:138:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 238: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:138:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 239: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:138:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 240: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:138:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 241: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:138:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 242: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.19
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:138:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 243: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.20
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:138:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 244: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.21
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:138:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 245: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.22
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:138:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 246: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.23
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:138:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 247: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.24
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:138:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 248: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.25
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:140:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 249: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.26
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:140:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 250: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.27
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:140:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 251: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.28
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:140:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 252: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.29
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:140:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 253: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.30
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:140:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 254: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.31
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:140:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 255: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.32
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:140:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 256: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.33
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:140:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 257: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.34
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:140:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 258: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.35
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:140:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 259: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.36
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:140:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 260: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.37
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:142:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 261: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.38
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:142:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 262: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.39
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:142:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 263: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.40
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:142:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 264: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.41
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:142:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 265: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.42
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:142:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 266: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.43
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:142:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 267: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.44
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:142:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 268: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.45
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:142:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 269: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.46
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:142:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 270: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.47
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:142:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 271: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.48
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:142:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 272: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.49
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:144:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 273: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.50
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:144:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 274: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.51
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:144:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 275: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.52
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:144:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 276: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.53
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:144:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 277: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.54
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:144:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 278: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.55
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:144:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 279: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.56
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:144:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 280: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.57
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:144:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 281: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.58
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:144:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 282: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.59
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:144:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 283: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.60
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:144:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 284: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.61
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:146:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 285: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.62
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:146:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 286: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.63
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:146:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 287: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.64
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:146:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 288: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.65
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:146:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 289: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.66
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:146:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 290: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.67
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:146:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 291: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.68
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:146:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 292: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.69
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:146:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 293: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.70
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:146:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 294: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.71
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:146:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 295: <zip::DosDateTime as std::cmp::PartialEq>::eq.pointer_dereference.72
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:146:5 in function <zip::DosDateTime as std::cmp::PartialEq>::eq
+
+Check 296: <std::ops::RangeInclusive<u8> as std::ops::RangeBounds<u8>>::end_bound.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ops/range.rs:1141:12 in function <std::ops::RangeInclusive<u8> as std::ops::RangeBounds<u8>>::end_bound
+
+Check 297: <std::ops::RangeInclusive<u8> as std::ops::RangeBounds<u8>>::end_bound.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ops/range.rs:1141:12 in function <std::ops::RangeInclusive<u8> as std::ops::RangeBounds<u8>>::end_bound
+
+Check 298: <std::ops::RangeInclusive<u8> as std::ops::RangeBounds<u8>>::end_bound.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ops/range.rs:1141:12 in function <std::ops::RangeInclusive<u8> as std::ops::RangeBounds<u8>>::end_bound
+
+Check 299: <std::ops::RangeInclusive<u8> as std::ops::RangeBounds<u8>>::end_bound.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ops/range.rs:1141:12 in function <std::ops::RangeInclusive<u8> as std::ops::RangeBounds<u8>>::end_bound
+
+Check 300: <std::ops::RangeInclusive<u8> as std::ops::RangeBounds<u8>>::end_bound.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ops/range.rs:1141:12 in function <std::ops::RangeInclusive<u8> as std::ops::RangeBounds<u8>>::end_bound
+
+Check 301: <std::ops::RangeInclusive<u8> as std::ops::RangeBounds<u8>>::end_bound.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ops/range.rs:1141:12 in function <std::ops::RangeInclusive<u8> as std::ops::RangeBounds<u8>>::end_bound
+
+
+SUMMARY:
+ ** 0 of 301 failed
+
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.786704s
+
+WARNING: Kani could not produce a concrete playback for `zip::proofs::dos_datetime_roundtrip` because there were no failing panic checks or satisfiable cover statements.
+INFO: The concrete playback feature never generated unit tests because there were no failing harnesses.
+Manual Harness Summary:
+Complete - 1 successfully verified harnesses, 0 failures, 1 total.
+	Command being timed: "timeout 1200 cargo kani --harness zip::proofs::dos_datetime_roundtrip --exact -Z concrete-playback --concrete-playback=print"
+	User time (seconds): 1.39
+	System time (seconds): 0.28
+	Percent of CPU this job got: 106%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.58
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 189380
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 71938
+	Voluntary context switches: 4347
+	Involuntary context switches: 26
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 4000
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

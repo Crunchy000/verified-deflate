@@ -1,0 +1,724 @@
+Kani Rust Verifier 0.68.0 (cargo plugin)
+CBMC 6.11.0
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.50s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+Checking harness zip::proofs::civil_date_conversion_roundtrip...
+CBMC 6.11.0 (cbmc-6.11.0)
+CBMC version 6.11.0 (cbmc-6.11.0) 64-bit x86_64 linux
+Reading GOTO program from file /home/runner/work/verified-deflate/verified-deflate/target/kani/x86_64-unknown-linux-gnu/debug/build/verified-deflate/cfc2b23787296370/out/verified_deflate-cfc2b23787296370__RNvNtNtCsk0OmT2SdITd_16verified_deflate3zip6proofs31civil_date_conversion_roundtrip.out
+Generating GOTO Program
+Adding CPROVER library (x86_64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+Running with 16 object bits, 48 offset bits (user-specified)
+Starting Bounded Model Checking
+Runtime Symex: 0.0507558s
+size of program expression: 2248 steps
+simple slicing removed 4 assignments
+Generated 308 VCC(s), 170 remaining after simplification
+Runtime Postprocess Equation: 0.000225334s
+Passing problem to propositional reduction
+converting SSA
+Runtime Convert SSA: 0.0767412s
+Running propositional reduction
+Post-processing
+Runtime Post-process: 9.277e-06s
+Solving with CaDiCaL 3.0.0
+111118 variables, 238694 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.535149s
+Runtime decision procedure: 0.614363s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+111119 variables, 238695 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.0302679s
+Runtime decision procedure: 0.032135s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+111120 variables, 238696 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.123174s
+Runtime decision procedure: 0.1247s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+111121 variables, 238697 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.228685s
+Runtime decision procedure: 0.229632s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+111122 variables, 238698 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.397768s
+Runtime decision procedure: 0.398796s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+111123 variables, 238699 clauses
+SAT checker: instance is UNSATISFIABLE
+Runtime Solver: 5.42833s
+Runtime decision procedure: 5.42858s
+
+RESULTS:
+Check 1: zip::civil_from_days.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:183:13 in function zip::civil_from_days
+
+Check 2: zip::civil_from_days.assertion.2
+	 - Status: UNREACHABLE
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:184:38 in function zip::civil_from_days
+
+Check 3: zip::civil_from_days.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:184:15 in function zip::civil_from_days
+
+Check 4: zip::civil_from_days.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:184:15 in function zip::civil_from_days
+
+Check 5: zip::civil_from_days.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:184:15 in function zip::civil_from_days
+
+Check 6: zip::civil_from_days.arithmetic_overflow.2
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:184:15 in function zip::civil_from_days
+
+Check 7: zip::civil_from_days.assertion.5
+	 - Status: SUCCESS
+	 - Description: "attempt to multiply with overflow"
+	 - Location: src/zip.rs:185:19 in function zip::civil_from_days
+
+Check 8: zip::civil_from_days.assertion.6
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:185:15 in function zip::civil_from_days
+
+Check 9: zip::civil_from_days.assertion.7
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:186:22 in function zip::civil_from_days
+
+Check 10: zip::civil_from_days.assertion.8
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:186:22 in function zip::civil_from_days
+
+Check 11: zip::civil_from_days.arithmetic_overflow.3
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:186:22 in function zip::civil_from_days
+
+Check 12: zip::civil_from_days.arithmetic_overflow.4
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:186:22 in function zip::civil_from_days
+
+Check 13: zip::civil_from_days.assertion.9
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:186:16 in function zip::civil_from_days
+
+Check 14: zip::civil_from_days.assertion.10
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:186:35 in function zip::civil_from_days
+
+Check 15: zip::civil_from_days.assertion.11
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:186:35 in function zip::civil_from_days
+
+Check 16: zip::civil_from_days.arithmetic_overflow.5
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:186:35 in function zip::civil_from_days
+
+Check 17: zip::civil_from_days.arithmetic_overflow.6
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:186:35 in function zip::civil_from_days
+
+Check 18: zip::civil_from_days.assertion.12
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:186:16 in function zip::civil_from_days
+
+Check 19: zip::civil_from_days.assertion.13
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:186:50 in function zip::civil_from_days
+
+Check 20: zip::civil_from_days.assertion.14
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:186:50 in function zip::civil_from_days
+
+Check 21: zip::civil_from_days.arithmetic_overflow.7
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:186:50 in function zip::civil_from_days
+
+Check 22: zip::civil_from_days.arithmetic_overflow.8
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:186:50 in function zip::civil_from_days
+
+Check 23: zip::civil_from_days.assertion.15
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:186:15 in function zip::civil_from_days
+
+Check 24: zip::civil_from_days.assertion.16
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:186:15 in function zip::civil_from_days
+
+Check 25: zip::civil_from_days.assertion.17
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:186:15 in function zip::civil_from_days
+
+Check 26: zip::civil_from_days.arithmetic_overflow.9
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:186:15 in function zip::civil_from_days
+
+Check 27: zip::civil_from_days.arithmetic_overflow.10
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:186:15 in function zip::civil_from_days
+
+Check 28: zip::civil_from_days.assertion.18
+	 - Status: SUCCESS
+	 - Description: "attempt to multiply with overflow"
+	 - Location: src/zip.rs:187:22 in function zip::civil_from_days
+
+Check 29: zip::civil_from_days.assertion.19
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:187:34 in function zip::civil_from_days
+
+Check 30: zip::civil_from_days.assertion.20
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:187:34 in function zip::civil_from_days
+
+Check 31: zip::civil_from_days.arithmetic_overflow.11
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:187:34 in function zip::civil_from_days
+
+Check 32: zip::civil_from_days.arithmetic_overflow.12
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:187:34 in function zip::civil_from_days
+
+Check 33: zip::civil_from_days.assertion.21
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:187:22 in function zip::civil_from_days
+
+Check 34: zip::civil_from_days.assertion.22
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:187:44 in function zip::civil_from_days
+
+Check 35: zip::civil_from_days.assertion.23
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:187:44 in function zip::civil_from_days
+
+Check 36: zip::civil_from_days.arithmetic_overflow.13
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:187:44 in function zip::civil_from_days
+
+Check 37: zip::civil_from_days.arithmetic_overflow.14
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:187:44 in function zip::civil_from_days
+
+Check 38: zip::civil_from_days.assertion.24
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:187:21 in function zip::civil_from_days
+
+Check 39: zip::civil_from_days.assertion.25
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:187:15 in function zip::civil_from_days
+
+Check 40: zip::civil_from_days.assertion.26
+	 - Status: SUCCESS
+	 - Description: "attempt to multiply with overflow"
+	 - Location: src/zip.rs:188:15 in function zip::civil_from_days
+
+Check 41: zip::civil_from_days.assertion.27
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:188:14 in function zip::civil_from_days
+
+Check 42: zip::civil_from_days.assertion.28
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:188:14 in function zip::civil_from_days
+
+Check 43: zip::civil_from_days.assertion.29
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:188:14 in function zip::civil_from_days
+
+Check 44: zip::civil_from_days.arithmetic_overflow.15
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:188:14 in function zip::civil_from_days
+
+Check 45: zip::civil_from_days.arithmetic_overflow.16
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:188:14 in function zip::civil_from_days
+
+Check 46: zip::civil_from_days.assertion.30
+	 - Status: SUCCESS
+	 - Description: "attempt to multiply with overflow"
+	 - Location: src/zip.rs:189:21 in function zip::civil_from_days
+
+Check 47: zip::civil_from_days.assertion.31
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:189:20 in function zip::civil_from_days
+
+Check 48: zip::civil_from_days.assertion.32
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:189:20 in function zip::civil_from_days
+
+Check 49: zip::civil_from_days.assertion.33
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:189:20 in function zip::civil_from_days
+
+Check 50: zip::civil_from_days.arithmetic_overflow.17
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:189:20 in function zip::civil_from_days
+
+Check 51: zip::civil_from_days.arithmetic_overflow.18
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:189:20 in function zip::civil_from_days
+
+Check 52: zip::civil_from_days.assertion.34
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:189:14 in function zip::civil_from_days
+
+Check 53: zip::civil_from_days.assertion.35
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:189:13 in function zip::civil_from_days
+
+Check 54: zip::civil_from_days.assertion.36
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:190:26 in function zip::civil_from_days
+
+Check 55: zip::civil_from_days.assertion.37
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:190:42 in function zip::civil_from_days
+
+Check 56: zip::civil_from_days.assertion.38
+	 - Status: SUCCESS
+	 - Description: "attempt to multiply with overflow"
+	 - Location: src/zip.rs:191:19 in function zip::civil_from_days
+
+Check 57: zip::civil_from_days.assertion.39
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:191:13 in function zip::civil_from_days
+
+Check 58: zip::civil_from_days.assertion.40
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:191:13 in function zip::civil_from_days
+
+Check 59: zip::proofs::civil_date_conversion_roundtrip.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:1121:40 in function zip::proofs::civil_date_conversion_roundtrip
+
+Check 60: zip::proofs::civil_date_conversion_roundtrip.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:1122:17 in function zip::proofs::civil_date_conversion_roundtrip
+
+Check 61: zip::proofs::civil_date_conversion_roundtrip.assertion.3
+	 - Status: SUCCESS
+	 - Description: "assertion failed: y >= 1980 && y <= 2107"
+	 - Location: src/zip.rs:1124:9 in function zip::proofs::civil_date_conversion_roundtrip
+
+Check 62: zip::proofs::civil_date_conversion_roundtrip.assertion.4
+	 - Status: SUCCESS
+	 - Description: "assertion failed: m >= 1 && m <= 12"
+	 - Location: src/zip.rs:1125:9 in function zip::proofs::civil_date_conversion_roundtrip
+
+Check 63: zip::proofs::civil_date_conversion_roundtrip.assertion.5
+	 - Status: SUCCESS
+	 - Description: "assertion failed: d >= 1 && d <= days_in_month(y, m)"
+	 - Location: src/zip.rs:1126:9 in function zip::proofs::civil_date_conversion_roundtrip
+
+Check 64: zip::proofs::civil_date_conversion_roundtrip.assertion.6
+	 - Status: SUCCESS
+	 - Description: "assertion failed: days_from_civil(y, m, d) == z"
+	 - Location: src/zip.rs:1127:9 in function zip::proofs::civil_date_conversion_roundtrip
+
+Check 65: zip::days_from_civil.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:172:25 in function zip::days_from_civil
+
+Check 66: zip::days_from_civil.assertion.2
+	 - Status: UNREACHABLE
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:173:38 in function zip::days_from_civil
+
+Check 67: zip::days_from_civil.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:173:15 in function zip::days_from_civil
+
+Check 68: zip::days_from_civil.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:173:15 in function zip::days_from_civil
+
+Check 69: zip::days_from_civil.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:173:15 in function zip::days_from_civil
+
+Check 70: zip::days_from_civil.arithmetic_overflow.2
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:173:15 in function zip::days_from_civil
+
+Check 71: zip::days_from_civil.assertion.5
+	 - Status: SUCCESS
+	 - Description: "attempt to multiply with overflow"
+	 - Location: src/zip.rs:174:19 in function zip::days_from_civil
+
+Check 72: zip::days_from_civil.assertion.6
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:174:15 in function zip::days_from_civil
+
+Check 73: zip::days_from_civil.assertion.7
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:175:14 in function zip::days_from_civil
+
+Check 74: zip::days_from_civil.assertion.8
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:175:14 in function zip::days_from_civil
+
+Check 75: zip::days_from_civil.assertion.9
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:175:14 in function zip::days_from_civil
+
+Check 76: zip::days_from_civil.arithmetic_overflow.3
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:175:14 in function zip::days_from_civil
+
+Check 77: zip::days_from_civil.arithmetic_overflow.4
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:175:14 in function zip::days_from_civil
+
+Check 78: zip::days_from_civil.assertion.10
+	 - Status: SUCCESS
+	 - Description: "attempt to multiply with overflow"
+	 - Location: src/zip.rs:176:16 in function zip::days_from_civil
+
+Check 79: zip::days_from_civil.assertion.11
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:176:15 in function zip::days_from_civil
+
+Check 80: zip::days_from_civil.assertion.12
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:176:15 in function zip::days_from_civil
+
+Check 81: zip::days_from_civil.assertion.13
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:176:15 in function zip::days_from_civil
+
+Check 82: zip::days_from_civil.arithmetic_overflow.5
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:176:15 in function zip::days_from_civil
+
+Check 83: zip::days_from_civil.arithmetic_overflow.6
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:176:15 in function zip::days_from_civil
+
+Check 84: zip::days_from_civil.assertion.14
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:176:15 in function zip::days_from_civil
+
+Check 85: zip::days_from_civil.assertion.15
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:176:15 in function zip::days_from_civil
+
+Check 86: zip::days_from_civil.assertion.16
+	 - Status: SUCCESS
+	 - Description: "attempt to multiply with overflow"
+	 - Location: src/zip.rs:177:15 in function zip::days_from_civil
+
+Check 87: zip::days_from_civil.assertion.17
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:177:27 in function zip::days_from_civil
+
+Check 88: zip::days_from_civil.assertion.18
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:177:27 in function zip::days_from_civil
+
+Check 89: zip::days_from_civil.arithmetic_overflow.7
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:177:27 in function zip::days_from_civil
+
+Check 90: zip::days_from_civil.arithmetic_overflow.8
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:177:27 in function zip::days_from_civil
+
+Check 91: zip::days_from_civil.assertion.19
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:177:15 in function zip::days_from_civil
+
+Check 92: zip::days_from_civil.assertion.20
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:177:37 in function zip::days_from_civil
+
+Check 93: zip::days_from_civil.assertion.21
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:177:37 in function zip::days_from_civil
+
+Check 94: zip::days_from_civil.arithmetic_overflow.9
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:177:37 in function zip::days_from_civil
+
+Check 95: zip::days_from_civil.arithmetic_overflow.10
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:177:37 in function zip::days_from_civil
+
+Check 96: zip::days_from_civil.assertion.22
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:177:15 in function zip::days_from_civil
+
+Check 97: zip::days_from_civil.assertion.23
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:177:15 in function zip::days_from_civil
+
+Check 98: zip::days_from_civil.assertion.24
+	 - Status: SUCCESS
+	 - Description: "attempt to multiply with overflow"
+	 - Location: src/zip.rs:178:5 in function zip::days_from_civil
+
+Check 99: zip::days_from_civil.assertion.25
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:178:5 in function zip::days_from_civil
+
+Check 100: zip::days_from_civil.assertion.26
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:178:5 in function zip::days_from_civil
+
+Check 101: zip::is_leap.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:156:6 in function zip::is_leap
+
+Check 102: zip::is_leap.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:156:6 in function zip::is_leap
+
+Check 103: zip::is_leap.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:156:6 in function zip::is_leap
+
+Check 104: zip::is_leap.arithmetic_overflow.2
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:156:6 in function zip::is_leap
+
+Check 105: zip::is_leap.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:156:20 in function zip::is_leap
+
+Check 106: zip::is_leap.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:156:20 in function zip::is_leap
+
+Check 107: zip::is_leap.arithmetic_overflow.3
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:156:20 in function zip::is_leap
+
+Check 108: zip::is_leap.arithmetic_overflow.4
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:156:20 in function zip::is_leap
+
+Check 109: zip::is_leap.assertion.5
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:156:37 in function zip::is_leap
+
+Check 110: zip::is_leap.assertion.6
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:156:37 in function zip::is_leap
+
+Check 111: zip::is_leap.arithmetic_overflow.5
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:156:37 in function zip::is_leap
+
+Check 112: zip::is_leap.arithmetic_overflow.6
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:156:37 in function zip::is_leap
+
+
+SUMMARY:
+ ** 0 of 112 failed (2 unreachable)
+
+VERIFICATION:- SUCCESSFUL
+Verification Time: 9.282613s
+
+WARNING: Kani could not produce a concrete playback for `zip::proofs::civil_date_conversion_roundtrip` because there were no failing panic checks or satisfiable cover statements.
+INFO: The concrete playback feature never generated unit tests because there were no failing harnesses.
+Manual Harness Summary:
+Complete - 1 successfully verified harnesses, 0 failures, 1 total.
+	Command being timed: "timeout 1200 cargo kani --harness zip::proofs::civil_date_conversion_roundtrip --exact -Z concrete-playback --concrete-playback=print"
+	User time (seconds): 9.91
+	System time (seconds): 0.60
+	Percent of CPU this job got: 103%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:10.14
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 269712
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 129159
+	Voluntary context switches: 16078
+	Involuntary context switches: 88
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 3824
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

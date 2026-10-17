@@ -1,0 +1,11 @@
+zip::proofs::local_header_roundtrip	0	18
+zip::proofs::central_header_roundtrip	0	26
+zip::proofs::eocd_roundtrip	0	14
+zip::proofs::header_parsers_never_panic	0	6
+zip::proofs::find_eocd_is_sound	0	7
+zip::proofs::directory_bounds_sound	0	2
+zip::proofs::record_bounds_sound	0	3
+zip::proofs::dos_datetime_roundtrip	0	2
+zip::proofs::civil_date_conversion_roundtrip	0	10
+zip::proofs::unix_time_always_valid	0	5
+zip::proofs::validate_name_rejects_traversal	0	8

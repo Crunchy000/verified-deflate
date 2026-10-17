@@ -1,0 +1,1048 @@
+Kani Rust Verifier 0.68.0 (cargo plugin)
+CBMC 6.11.0
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.49s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+Checking harness zip::proofs::unix_time_always_valid...
+CBMC 6.11.0 (cbmc-6.11.0)
+CBMC version 6.11.0 (cbmc-6.11.0) 64-bit x86_64 linux
+Reading GOTO program from file /home/runner/work/verified-deflate/verified-deflate/target/kani/x86_64-unknown-linux-gnu/debug/build/verified-deflate/3f283b7b3c43c352/out/verified_deflate-3f283b7b3c43c352__RNvNtNtCsk0OmT2SdITd_16verified_deflate3zip6proofs22unix_time_always_valid.out
+Generating GOTO Program
+Adding CPROVER library (x86_64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+Running with 16 object bits, 48 offset bits (user-specified)
+Starting Bounded Model Checking
+Runtime Symex: 0.0303036s
+size of program expression: 1377 steps
+simple slicing removed 8 assignments
+Generated 240 VCC(s), 87 remaining after simplification
+Runtime Postprocess Equation: 7.6664e-05s
+Passing problem to propositional reduction
+converting SSA
+Runtime Convert SSA: 0.0714255s
+Running propositional reduction
+Post-processing
+Runtime Post-process: 8.436e-06s
+Solving with CaDiCaL 3.0.0
+72297 variables, 220548 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.577422s
+Runtime decision procedure: 0.651053s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+72298 variables, 220549 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.0772698s
+Runtime decision procedure: 0.0791187s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+72299 variables, 220550 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.828167s
+Runtime decision procedure: 0.829199s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+72300 variables, 220551 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.106838s
+Runtime decision procedure: 0.108465s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+72301 variables, 220552 clauses
+SAT checker: instance is UNSATISFIABLE
+Runtime Solver: 0.652972s
+Runtime decision procedure: 0.653099s
+
+RESULTS:
+Check 1: zip::is_leap.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:156:6 in function zip::is_leap
+
+Check 2: zip::is_leap.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:156:6 in function zip::is_leap
+
+Check 3: zip::is_leap.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:156:6 in function zip::is_leap
+
+Check 4: zip::is_leap.arithmetic_overflow.2
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:156:6 in function zip::is_leap
+
+Check 5: zip::is_leap.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:156:20 in function zip::is_leap
+
+Check 6: zip::is_leap.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:156:20 in function zip::is_leap
+
+Check 7: zip::is_leap.arithmetic_overflow.3
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:156:20 in function zip::is_leap
+
+Check 8: zip::is_leap.arithmetic_overflow.4
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:156:20 in function zip::is_leap
+
+Check 9: zip::is_leap.assertion.5
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:156:37 in function zip::is_leap
+
+Check 10: zip::is_leap.assertion.6
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:156:37 in function zip::is_leap
+
+Check 11: zip::is_leap.arithmetic_overflow.5
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:156:37 in function zip::is_leap
+
+Check 12: zip::is_leap.arithmetic_overflow.6
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:156:37 in function zip::is_leap
+
+Check 13: core::num::<impl i64>::rem_euclid.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/int_macros.rs:3251:21 in function core::num::<impl i64>::rem_euclid
+
+Check 14: core::num::<impl i64>::rem_euclid.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/int_macros.rs:3251:21 in function core::num::<impl i64>::rem_euclid
+
+Check 15: core::num::<impl i64>::rem_euclid.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/int_macros.rs:3251:21 in function core::num::<impl i64>::rem_euclid
+
+Check 16: core::num::<impl i64>::rem_euclid.arithmetic_overflow.2
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/int_macros.rs:3251:21 in function core::num::<impl i64>::rem_euclid
+
+Check 17: zip::civil_from_days.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:183:13 in function zip::civil_from_days
+
+Check 18: zip::civil_from_days.assertion.2
+	 - Status: UNREACHABLE
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:184:38 in function zip::civil_from_days
+
+Check 19: zip::civil_from_days.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:184:15 in function zip::civil_from_days
+
+Check 20: zip::civil_from_days.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:184:15 in function zip::civil_from_days
+
+Check 21: zip::civil_from_days.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:184:15 in function zip::civil_from_days
+
+Check 22: zip::civil_from_days.arithmetic_overflow.2
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:184:15 in function zip::civil_from_days
+
+Check 23: zip::civil_from_days.assertion.5
+	 - Status: SUCCESS
+	 - Description: "attempt to multiply with overflow"
+	 - Location: src/zip.rs:185:19 in function zip::civil_from_days
+
+Check 24: zip::civil_from_days.assertion.6
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:185:15 in function zip::civil_from_days
+
+Check 25: zip::civil_from_days.assertion.7
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:186:22 in function zip::civil_from_days
+
+Check 26: zip::civil_from_days.assertion.8
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:186:22 in function zip::civil_from_days
+
+Check 27: zip::civil_from_days.arithmetic_overflow.3
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:186:22 in function zip::civil_from_days
+
+Check 28: zip::civil_from_days.arithmetic_overflow.4
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:186:22 in function zip::civil_from_days
+
+Check 29: zip::civil_from_days.assertion.9
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:186:16 in function zip::civil_from_days
+
+Check 30: zip::civil_from_days.assertion.10
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:186:35 in function zip::civil_from_days
+
+Check 31: zip::civil_from_days.assertion.11
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:186:35 in function zip::civil_from_days
+
+Check 32: zip::civil_from_days.arithmetic_overflow.5
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:186:35 in function zip::civil_from_days
+
+Check 33: zip::civil_from_days.arithmetic_overflow.6
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:186:35 in function zip::civil_from_days
+
+Check 34: zip::civil_from_days.assertion.12
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:186:16 in function zip::civil_from_days
+
+Check 35: zip::civil_from_days.assertion.13
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:186:50 in function zip::civil_from_days
+
+Check 36: zip::civil_from_days.assertion.14
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:186:50 in function zip::civil_from_days
+
+Check 37: zip::civil_from_days.arithmetic_overflow.7
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:186:50 in function zip::civil_from_days
+
+Check 38: zip::civil_from_days.arithmetic_overflow.8
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:186:50 in function zip::civil_from_days
+
+Check 39: zip::civil_from_days.assertion.15
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:186:15 in function zip::civil_from_days
+
+Check 40: zip::civil_from_days.assertion.16
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:186:15 in function zip::civil_from_days
+
+Check 41: zip::civil_from_days.assertion.17
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:186:15 in function zip::civil_from_days
+
+Check 42: zip::civil_from_days.arithmetic_overflow.9
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:186:15 in function zip::civil_from_days
+
+Check 43: zip::civil_from_days.arithmetic_overflow.10
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:186:15 in function zip::civil_from_days
+
+Check 44: zip::civil_from_days.assertion.18
+	 - Status: SUCCESS
+	 - Description: "attempt to multiply with overflow"
+	 - Location: src/zip.rs:187:22 in function zip::civil_from_days
+
+Check 45: zip::civil_from_days.assertion.19
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:187:34 in function zip::civil_from_days
+
+Check 46: zip::civil_from_days.assertion.20
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:187:34 in function zip::civil_from_days
+
+Check 47: zip::civil_from_days.arithmetic_overflow.11
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:187:34 in function zip::civil_from_days
+
+Check 48: zip::civil_from_days.arithmetic_overflow.12
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:187:34 in function zip::civil_from_days
+
+Check 49: zip::civil_from_days.assertion.21
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:187:22 in function zip::civil_from_days
+
+Check 50: zip::civil_from_days.assertion.22
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:187:44 in function zip::civil_from_days
+
+Check 51: zip::civil_from_days.assertion.23
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:187:44 in function zip::civil_from_days
+
+Check 52: zip::civil_from_days.arithmetic_overflow.13
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:187:44 in function zip::civil_from_days
+
+Check 53: zip::civil_from_days.arithmetic_overflow.14
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:187:44 in function zip::civil_from_days
+
+Check 54: zip::civil_from_days.assertion.24
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:187:21 in function zip::civil_from_days
+
+Check 55: zip::civil_from_days.assertion.25
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:187:15 in function zip::civil_from_days
+
+Check 56: zip::civil_from_days.assertion.26
+	 - Status: SUCCESS
+	 - Description: "attempt to multiply with overflow"
+	 - Location: src/zip.rs:188:15 in function zip::civil_from_days
+
+Check 57: zip::civil_from_days.assertion.27
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:188:14 in function zip::civil_from_days
+
+Check 58: zip::civil_from_days.assertion.28
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:188:14 in function zip::civil_from_days
+
+Check 59: zip::civil_from_days.assertion.29
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:188:14 in function zip::civil_from_days
+
+Check 60: zip::civil_from_days.arithmetic_overflow.15
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:188:14 in function zip::civil_from_days
+
+Check 61: zip::civil_from_days.arithmetic_overflow.16
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:188:14 in function zip::civil_from_days
+
+Check 62: zip::civil_from_days.assertion.30
+	 - Status: SUCCESS
+	 - Description: "attempt to multiply with overflow"
+	 - Location: src/zip.rs:189:21 in function zip::civil_from_days
+
+Check 63: zip::civil_from_days.assertion.31
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:189:20 in function zip::civil_from_days
+
+Check 64: zip::civil_from_days.assertion.32
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:189:20 in function zip::civil_from_days
+
+Check 65: zip::civil_from_days.assertion.33
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:189:20 in function zip::civil_from_days
+
+Check 66: zip::civil_from_days.arithmetic_overflow.17
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:189:20 in function zip::civil_from_days
+
+Check 67: zip::civil_from_days.arithmetic_overflow.18
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:189:20 in function zip::civil_from_days
+
+Check 68: zip::civil_from_days.assertion.34
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:189:14 in function zip::civil_from_days
+
+Check 69: zip::civil_from_days.assertion.35
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:189:13 in function zip::civil_from_days
+
+Check 70: zip::civil_from_days.assertion.36
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:190:26 in function zip::civil_from_days
+
+Check 71: zip::civil_from_days.assertion.37
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:190:42 in function zip::civil_from_days
+
+Check 72: zip::civil_from_days.assertion.38
+	 - Status: SUCCESS
+	 - Description: "attempt to multiply with overflow"
+	 - Location: src/zip.rs:191:19 in function zip::civil_from_days
+
+Check 73: zip::civil_from_days.assertion.39
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:191:13 in function zip::civil_from_days
+
+Check 74: zip::civil_from_days.assertion.40
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:191:13 in function zip::civil_from_days
+
+Check 75: zip::DosDateTime::from_unix_seconds.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:264:19 in function zip::DosDateTime::from_unix_seconds
+
+Check 76: zip::DosDateTime::from_unix_seconds.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:264:19 in function zip::DosDateTime::from_unix_seconds
+
+Check 77: zip::DosDateTime::from_unix_seconds.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:264:19 in function zip::DosDateTime::from_unix_seconds
+
+Check 78: zip::DosDateTime::from_unix_seconds.arithmetic_overflow.2
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:264:19 in function zip::DosDateTime::from_unix_seconds
+
+Check 79: zip::DosDateTime::from_unix_seconds.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:265:22 in function zip::DosDateTime::from_unix_seconds
+
+Check 80: zip::DosDateTime::from_unix_seconds.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:265:22 in function zip::DosDateTime::from_unix_seconds
+
+Check 81: zip::DosDateTime::from_unix_seconds.arithmetic_overflow.3
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: src/zip.rs:265:22 in function zip::DosDateTime::from_unix_seconds
+
+Check 82: zip::DosDateTime::from_unix_seconds.arithmetic_overflow.4
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: src/zip.rs:265:22 in function zip::DosDateTime::from_unix_seconds
+
+Check 83: zip::DosDateTime::from_unix_seconds.assertion.5
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:265:21 in function zip::DosDateTime::from_unix_seconds
+
+Check 84: zip::DosDateTime::from_unix_seconds.assertion.6
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:265:21 in function zip::DosDateTime::from_unix_seconds
+
+Check 85: zip::DosDateTime::from_unix_seconds.arithmetic_overflow.5
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:265:21 in function zip::DosDateTime::from_unix_seconds
+
+Check 86: zip::DosDateTime::from_unix_seconds.arithmetic_overflow.6
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:265:21 in function zip::DosDateTime::from_unix_seconds
+
+Check 87: zip::DosDateTime::from_unix_seconds.assertion.7
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:266:21 in function zip::DosDateTime::from_unix_seconds
+
+Check 88: zip::DosDateTime::from_unix_seconds.assertion.8
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:266:21 in function zip::DosDateTime::from_unix_seconds
+
+Check 89: zip::DosDateTime::from_unix_seconds.arithmetic_overflow.7
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: src/zip.rs:266:21 in function zip::DosDateTime::from_unix_seconds
+
+Check 90: zip::DosDateTime::from_unix_seconds.arithmetic_overflow.8
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:266:21 in function zip::DosDateTime::from_unix_seconds
+
+Check 91: core::num::<impl i64>::div_euclid.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/int_macros.rs:3207:21 in function core::num::<impl i64>::div_euclid
+
+Check 92: core::num::<impl i64>::div_euclid.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/int_macros.rs:3207:21 in function core::num::<impl i64>::div_euclid
+
+Check 93: core::num::<impl i64>::div_euclid.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to divide with overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/int_macros.rs:3207:21 in function core::num::<impl i64>::div_euclid
+
+Check 94: core::num::<impl i64>::div_euclid.arithmetic_overflow.2
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/int_macros.rs:3207:21 in function core::num::<impl i64>::div_euclid
+
+Check 95: core::num::<impl i64>::div_euclid.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/int_macros.rs:3208:16 in function core::num::<impl i64>::div_euclid
+
+Check 96: core::num::<impl i64>::div_euclid.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/int_macros.rs:3208:16 in function core::num::<impl i64>::div_euclid
+
+Check 97: core::num::<impl i64>::div_euclid.arithmetic_overflow.3
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/int_macros.rs:3208:16 in function core::num::<impl i64>::div_euclid
+
+Check 98: core::num::<impl i64>::div_euclid.arithmetic_overflow.4
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/int_macros.rs:3208:16 in function core::num::<impl i64>::div_euclid
+
+Check 99: core::num::<impl i64>::div_euclid.assertion.5
+	 - Status: UNREACHABLE
+	 - Description: "attempt to subtract with overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/int_macros.rs:3209:37 in function core::num::<impl i64>::div_euclid
+
+Check 100: core::num::<impl i64>::div_euclid.assertion.6
+	 - Status: UNREACHABLE
+	 - Description: "attempt to add with overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/int_macros.rs:3209:52 in function core::num::<impl i64>::div_euclid
+
+Check 101: zip::DosDateTime::is_valid.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:222:16 in function zip::DosDateTime::is_valid
+
+Check 102: zip::DosDateTime::is_valid.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: src/zip.rs:222:16 in function zip::DosDateTime::is_valid
+
+Check 103: zip::proofs::unix_time_always_valid.assertion.1
+	 - Status: SUCCESS
+	 - Description: "assertion failed: DosDateTime::from_unix_seconds(s).is_valid()"
+	 - Location: src/zip.rs:1134:9 in function zip::proofs::unix_time_always_valid
+
+Check 104: core::num::<impl i64>::div_euclid.division-by-zero.1
+	 - Status: SUCCESS
+	 - Description: "division by zero"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/int_macros.rs:3207:21 in function core::num::<impl i64>::div_euclid
+
+Check 105: core::num::<impl i64>::div_euclid.division-by-zero.2
+	 - Status: SUCCESS
+	 - Description: "division by zero"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/int_macros.rs:3208:16 in function core::num::<impl i64>::div_euclid
+
+Check 106: core::num::<impl i64>::rem_euclid.division-by-zero.1
+	 - Status: SUCCESS
+	 - Description: "division by zero"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/int_macros.rs:3251:21 in function core::num::<impl i64>::rem_euclid
+
+Check 107: zip::DosDateTime::is_valid.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:213:9 in function zip::DosDateTime::is_valid
+
+Check 108: zip::DosDateTime::is_valid.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:213:9 in function zip::DosDateTime::is_valid
+
+Check 109: zip::DosDateTime::is_valid.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:213:9 in function zip::DosDateTime::is_valid
+
+Check 110: zip::DosDateTime::is_valid.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:213:9 in function zip::DosDateTime::is_valid
+
+Check 111: zip::DosDateTime::is_valid.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:213:9 in function zip::DosDateTime::is_valid
+
+Check 112: zip::DosDateTime::is_valid.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:213:9 in function zip::DosDateTime::is_valid
+
+Check 113: zip::DosDateTime::is_valid.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:214:16 in function zip::DosDateTime::is_valid
+
+Check 114: zip::DosDateTime::is_valid.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:214:16 in function zip::DosDateTime::is_valid
+
+Check 115: zip::DosDateTime::is_valid.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:214:16 in function zip::DosDateTime::is_valid
+
+Check 116: zip::DosDateTime::is_valid.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:214:16 in function zip::DosDateTime::is_valid
+
+Check 117: zip::DosDateTime::is_valid.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:214:16 in function zip::DosDateTime::is_valid
+
+Check 118: zip::DosDateTime::is_valid.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:214:16 in function zip::DosDateTime::is_valid
+
+Check 119: zip::DosDateTime::is_valid.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:215:16 in function zip::DosDateTime::is_valid
+
+Check 120: zip::DosDateTime::is_valid.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:215:16 in function zip::DosDateTime::is_valid
+
+Check 121: zip::DosDateTime::is_valid.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:215:16 in function zip::DosDateTime::is_valid
+
+Check 122: zip::DosDateTime::is_valid.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:215:16 in function zip::DosDateTime::is_valid
+
+Check 123: zip::DosDateTime::is_valid.pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:215:16 in function zip::DosDateTime::is_valid
+
+Check 124: zip::DosDateTime::is_valid.pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:215:16 in function zip::DosDateTime::is_valid
+
+Check 125: zip::DosDateTime::is_valid.pointer_dereference.19
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:216:16 in function zip::DosDateTime::is_valid
+
+Check 126: zip::DosDateTime::is_valid.pointer_dereference.20
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:216:16 in function zip::DosDateTime::is_valid
+
+Check 127: zip::DosDateTime::is_valid.pointer_dereference.21
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:216:16 in function zip::DosDateTime::is_valid
+
+Check 128: zip::DosDateTime::is_valid.pointer_dereference.22
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:216:16 in function zip::DosDateTime::is_valid
+
+Check 129: zip::DosDateTime::is_valid.pointer_dereference.23
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:216:16 in function zip::DosDateTime::is_valid
+
+Check 130: zip::DosDateTime::is_valid.pointer_dereference.24
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:216:16 in function zip::DosDateTime::is_valid
+
+Check 131: zip::DosDateTime::is_valid.pointer_dereference.25
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:217:16 in function zip::DosDateTime::is_valid
+
+Check 132: zip::DosDateTime::is_valid.pointer_dereference.26
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:217:16 in function zip::DosDateTime::is_valid
+
+Check 133: zip::DosDateTime::is_valid.pointer_dereference.27
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:217:16 in function zip::DosDateTime::is_valid
+
+Check 134: zip::DosDateTime::is_valid.pointer_dereference.28
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:217:16 in function zip::DosDateTime::is_valid
+
+Check 135: zip::DosDateTime::is_valid.pointer_dereference.29
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:217:16 in function zip::DosDateTime::is_valid
+
+Check 136: zip::DosDateTime::is_valid.pointer_dereference.30
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:217:16 in function zip::DosDateTime::is_valid
+
+Check 137: zip::DosDateTime::is_valid.pointer_dereference.31
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:218:16 in function zip::DosDateTime::is_valid
+
+Check 138: zip::DosDateTime::is_valid.pointer_dereference.32
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:218:16 in function zip::DosDateTime::is_valid
+
+Check 139: zip::DosDateTime::is_valid.pointer_dereference.33
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:218:16 in function zip::DosDateTime::is_valid
+
+Check 140: zip::DosDateTime::is_valid.pointer_dereference.34
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:218:16 in function zip::DosDateTime::is_valid
+
+Check 141: zip::DosDateTime::is_valid.pointer_dereference.35
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:218:16 in function zip::DosDateTime::is_valid
+
+Check 142: zip::DosDateTime::is_valid.pointer_dereference.36
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:218:16 in function zip::DosDateTime::is_valid
+
+Check 143: zip::DosDateTime::is_valid.pointer_dereference.37
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:218:42 in function zip::DosDateTime::is_valid
+
+Check 144: zip::DosDateTime::is_valid.pointer_dereference.38
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:218:42 in function zip::DosDateTime::is_valid
+
+Check 145: zip::DosDateTime::is_valid.pointer_dereference.39
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:218:42 in function zip::DosDateTime::is_valid
+
+Check 146: zip::DosDateTime::is_valid.pointer_dereference.40
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:218:42 in function zip::DosDateTime::is_valid
+
+Check 147: zip::DosDateTime::is_valid.pointer_dereference.41
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:218:42 in function zip::DosDateTime::is_valid
+
+Check 148: zip::DosDateTime::is_valid.pointer_dereference.42
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:218:42 in function zip::DosDateTime::is_valid
+
+Check 149: zip::DosDateTime::is_valid.pointer_dereference.43
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:218:60 in function zip::DosDateTime::is_valid
+
+Check 150: zip::DosDateTime::is_valid.pointer_dereference.44
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:218:60 in function zip::DosDateTime::is_valid
+
+Check 151: zip::DosDateTime::is_valid.pointer_dereference.45
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:218:60 in function zip::DosDateTime::is_valid
+
+Check 152: zip::DosDateTime::is_valid.pointer_dereference.46
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:218:60 in function zip::DosDateTime::is_valid
+
+Check 153: zip::DosDateTime::is_valid.pointer_dereference.47
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:218:60 in function zip::DosDateTime::is_valid
+
+Check 154: zip::DosDateTime::is_valid.pointer_dereference.48
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:218:60 in function zip::DosDateTime::is_valid
+
+Check 155: zip::DosDateTime::is_valid.pointer_dereference.49
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:219:16 in function zip::DosDateTime::is_valid
+
+Check 156: zip::DosDateTime::is_valid.pointer_dereference.50
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:219:16 in function zip::DosDateTime::is_valid
+
+Check 157: zip::DosDateTime::is_valid.pointer_dereference.51
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:219:16 in function zip::DosDateTime::is_valid
+
+Check 158: zip::DosDateTime::is_valid.pointer_dereference.52
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:219:16 in function zip::DosDateTime::is_valid
+
+Check 159: zip::DosDateTime::is_valid.pointer_dereference.53
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:219:16 in function zip::DosDateTime::is_valid
+
+Check 160: zip::DosDateTime::is_valid.pointer_dereference.54
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:219:16 in function zip::DosDateTime::is_valid
+
+Check 161: zip::DosDateTime::is_valid.pointer_dereference.55
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:220:16 in function zip::DosDateTime::is_valid
+
+Check 162: zip::DosDateTime::is_valid.pointer_dereference.56
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:220:16 in function zip::DosDateTime::is_valid
+
+Check 163: zip::DosDateTime::is_valid.pointer_dereference.57
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:220:16 in function zip::DosDateTime::is_valid
+
+Check 164: zip::DosDateTime::is_valid.pointer_dereference.58
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:220:16 in function zip::DosDateTime::is_valid
+
+Check 165: zip::DosDateTime::is_valid.pointer_dereference.59
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:220:16 in function zip::DosDateTime::is_valid
+
+Check 166: zip::DosDateTime::is_valid.pointer_dereference.60
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:220:16 in function zip::DosDateTime::is_valid
+
+Check 167: zip::DosDateTime::is_valid.pointer_dereference.61
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:221:16 in function zip::DosDateTime::is_valid
+
+Check 168: zip::DosDateTime::is_valid.pointer_dereference.62
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:221:16 in function zip::DosDateTime::is_valid
+
+Check 169: zip::DosDateTime::is_valid.pointer_dereference.63
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:221:16 in function zip::DosDateTime::is_valid
+
+Check 170: zip::DosDateTime::is_valid.pointer_dereference.64
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:221:16 in function zip::DosDateTime::is_valid
+
+Check 171: zip::DosDateTime::is_valid.pointer_dereference.65
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:221:16 in function zip::DosDateTime::is_valid
+
+Check 172: zip::DosDateTime::is_valid.pointer_dereference.66
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:221:16 in function zip::DosDateTime::is_valid
+
+Check 173: zip::DosDateTime::is_valid.pointer_dereference.67
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:222:16 in function zip::DosDateTime::is_valid
+
+Check 174: zip::DosDateTime::is_valid.pointer_dereference.68
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:222:16 in function zip::DosDateTime::is_valid
+
+Check 175: zip::DosDateTime::is_valid.pointer_dereference.69
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:222:16 in function zip::DosDateTime::is_valid
+
+Check 176: zip::DosDateTime::is_valid.pointer_dereference.70
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:222:16 in function zip::DosDateTime::is_valid
+
+Check 177: zip::DosDateTime::is_valid.pointer_dereference.71
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:222:16 in function zip::DosDateTime::is_valid
+
+Check 178: zip::DosDateTime::is_valid.pointer_dereference.72
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:222:16 in function zip::DosDateTime::is_valid
+
+
+SUMMARY:
+ ** 0 of 178 failed (3 unreachable)
+
+VERIFICATION:- SUCCESSFUL
+Verification Time: 3.391607s
+
+WARNING: Kani could not produce a concrete playback for `zip::proofs::unix_time_always_valid` because there were no failing panic checks or satisfiable cover statements.
+INFO: The concrete playback feature never generated unit tests because there were no failing harnesses.
+Manual Harness Summary:
+Complete - 1 successfully verified harnesses, 0 failures, 1 total.
+	Command being timed: "timeout 1200 cargo kani --harness zip::proofs::unix_time_always_valid --exact -Z concrete-playback --concrete-playback=print"
+	User time (seconds): 4.00
+	System time (seconds): 0.38
+	Percent of CPU this job got: 104%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:04.21
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 191396
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 98339
+	Voluntary context switches: 7243
+	Involuntary context switches: 43
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 3816
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

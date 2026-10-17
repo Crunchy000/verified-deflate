@@ -1,0 +1,1238 @@
+Kani Rust Verifier 0.68.0 (cargo plugin)
+CBMC 6.11.0
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+warning: Found the following unsupported constructs:
+             - caller_location (1)
+             - foreign function (1)
+         
+         Verification will fail if one or more of these constructs is reachable.
+         See https://model-checking.github.io/kani/rust-feature-support.html for more details.
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.75s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+Checking harness zip::proofs::validate_name_rejects_traversal...
+CBMC 6.11.0 (cbmc-6.11.0)
+CBMC version 6.11.0 (cbmc-6.11.0) 64-bit x86_64 linux
+Reading GOTO program from file /home/runner/work/verified-deflate/verified-deflate/target/kani/x86_64-unknown-linux-gnu/debug/build/verified-deflate/c9c0aead9f26af23/out/verified_deflate-c9c0aead9f26af23__RNvNtNtCsk0OmT2SdITd_16verified_deflate3zip6proofs31validate_name_rejects_traversal.out
+Generating GOTO Program
+Adding CPROVER library (x86_64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+Running with 16 object bits, 48 offset bits (user-specified)
+Starting Bounded Model Checking
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 50 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2641 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 177 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 69 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2641 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 177 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 413 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 50 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2641 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 177 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 69 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2641 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 177 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 413 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip12name_is_safe.0 iteration 1 file src/zip.rs line 510 column 5 function zip::name_is_safe thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip12name_is_safe.0 iteration 2 file src/zip.rs line 510 column 5 function zip::name_is_safe thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip12name_is_safe.0 iteration 3 file src/zip.rs line 510 column 5 function zip::name_is_safe thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip12name_is_safe.0 iteration 4 file src/zip.rs line 510 column 5 function zip::name_is_safe thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip12name_is_safe.0 iteration 5 file src/zip.rs line 510 column 5 function zip::name_is_safe thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip12name_is_safe.0 iteration 6 file src/zip.rs line 510 column 5 function zip::name_is_safe thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip12name_is_safe.0 iteration 7 file src/zip.rs line 510 column 5 function zip::name_is_safe thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip12name_is_safe.0 iteration 8 file src/zip.rs line 510 column 5 function zip::name_is_safe thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip12name_is_safe.0 iteration 9 file src/zip.rs line 510 column 5 function zip::name_is_safe thread 0
+Not unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate3zip12name_is_safe.0 iteration 10 file src/zip.rs line 510 column 5 function zip::name_is_safe thread 0
+aborting path on assume(false) at file src/zip.rs line 1149 column 22 function zip::proofs::validate_name_rejects_traversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate3zip6proofs31validate_name_rejects_traversal.0 iteration 1 file src/zip.rs line 1149 column 13 function zip::proofs::validate_name_rejects_traversal thread 0
+aborting path on assume(false) at file src/zip.rs line 1149 column 22 function zip::proofs::validate_name_rejects_traversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate3zip6proofs31validate_name_rejects_traversal.0 iteration 2 file src/zip.rs line 1149 column 13 function zip::proofs::validate_name_rejects_traversal thread 0
+aborting path on assume(false) at file src/zip.rs line 1149 column 22 function zip::proofs::validate_name_rejects_traversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate3zip6proofs31validate_name_rejects_traversal.0 iteration 3 file src/zip.rs line 1149 column 13 function zip::proofs::validate_name_rejects_traversal thread 0
+aborting path on assume(false) at file src/zip.rs line 1149 column 22 function zip::proofs::validate_name_rejects_traversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate3zip6proofs31validate_name_rejects_traversal.0 iteration 4 file src/zip.rs line 1149 column 13 function zip::proofs::validate_name_rejects_traversal thread 0
+aborting path on assume(false) at file src/zip.rs line 1149 column 22 function zip::proofs::validate_name_rejects_traversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate3zip6proofs31validate_name_rejects_traversal.0 iteration 5 file src/zip.rs line 1149 column 13 function zip::proofs::validate_name_rejects_traversal thread 0
+aborting path on assume(false) at file src/zip.rs line 1149 column 22 function zip::proofs::validate_name_rejects_traversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate3zip6proofs31validate_name_rejects_traversal.0 iteration 6 file src/zip.rs line 1149 column 13 function zip::proofs::validate_name_rejects_traversal thread 0
+aborting path on assume(false) at file src/zip.rs line 1149 column 22 function zip::proofs::validate_name_rejects_traversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate3zip6proofs31validate_name_rejects_traversal.0 iteration 7 file src/zip.rs line 1149 column 13 function zip::proofs::validate_name_rejects_traversal thread 0
+aborting path on assume(false) at file src/zip.rs line 1149 column 22 function zip::proofs::validate_name_rejects_traversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate3zip6proofs31validate_name_rejects_traversal.0 iteration 8 file src/zip.rs line 1149 column 13 function zip::proofs::validate_name_rejects_traversal thread 0
+aborting path on assume(false) at file src/zip.rs line 1149 column 22 function zip::proofs::validate_name_rejects_traversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate3zip6proofs31validate_name_rejects_traversal.0 iteration 9 file src/zip.rs line 1149 column 13 function zip::proofs::validate_name_rejects_traversal thread 0
+aborting path on assume(false) at file src/zip.rs line 1149 column 22 function zip::proofs::validate_name_rejects_traversal thread 0
+Not unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate3zip6proofs31validate_name_rejects_traversal.0 iteration 10 file src/zip.rs line 1149 column 13 function zip::proofs::validate_name_rejects_traversal thread 0
+Runtime Symex: 0.454684s
+size of program expression: 14583 steps
+simple slicing removed 1141 assignments
+Generated 2119 VCC(s), 664 remaining after simplification
+Runtime Postprocess Equation: 0.00182928s
+Passing problem to propositional reduction
+converting SSA
+Runtime Convert SSA: 0.213183s
+Running propositional reduction
+Post-processing
+Runtime Post-process: 9.328e-06s
+Solving with CaDiCaL 3.0.0
+298835 variables, 532959 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 1.01393s
+Runtime decision procedure: 1.23448s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+298836 variables, 532960 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.0503239s
+Runtime decision procedure: 0.0570979s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+298837 variables, 532961 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.0368119s
+Runtime decision procedure: 0.0419165s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+298838 variables, 532962 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.0361273s
+Runtime decision procedure: 0.0427067s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+298839 variables, 532963 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.0494213s
+Runtime decision procedure: 0.0562028s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+298840 variables, 532964 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.0431064s
+Runtime decision procedure: 0.0480835s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+298841 variables, 532965 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.0473408s
+Runtime decision procedure: 0.0525482s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+298842 variables, 532966 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.0751584s
+Runtime decision procedure: 0.0803892s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+298843 variables, 532967 clauses
+SAT checker: instance is UNSATISFIABLE
+Runtime Solver: 0.170301s
+Runtime decision procedure: 0.172288s
+
+RESULTS:
+Check 1: std::panic::Location::<'_>::caller.unsupported_construct.1
+	 - Status: SUCCESS
+	 - Description: "caller_location is not currently supported by Kani. Please post your example at https://github.com/model-checking/kani/issues/374"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic/location.rs:181:9 in function std::panic::Location::<'_>::caller
+
+Check 2: kani::mem::cbmc::same_allocation.unsupported_construct.1
+	 - Status: SUCCESS
+	 - Description: "Kani does not support reasoning about pointer to unallocated memory"
+	 - Location: library/kani/src/lib.rs:57:1 in function kani::mem::cbmc::same_allocation
+
+Check 3: zip::proofs::validate_name_rejects_traversal.assertion.1
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/zip.rs:1148:32 in function zip::proofs::validate_name_rejects_traversal
+
+Check 4: zip::proofs::validate_name_rejects_traversal.assertion.2
+	 - Status: SUCCESS
+	 - Description: "assertion failed: len > 0 && n[0] != b'/'"
+	 - Location: src/zip.rs:1148:13 in function zip::proofs::validate_name_rejects_traversal
+
+Check 5: zip::proofs::validate_name_rejects_traversal.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: src/zip.rs:1149:22 in function zip::proofs::validate_name_rejects_traversal
+
+Check 6: zip::proofs::validate_name_rejects_traversal.assertion.3
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/zip.rs:1150:25 in function zip::proofs::validate_name_rejects_traversal
+
+Check 7: zip::proofs::validate_name_rejects_traversal.assertion.4
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/zip.rs:1150:42 in function zip::proofs::validate_name_rejects_traversal
+
+Check 8: zip::proofs::validate_name_rejects_traversal.assertion.5
+	 - Status: SUCCESS
+	 - Description: "assertion failed: n[i] != b'\\' && n[i] != 0"
+	 - Location: src/zip.rs:1150:17 in function zip::proofs::validate_name_rejects_traversal
+
+Check 9: zip::proofs::validate_name_rejects_traversal.assertion.6
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:1151:52 in function zip::proofs::validate_name_rejects_traversal
+
+Check 10: zip::proofs::validate_name_rejects_traversal.assertion.7
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/zip.rs:1151:50 in function zip::proofs::validate_name_rejects_traversal
+
+Check 11: zip::proofs::validate_name_rejects_traversal.assertion.8
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:1152:38 in function zip::proofs::validate_name_rejects_traversal
+
+Check 12: zip::proofs::validate_name_rejects_traversal.assertion.9
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:1152:55 in function zip::proofs::validate_name_rejects_traversal
+
+Check 13: zip::proofs::validate_name_rejects_traversal.assertion.10
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:1152:72 in function zip::proofs::validate_name_rejects_traversal
+
+Check 14: zip::proofs::validate_name_rejects_traversal.assertion.11
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/zip.rs:1152:70 in function zip::proofs::validate_name_rejects_traversal
+
+Check 15: zip::proofs::validate_name_rejects_traversal.assertion.12
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:1153:30 in function zip::proofs::validate_name_rejects_traversal
+
+Check 16: zip::proofs::validate_name_rejects_traversal.assertion.13
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/zip.rs:1153:45 in function zip::proofs::validate_name_rejects_traversal
+
+Check 17: zip::proofs::validate_name_rejects_traversal.assertion.14
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:1153:63 in function zip::proofs::validate_name_rejects_traversal
+
+Check 18: zip::proofs::validate_name_rejects_traversal.assertion.15
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/zip.rs:1153:61 in function zip::proofs::validate_name_rejects_traversal
+
+Check 19: zip::proofs::validate_name_rejects_traversal.assertion.16
+	 - Status: SUCCESS
+	 - Description: "assertion failed: !(starts_component && dotdot && ends_component)"
+	 - Location: src/zip.rs:1154:17 in function zip::proofs::validate_name_rejects_traversal
+
+Check 20: zip::name_is_safe.assertion.1
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/zip.rs:501:24 in function zip::name_is_safe
+
+Check 21: zip::name_is_safe.assertion.2
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/zip.rs:501:40 in function zip::name_is_safe
+
+Check 22: zip::name_is_safe.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:504:21 in function zip::name_is_safe
+
+Check 23: zip::name_is_safe.assertion.4
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/zip.rs:504:19 in function zip::name_is_safe
+
+Check 24: zip::name_is_safe.assertion.5
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:504:49 in function zip::name_is_safe
+
+Check 25: zip::name_is_safe.assertion.6
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/zip.rs:511:31 in function zip::name_is_safe
+
+Check 26: zip::name_is_safe.assertion.7
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/zip.rs:512:23 in function zip::name_is_safe
+
+Check 27: zip::name_is_safe.assertion.8
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:517:21 in function zip::name_is_safe
+
+Check 28: zip::name_is_safe.assertion.9
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/zip.rs:518:19 in function zip::name_is_safe
+
+Check 29: zip::name_is_safe.assertion.10
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/zip.rs:518:35 in function zip::name_is_safe
+
+Check 30: zip::name_is_safe.assertion.11
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:521:9 in function zip::name_is_safe
+
+Check 31: zip::name_is_safe::{closure#0}.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/zip.rs:513:39 in function zip::name_is_safe::{closure#0}
+
+Check 32: zip::name_is_safe::{closure#0}.assertion.2
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/zip.rs:513:34 in function zip::name_is_safe::{closure#0}
+
+Check 33: <usize as kani::rustc_intrinsics::ToISize>::to_isize.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: library/kani_core/src/models.rs:203:17 in function <usize as kani::rustc_intrinsics::ToISize>::to_isize
+
+Check 34: <usize as kani::rustc_intrinsics::ToISize>::to_isize.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "Offset value overflows isize"
+	 - Location: library/kani/src/lib.rs:57:1 in function <usize as kani::rustc_intrinsics::ToISize>::to_isize
+
+Check 35: <usize as kani::rustc_intrinsics::ToISize>::to_isize.assertion.1
+	 - Status: SUCCESS
+	 - Description: "internal error: entered unreachable code"
+	 - Location: library/kani/src/lib.rs:57:1 in function <usize as kani::rustc_intrinsics::ToISize>::to_isize
+
+Check 36: core::slice::index::slice_index_fail::do_panic::runtime.assertion.4
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:50:9 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 37: core::slice::index::slice_index_fail::do_panic::runtime.assertion.1
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:41:9 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 38: kani::rustc_intrinsics::offset::<u8, *const u8, usize>.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "Offset in bytes overflows isize"
+	 - Location: library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::offset::<u8, *const u8, usize>
+
+Check 39: kani::rustc_intrinsics::offset::<u8, *const u8, usize>.safety_check.2
+	 - Status: SUCCESS
+	 - Description: "Offset result address must equal original pointer address plus offset"
+	 - Location: library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::offset::<u8, *const u8, usize>
+
+Check 40: kani::rustc_intrinsics::offset::<u8, *const u8, usize>.safety_check.3
+	 - Status: SUCCESS
+	 - Description: "Offset result and original pointer must point to the same allocation"
+	 - Location: library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::offset::<u8, *const u8, usize>
+
+Check 41: core::slice::index::slice_index_fail::do_panic::runtime.assertion.2
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:59:9 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 42: core::slice::index::slice_index_fail::do_panic::runtime.assertion.3
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:69:5 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 43: core::panicking::panic_nounwind_fmt::runtime.unsupported_construct.1
+	 - Status: SUCCESS
+	 - Description: "call to foreign "Rust" function `_RNvCskSgPeDzUGbv_7___rustc17rust_begin_unwind` is not currently supported by Kani. Please post your example at https://github.com/model-checking/kani/issues/new/choose"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panicking.rs:110:17 in function core::panicking::panic_nounwind_fmt::runtime
+
+Check 44: std::fmt::Arguments::<'_>::from_str.assertion.1
+	 - Status: UNREACHABLE
+	 - Description: "attempt to shift left with overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/mod.rs:820:38 in function std::fmt::Arguments::<'_>::from_str
+
+Check 45: core::num::<impl usize>::unchecked_add.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to compute `unchecked_add` which would overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:1013:17 in function core::num::<impl usize>::unchecked_add
+
+Check 46: <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:405:5 in function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 47: <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "misaligned pointer to reference cast: address must be a multiple of its type's alignment"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:411:22 in function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 48: <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index.safety_check.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:411:22 in function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 49: core::num::<impl usize>::checked_sub.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to compute `unchecked_sub` which would overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:1096:31 in function core::num::<impl usize>::checked_sub
+
+Check 50: zip::name_is_safe::{closure#0}.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:513:39 in function zip::name_is_safe::{closure#0}
+
+Check 51: zip::name_is_safe::{closure#0}.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:513:39 in function zip::name_is_safe::{closure#0}
+
+Check 52: zip::name_is_safe::{closure#0}.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:513:39 in function zip::name_is_safe::{closure#0}
+
+Check 53: zip::name_is_safe::{closure#0}.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:513:39 in function zip::name_is_safe::{closure#0}
+
+Check 54: zip::name_is_safe::{closure#0}.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:513:39 in function zip::name_is_safe::{closure#0}
+
+Check 55: zip::name_is_safe::{closure#0}.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:513:39 in function zip::name_is_safe::{closure#0}
+
+Check 56: zip::name_is_safe::{closure#0}.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:513:39 in function zip::name_is_safe::{closure#0}
+
+Check 57: zip::name_is_safe::{closure#0}.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:513:39 in function zip::name_is_safe::{closure#0}
+
+Check 58: zip::name_is_safe::{closure#0}.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:513:39 in function zip::name_is_safe::{closure#0}
+
+Check 59: zip::name_is_safe::{closure#0}.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:513:39 in function zip::name_is_safe::{closure#0}
+
+Check 60: zip::name_is_safe::{closure#0}.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:513:39 in function zip::name_is_safe::{closure#0}
+
+Check 61: zip::name_is_safe::{closure#0}.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:513:39 in function zip::name_is_safe::{closure#0}
+
+Check 62: zip::name_is_safe::{closure#0}.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:513:34 in function zip::name_is_safe::{closure#0}
+
+Check 63: zip::name_is_safe::{closure#0}.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:513:34 in function zip::name_is_safe::{closure#0}
+
+Check 64: zip::name_is_safe::{closure#0}.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:513:34 in function zip::name_is_safe::{closure#0}
+
+Check 65: zip::name_is_safe::{closure#0}.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:513:34 in function zip::name_is_safe::{closure#0}
+
+Check 66: zip::name_is_safe::{closure#0}.pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:513:34 in function zip::name_is_safe::{closure#0}
+
+Check 67: zip::name_is_safe::{closure#0}.pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:513:34 in function zip::name_is_safe::{closure#0}
+
+Check 68: zip::name_is_safe::{closure#0}.pointer_dereference.19
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:513:34 in function zip::name_is_safe::{closure#0}
+
+Check 69: zip::name_is_safe::{closure#0}.pointer_dereference.20
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:513:34 in function zip::name_is_safe::{closure#0}
+
+Check 70: zip::name_is_safe::{closure#0}.pointer_dereference.21
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:513:34 in function zip::name_is_safe::{closure#0}
+
+Check 71: zip::name_is_safe::{closure#0}.pointer_dereference.22
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:513:34 in function zip::name_is_safe::{closure#0}
+
+Check 72: zip::name_is_safe::{closure#0}.pointer_dereference.23
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:513:34 in function zip::name_is_safe::{closure#0}
+
+Check 73: zip::name_is_safe::{closure#0}.pointer_dereference.24
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:513:34 in function zip::name_is_safe::{closure#0}
+
+Check 74: zip::name_is_safe::{closure#0}.pointer_dereference.25
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:513:34 in function zip::name_is_safe::{closure#0}
+
+Check 75: zip::name_is_safe::{closure#0}.pointer_dereference.26
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:513:34 in function zip::name_is_safe::{closure#0}
+
+Check 76: zip::name_is_safe::{closure#0}.pointer_dereference.27
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:513:34 in function zip::name_is_safe::{closure#0}
+
+Check 77: zip::name_is_safe::{closure#0}.pointer_dereference.28
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:513:34 in function zip::name_is_safe::{closure#0}
+
+Check 78: zip::name_is_safe::{closure#0}.pointer_dereference.29
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:513:34 in function zip::name_is_safe::{closure#0}
+
+Check 79: zip::name_is_safe::{closure#0}.pointer_dereference.30
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:513:34 in function zip::name_is_safe::{closure#0}
+
+Check 80: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:25 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 81: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:25 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 82: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:25 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 83: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:25 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 84: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:25 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 85: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:25 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 86: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:25 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 87: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:25 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 88: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:25 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 89: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:25 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 90: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:25 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 91: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:25 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 92: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:39 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 93: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:39 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 94: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:39 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 95: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:39 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 96: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:39 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 97: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:39 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 98: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.19
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:39 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 99: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.20
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:39 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 100: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.21
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:39 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 101: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.22
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:39 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 102: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.23
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:39 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 103: core::num::<impl u8>::is_ascii_alphabetic.pointer_dereference.24
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:824:39 in function core::num::<impl u8>::is_ascii_alphabetic
+
+Check 104: zip::name_is_safe.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:501:24 in function zip::name_is_safe
+
+Check 105: zip::name_is_safe.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:501:24 in function zip::name_is_safe
+
+Check 106: zip::name_is_safe.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:501:24 in function zip::name_is_safe
+
+Check 107: zip::name_is_safe.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:501:24 in function zip::name_is_safe
+
+Check 108: zip::name_is_safe.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:501:24 in function zip::name_is_safe
+
+Check 109: zip::name_is_safe.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:501:24 in function zip::name_is_safe
+
+Check 110: zip::name_is_safe.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:504:19 in function zip::name_is_safe
+
+Check 111: zip::name_is_safe.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:504:19 in function zip::name_is_safe
+
+Check 112: zip::name_is_safe.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:504:19 in function zip::name_is_safe
+
+Check 113: zip::name_is_safe.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:504:19 in function zip::name_is_safe
+
+Check 114: zip::name_is_safe.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:504:19 in function zip::name_is_safe
+
+Check 115: zip::name_is_safe.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:504:19 in function zip::name_is_safe
+
+Check 116: zip::name_is_safe.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:511:31 in function zip::name_is_safe
+
+Check 117: zip::name_is_safe.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:511:31 in function zip::name_is_safe
+
+Check 118: zip::name_is_safe.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:511:31 in function zip::name_is_safe
+
+Check 119: zip::name_is_safe.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:511:31 in function zip::name_is_safe
+
+Check 120: zip::name_is_safe.pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:511:31 in function zip::name_is_safe
+
+Check 121: zip::name_is_safe.pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:511:31 in function zip::name_is_safe
+
+Check 122: zip::name_is_safe.pointer_dereference.19
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:518:19 in function zip::name_is_safe
+
+Check 123: zip::name_is_safe.pointer_dereference.20
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:518:19 in function zip::name_is_safe
+
+Check 124: zip::name_is_safe.pointer_dereference.21
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:518:19 in function zip::name_is_safe
+
+Check 125: zip::name_is_safe.pointer_dereference.22
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:518:19 in function zip::name_is_safe
+
+Check 126: zip::name_is_safe.pointer_dereference.23
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:518:19 in function zip::name_is_safe
+
+Check 127: zip::name_is_safe.pointer_dereference.24
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:518:19 in function zip::name_is_safe
+
+Check 128: zip::name_is_safe.pointer_dereference.25
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:518:35 in function zip::name_is_safe
+
+Check 129: zip::name_is_safe.pointer_dereference.26
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:518:35 in function zip::name_is_safe
+
+Check 130: zip::name_is_safe.pointer_dereference.27
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:518:35 in function zip::name_is_safe
+
+Check 131: zip::name_is_safe.pointer_dereference.28
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:518:35 in function zip::name_is_safe
+
+Check 132: zip::name_is_safe.pointer_dereference.29
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:518:35 in function zip::name_is_safe
+
+Check 133: zip::name_is_safe.pointer_dereference.30
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:518:35 in function zip::name_is_safe
+
+Check 134: zip::proofs::validate_name_rejects_traversal.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:1148:32 in function zip::proofs::validate_name_rejects_traversal
+
+Check 135: zip::proofs::validate_name_rejects_traversal.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:1148:32 in function zip::proofs::validate_name_rejects_traversal
+
+Check 136: zip::proofs::validate_name_rejects_traversal.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:1148:32 in function zip::proofs::validate_name_rejects_traversal
+
+Check 137: zip::proofs::validate_name_rejects_traversal.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:1148:32 in function zip::proofs::validate_name_rejects_traversal
+
+Check 138: zip::proofs::validate_name_rejects_traversal.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:1148:32 in function zip::proofs::validate_name_rejects_traversal
+
+Check 139: zip::proofs::validate_name_rejects_traversal.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:1148:32 in function zip::proofs::validate_name_rejects_traversal
+
+Check 140: zip::proofs::validate_name_rejects_traversal.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:1150:25 in function zip::proofs::validate_name_rejects_traversal
+
+Check 141: zip::proofs::validate_name_rejects_traversal.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:1150:25 in function zip::proofs::validate_name_rejects_traversal
+
+Check 142: zip::proofs::validate_name_rejects_traversal.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:1150:25 in function zip::proofs::validate_name_rejects_traversal
+
+Check 143: zip::proofs::validate_name_rejects_traversal.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:1150:25 in function zip::proofs::validate_name_rejects_traversal
+
+Check 144: zip::proofs::validate_name_rejects_traversal.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:1150:25 in function zip::proofs::validate_name_rejects_traversal
+
+Check 145: zip::proofs::validate_name_rejects_traversal.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:1150:25 in function zip::proofs::validate_name_rejects_traversal
+
+Check 146: zip::proofs::validate_name_rejects_traversal.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:1150:42 in function zip::proofs::validate_name_rejects_traversal
+
+Check 147: zip::proofs::validate_name_rejects_traversal.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:1150:42 in function zip::proofs::validate_name_rejects_traversal
+
+Check 148: zip::proofs::validate_name_rejects_traversal.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:1150:42 in function zip::proofs::validate_name_rejects_traversal
+
+Check 149: zip::proofs::validate_name_rejects_traversal.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:1150:42 in function zip::proofs::validate_name_rejects_traversal
+
+Check 150: zip::proofs::validate_name_rejects_traversal.pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:1150:42 in function zip::proofs::validate_name_rejects_traversal
+
+Check 151: zip::proofs::validate_name_rejects_traversal.pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:1150:42 in function zip::proofs::validate_name_rejects_traversal
+
+Check 152: zip::proofs::validate_name_rejects_traversal.pointer_dereference.19
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:1151:50 in function zip::proofs::validate_name_rejects_traversal
+
+Check 153: zip::proofs::validate_name_rejects_traversal.pointer_dereference.20
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:1151:50 in function zip::proofs::validate_name_rejects_traversal
+
+Check 154: zip::proofs::validate_name_rejects_traversal.pointer_dereference.21
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:1151:50 in function zip::proofs::validate_name_rejects_traversal
+
+Check 155: zip::proofs::validate_name_rejects_traversal.pointer_dereference.22
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:1151:50 in function zip::proofs::validate_name_rejects_traversal
+
+Check 156: zip::proofs::validate_name_rejects_traversal.pointer_dereference.23
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:1151:50 in function zip::proofs::validate_name_rejects_traversal
+
+Check 157: zip::proofs::validate_name_rejects_traversal.pointer_dereference.24
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:1151:50 in function zip::proofs::validate_name_rejects_traversal
+
+Check 158: zip::proofs::validate_name_rejects_traversal.pointer_dereference.25
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:1152:70 in function zip::proofs::validate_name_rejects_traversal
+
+Check 159: zip::proofs::validate_name_rejects_traversal.pointer_dereference.26
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:1152:70 in function zip::proofs::validate_name_rejects_traversal
+
+Check 160: zip::proofs::validate_name_rejects_traversal.pointer_dereference.27
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:1152:70 in function zip::proofs::validate_name_rejects_traversal
+
+Check 161: zip::proofs::validate_name_rejects_traversal.pointer_dereference.28
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:1152:70 in function zip::proofs::validate_name_rejects_traversal
+
+Check 162: zip::proofs::validate_name_rejects_traversal.pointer_dereference.29
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:1152:70 in function zip::proofs::validate_name_rejects_traversal
+
+Check 163: zip::proofs::validate_name_rejects_traversal.pointer_dereference.30
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:1152:70 in function zip::proofs::validate_name_rejects_traversal
+
+Check 164: zip::proofs::validate_name_rejects_traversal.pointer_dereference.31
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:1153:45 in function zip::proofs::validate_name_rejects_traversal
+
+Check 165: zip::proofs::validate_name_rejects_traversal.pointer_dereference.32
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:1153:45 in function zip::proofs::validate_name_rejects_traversal
+
+Check 166: zip::proofs::validate_name_rejects_traversal.pointer_dereference.33
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:1153:45 in function zip::proofs::validate_name_rejects_traversal
+
+Check 167: zip::proofs::validate_name_rejects_traversal.pointer_dereference.34
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:1153:45 in function zip::proofs::validate_name_rejects_traversal
+
+Check 168: zip::proofs::validate_name_rejects_traversal.pointer_dereference.35
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:1153:45 in function zip::proofs::validate_name_rejects_traversal
+
+Check 169: zip::proofs::validate_name_rejects_traversal.pointer_dereference.36
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:1153:45 in function zip::proofs::validate_name_rejects_traversal
+
+Check 170: zip::proofs::validate_name_rejects_traversal.pointer_dereference.37
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/zip.rs:1153:61 in function zip::proofs::validate_name_rejects_traversal
+
+Check 171: zip::proofs::validate_name_rejects_traversal.pointer_dereference.38
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/zip.rs:1153:61 in function zip::proofs::validate_name_rejects_traversal
+
+Check 172: zip::proofs::validate_name_rejects_traversal.pointer_dereference.39
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/zip.rs:1153:61 in function zip::proofs::validate_name_rejects_traversal
+
+Check 173: zip::proofs::validate_name_rejects_traversal.pointer_dereference.40
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/zip.rs:1153:61 in function zip::proofs::validate_name_rejects_traversal
+
+Check 174: zip::proofs::validate_name_rejects_traversal.pointer_dereference.41
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/zip.rs:1153:61 in function zip::proofs::validate_name_rejects_traversal
+
+Check 175: zip::proofs::validate_name_rejects_traversal.pointer_dereference.42
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/zip.rs:1153:61 in function zip::proofs::validate_name_rejects_traversal
+
+Check 176: <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/range.rs:1101:23 in function <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next
+
+Check 177: <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/range.rs:1101:23 in function <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next
+
+Check 178: <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/range.rs:1101:23 in function <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next
+
+Check 179: <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/range.rs:1101:23 in function <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next
+
+Check 180: <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/range.rs:1101:23 in function <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next
+
+Check 181: <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/range.rs:1101:23 in function <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next
+
+Check 182: <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/range.rs:1103:13 in function <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next
+
+Check 183: <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/range.rs:1103:13 in function <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next
+
+Check 184: <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/range.rs:1103:13 in function <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next
+
+Check 185: <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/range.rs:1103:13 in function <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next
+
+Check 186: <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/range.rs:1103:13 in function <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next
+
+Check 187: <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/range.rs:1103:13 in function <std::ops::Range<usize> as std::iter::range::RangeIteratorImpl>::spec_next
+
+Check 188: std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:50 in function std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt
+
+Check 189: std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:50 in function std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt
+
+Check 190: std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:50 in function std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt
+
+Check 191: std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:50 in function std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt
+
+Check 192: std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:50 in function std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt
+
+Check 193: std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:50 in function std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt
+
+Check 194: std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:59 in function std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt
+
+Check 195: std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:59 in function std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt
+
+Check 196: std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:59 in function std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt
+
+Check 197: std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:59 in function std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt
+
+Check 198: std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:59 in function std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt
+
+Check 199: std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2192:59 in function std::cmp::impls::<impl std::cmp::PartialOrd for usize>::lt
+
+Check 200: zip::name_is_safe.unwind.0
+	 - Status: SUCCESS
+	 - Description: "unwinding assertion loop 0"
+	 - Location: src/zip.rs:510:5 in function zip::name_is_safe
+
+Check 201: zip::proofs::validate_name_rejects_traversal.unwind.0
+	 - Status: SUCCESS
+	 - Description: "unwinding assertion loop 0"
+	 - Location: src/zip.rs:1149:13 in function zip::proofs::validate_name_rejects_traversal
+
+
+SUMMARY:
+ ** 0 of 201 failed (1 unreachable)
+
+VERIFICATION:- SUCCESSFUL
+Verification Time: 6.438356s
+
+WARNING: Kani could not produce a concrete playback for `zip::proofs::validate_name_rejects_traversal` because there were no failing panic checks or satisfiable cover statements.
+INFO: The concrete playback feature never generated unit tests because there were no failing harnesses.
+Manual Harness Summary:
+Complete - 1 successfully verified harnesses, 0 failures, 1 total.
+	Command being timed: "timeout 1200 cargo kani --harness zip::proofs::validate_name_rejects_traversal --exact -Z concrete-playback --concrete-playback=print"
+	User time (seconds): 7.84
+	System time (seconds): 1.10
+	Percent of CPU this job got: 108%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:08.23
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 394492
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 248281
+	Voluntary context switches: 23794
+	Involuntary context switches: 93
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 19968
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
