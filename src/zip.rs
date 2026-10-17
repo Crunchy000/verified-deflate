@@ -1083,7 +1083,7 @@ mod proofs {
     /// Name validation never panics and rejects every name containing a
     /// `..` component or a leading `/`.
     #[kani::proof]
-    #[kani::unwind(8)]
+    #[kani::unwind(20)]
     fn validate_name_rejects_traversal() {
         let b: [u8; 6] = kani::any();
         let Ok(name) = core::str::from_utf8(&b) else { return };

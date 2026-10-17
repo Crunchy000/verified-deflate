@@ -45,19 +45,20 @@ def main(logdir: str) -> int:
         vt = f"{float(t.group(1)):.1f}s" if t else "-"
         rows.append(f"{status:14} {vt:>9} {secs:>6}s wall  {harness}")
         if status != "OK":
-            # Only look at verifier output, not compiler warnings before it.
-            start = log.rfind("Checking harness")
-            tail = log[start:] if start >= 0 else log
-            lines = [l for l in tail.splitlines() if l.strip()]
+            lines = [l for l in log.splitlines() if l.strip()]
             picked = []
             for i, l in enumerate(lines):
-                if re.match(r"\s*(\*\* \d+ of|Failed Checks)", l):
+                if "Status: FAILURE" in l:
+                    picked.extend(lines[max(0, i - 1):i + 3])
+                elif re.match(r"\s*(\*\* \d+ of|Failed Checks)", l):
                     picked.extend(lines[i:i + 2])
             # Concrete playback: the counterexample as a unit test.
-            m = re.search(r"(?s)(#\[test\]\s*fn kani_concrete_playback.*?\n\})", tail)
+            m = re.search(r"(?s)(#\[test\]\s*fn kani_concrete_playback.*?\n\})", log)
             if m:
                 picked.append(m.group(1)[:3000])
-            body = "\n".join(dict.fromkeys(picked)) if picked else "\n".join(lines[-60:])
+            noise = re.compile(r"^(Unwinding loop|Not unwinding|aborting path|size of program|Runtime|Generated|Starting|Passing problem|Solving|.*variables, .*clauses)")
+            rest = [l for l in lines if not noise.match(l)]
+            body = "\n".join(dict.fromkeys(picked)) if picked else "\n".join(rest[-60:])
             failures.append((harness, status, body[:6000]))
     summary = "\n".join(rows) or "no harnesses ran"
     ok = sum(r.startswith("OK") for r in rows)

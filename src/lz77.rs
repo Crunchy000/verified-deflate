@@ -409,7 +409,7 @@ mod proofs {
     /// The doubling copy produces exactly what a byte-at-a-time copy does,
     /// including heavily overlapping matches.
     #[kani::proof]
-    #[kani::unwind(13)]
+    #[kani::unwind(20)]
     fn copy_match_equals_naive() {
         let prefix: [u8; 4] = kani::any();
         let dist: usize = kani::any();
