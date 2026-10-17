@@ -34,8 +34,8 @@ cargo kani -Z stubbing --harness lz77::proofs::    # modules that use stubs
 cargo kani -Z stubbing --features kani-extended    # include the large ones
 ```
 
-CI (`.github/workflows/ci.yml`) runs each module as its own job, and each
-harness as its own process. A harness gets 16 GiB of memory and 30
+CI (`.github/workflows/ci.yml`) runs each module as its own job (the
+slow Huffman module as three), and each harness as its own process. A harness gets 16 GiB of memory and 30
 minutes, and the job summary reports per-harness results. On GitHub's
 standard runners the whole CI suite verifies in about 45 minutes of wall
 time across parallel jobs. Most harnesses take seconds; the slowest, the
