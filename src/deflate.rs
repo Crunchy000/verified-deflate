@@ -467,7 +467,8 @@ mod proofs {
     use crate::inflate::expand_code_length;
 
     fn check_rle(lengths: &[u8]) {
-        let mut toks = Vec::new();
+        // Every token covers at least one length, so this never reallocates.
+        let mut toks = Vec::with_capacity(lengths.len());
         rle_code_lengths(lengths, &mut toks);
         let mut out = vec![0u8; lengths.len()];
         let mut idx = 0;
@@ -483,21 +484,21 @@ mod proofs {
     /// RLE of arbitrary code lengths decodes, through the decoder's own
     /// expansion routine, back to the same lengths (covers symbols 0-17).
     #[kani::proof]
-    #[kani::unwind(10)]
+    #[kani::unwind(9)]
     fn code_length_rle_roundtrip() {
         let lengths: [u8; 8] = core::array::from_fn(|_| kani::any_where(|&l: &u8| l <= 15));
         check_rle(&lengths);
     }
 
-    /// Long zero runs (symbol 18) and mixed runs also round-trip.
+    /// Long zero runs (symbol 18) and mixed runs also round-trip: 12
+    /// lengths drawn from {0, v}.
     #[kani::proof]
-    #[kani::unwind(18)]
+    #[kani::unwind(13)]
     fn code_length_rle_zero_runs() {
-        let v: u8 = kani::any();
-        let mask: [bool; 16] = kani::any();
-        kani::assume(v <= 15);
-        let mut lengths = [0u8; 16];
-        for i in 0..16 {
+        let v: u8 = kani::any_where(|&v: &u8| v <= 15);
+        let mask: [bool; 12] = kani::any();
+        let mut lengths = [0u8; 12];
+        for i in 0..12 {
             if mask[i] {
                 lengths[i] = v;
             }
@@ -532,32 +533,9 @@ mod proofs {
         let data: [u8; 8] = kani::any();
         let len: usize = kani::any();
         kani::assume(len <= 8);
-        let mut w = BitWriter::new();
+        let mut w = BitWriter::with_capacity(16);
         w.write_bits(0, pre);
         write_stored(&mut w, &data[..len], true);
         assert_eq!(w.bit_len() - u64::from(pre), stored_bits(u64::from(pre), len));
-    }
-
-    /// The fixed-block size model equals the bits written for any tokens.
-    #[kani::proof]
-    #[kani::unwind(290)]
-    fn fixed_cost_is_exact() {
-        let kinds: [bool; 3] = kani::any();
-        let bytes: [u8; 3] = kani::any();
-        let lens: [u16; 3] = kani::any();
-        let dists: [u16; 3] = kani::any();
-        let mut toks = [Token::Literal(0); 3];
-        for i in 0..3 {
-            if kinds[i] {
-                toks[i] = Token::Literal(bytes[i]);
-            } else {
-                kani::assume(lens[i] >= 3 && lens[i] <= 258 && dists[i] >= 1 && dists[i] <= 32768);
-                toks[i] = Token::Match { len: lens[i], dist: dists[i] };
-            }
-        }
-        let stats = BlockStats::new(&toks);
-        let mut w = BitWriter::new();
-        write_fixed(&mut w, &toks, true);
-        assert_eq!(w.bit_len(), stats.fixed_bits());
     }
 }

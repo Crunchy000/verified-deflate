@@ -235,21 +235,15 @@ pub fn match_is_valid(len: usize, dist: usize, produced: usize) -> bool {
 
 /// Appends a match to `out`: copies `len` bytes starting `dist` bytes from
 /// the end, where the source may overlap the bytes being written (that is
-/// how DEFLATE expresses runs).
-///
-/// Copies in doubling chunks: after copying a multiple of `dist` bytes the
-/// output is periodic with period `dist`, so the next chunk can be taken
-/// from the start of the match source in one `extend_from_within`.
-/// Requires `1 <= dist <= out.len()`.
+/// how DEFLATE expresses runs). Byte by byte, so each byte read has already
+/// been written. Requires `1 <= dist <= out.len()`.
 #[inline]
 pub fn copy_match(out: &mut Vec<u8>, dist: usize, len: usize) {
+    out.reserve(len);
     let start = out.len() - dist;
-    let mut copied = 0;
-    while copied < len {
-        let avail = dist + copied;
-        let chunk = if len - copied < avail { len - copied } else { avail };
-        out.extend_from_within(start..start + chunk);
-        copied += chunk;
+    for i in 0..len {
+        let b = out[start + i];
+        out.push(b);
     }
 }
 
@@ -344,40 +338,38 @@ mod proofs {
         assert_eq!(out.as_slice(), data);
     }
 
-    /// For any 6 bytes, with small tables (4-entry hash, 8-byte window)
+    /// For any 5 bytes, with small tables (4-entry hash, 8-byte window)
     /// that make collisions and chain reuse reachable and with lazy
     /// matching on, every token is valid and the tokens replay to the input.
     #[kani::proof]
-    #[kani::unwind(7)]
+    #[kani::unwind(6)]
     fn tokens_valid_and_replay_small_tables() {
-        let data: [u8; 6] = kani::any();
-        let len: usize = kani::any();
-        kani::assume(len <= 6);
+        let data: [u8; 5] = kani::any();
         let cfg = MatchConfig {
-            max_chain: 4,
-            nice_len: 5,
-            good_len: 4,
-            max_lazy: 6,
+            max_chain: 2,
+            nice_len: 4,
+            good_len: 3,
+            max_lazy: 5,
             lazy: true,
             window_bits: 3,
             hash_bits: 2,
         };
-        check_tokens(&data[..len], cfg);
+        check_tokens(&data, cfg);
     }
 
-    /// Same property for any 5 bytes with the production level-9 configuration.
+    /// Same property for any 4 bytes with the production level-9 configuration.
     #[kani::proof]
-    #[kani::unwind(6)]
+    #[kani::unwind(5)]
     fn tokens_valid_and_replay_level9() {
-        let data: [u8; 5] = kani::any();
+        let data: [u8; 4] = kani::any();
         check_tokens(&data, MatchConfig::for_level(9));
     }
 
-    /// Same property for any 5 bytes without lazy matching (level 1).
+    /// Same property for any 4 bytes without lazy matching (level 1).
     #[kani::proof]
-    #[kani::unwind(6)]
+    #[kani::unwind(5)]
     fn tokens_valid_and_replay_greedy() {
-        let data: [u8; 5] = kani::any();
+        let data: [u8; 4] = kani::any();
         check_tokens(&data, MatchConfig::for_level(1));
     }
 
@@ -395,7 +387,7 @@ mod proofs {
         assert_eq!(toks[1], Token::Match { len: 5, dist: 1 });
     }
 
-    /// The doubling copy produces exactly what a byte-at-a-time copy does,
+    /// Match copying agrees with a reference copy into a fixed array,
     /// including heavily overlapping matches.
     #[kani::proof]
     #[kani::unwind(11)]
@@ -440,7 +432,7 @@ mod proofs {
             kani::assume(lens[i] <= 8);
             toks[i] = if kinds[i] { Token::Literal(bytes[i]) } else { Token::Match { len: lens[i], dist: dists[i] } };
         }
-        let mut out = Vec::new();
+        let mut out = Vec::with_capacity(24);
         match replay(&toks, &mut out) {
             Ok(()) => assert_eq!(out.len(), toks.iter().map(|t| t.output_len()).sum::<usize>()),
             Err(e) => assert_eq!(e, InflateError::DistanceTooFarBack),

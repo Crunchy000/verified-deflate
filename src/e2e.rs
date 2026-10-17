@@ -31,9 +31,8 @@ fn roundtrip_stored() {
 
 /// Fixed Huffman with the level-6 lazy matcher: any 4 bytes round-trip
 /// exactly (four bytes allow a literal followed by an overlapping match).
-/// Fixed codes are at most 9 bits, which bounds the decoder's bit loop.
 #[kani::proof]
-#[kani::unwind(10)]
+#[kani::unwind(7)]
 fn roundtrip_fixed_lazy() {
     let data: [u8; 4] = kani::any();
     roundtrip(&data, 6, Strategy::Fixed);
@@ -41,7 +40,7 @@ fn roundtrip_fixed_lazy() {
 
 /// Fixed Huffman with the greedy level-1 matcher on any 3 bytes.
 #[kani::proof]
-#[kani::unwind(10)]
+#[kani::unwind(6)]
 fn roundtrip_fixed_greedy() {
     let data: [u8; 3] = kani::any();
     roundtrip(&data, 1, Strategy::Fixed);
@@ -50,7 +49,7 @@ fn roundtrip_fixed_greedy() {
 /// Inputs built from two symbols are match-heavy; any 6 of them round-trip
 /// with the level-9 matcher.
 #[kani::proof]
-#[kani::unwind(10)]
+#[kani::unwind(8)]
 fn roundtrip_fixed_two_symbol_alphabet() {
     let bits: [bool; 6] = kani::any();
     let a: u8 = kani::any();

@@ -386,26 +386,46 @@ impl Decoder {
 
     /// Reads one symbol. Fails with `UnexpectedEof` if the input runs out
     /// and `InvalidSymbol` if the bits match no code.
+    ///
+    /// The fifteen per-length steps are written out rather than looped, so
+    /// that the model checker's loop bound for the callers does not have to
+    /// cover them.
     #[inline]
+    #[allow(unused_assignments)]
     pub fn decode(&self, br: &mut BitReader<'_>) -> Result<u16, InflateError> {
-        // Invariant at each check: first <= code, and first is the smallest
-        // canonical code of length `len`; index is the position of that code
-        // in `symbol`.
+        // Invariant at each step: first <= code, first is the smallest
+        // canonical code of the current length, and index is the position
+        // of that code in `symbol`.
         let mut code: u32 = 0;
         let mut first: u32 = 0;
         let mut index: u32 = 0;
-        let mut len = 1;
-        while len <= MAX_CODE_LEN {
-            code |= br.read_bit()?;
-            let count = u32::from(self.count[len]);
-            if code < first + count {
-                return Ok(self.symbol[(index + (code - first)) as usize]);
-            }
-            index += count;
-            first = (first + count) << 1;
-            code <<= 1;
-            len += 1;
+        macro_rules! step {
+            ($len:expr) => {
+                code |= br.read_bit()?;
+                let count = u32::from(self.count[$len]);
+                if code < first + count {
+                    return Ok(self.symbol[(index + (code - first)) as usize]);
+                }
+                index += count;
+                first = (first + count) << 1;
+                code <<= 1;
+            };
         }
+        step!(1);
+        step!(2);
+        step!(3);
+        step!(4);
+        step!(5);
+        step!(6);
+        step!(7);
+        step!(8);
+        step!(9);
+        step!(10);
+        step!(11);
+        step!(12);
+        step!(13);
+        step!(14);
+        step!(15);
         Err(InflateError::InvalidSymbol)
     }
 }

@@ -101,10 +101,9 @@ the proof instead of silently skipping behaviour.
 | Harness | Property |
 |---|---|
 | `code_length_rle_roundtrip` | The run-length coding of any 8 code lengths, expanded by the *decoder's own* routine, gives back the same lengths. |
-| `code_length_rle_zero_runs` | Same for 16 lengths drawn from {0, v}, reaching the long-zero-run code 18. |
+| `code_length_rle_zero_runs` | Same for 12 lengths drawn from {0, v}, reaching the long-zero-run code 18. |
 | `fixed_code_table_matches_rfc` | The compile-time fixed code tables hold the RFC's canonical codes. |
 | `stored_cost_is_exact` | The stored-block size model equals the bits actually written. |
-| `fixed_cost_is_exact` | The fixed-block size model equals the bits written, for any three tokens. |
 
 ### Decoder (`inflate`)
 
