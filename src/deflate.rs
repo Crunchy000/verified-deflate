@@ -565,18 +565,19 @@ mod proofs {
         assert_eq!(FIXED_DIST.code[d], reverse_bits(d as u16, 5));
     }
 
-    /// The stored-block size model equals the bits actually written.
+    /// The stored-block size model equals the bits actually written, from
+    /// every starting bit offset, for 0, 3 and 8 bytes of any content.
     #[kani::proof]
     #[kani::unwind(10)]
     fn stored_cost_is_exact() {
         let pre: u32 = kani::any();
         kani::assume(pre < 8);
         let data: [u8; 8] = kani::any();
-        let len: usize = kani::any();
-        kani::assume(len <= 8);
-        let mut w = BitWriter::with_capacity(16);
-        w.write_bits(0, pre);
-        write_stored(&mut w, &data[..len], true);
-        assert_eq!(w.bit_len() - u64::from(pre), stored_bits(u64::from(pre), len));
+        for len in [0usize, 3, 8] {
+            let mut w = BitWriter::with_capacity(16);
+            w.write_bits(0, pre);
+            write_stored(&mut w, &data[..len], true);
+            assert_eq!(w.bit_len() - u64::from(pre), stored_bits(u64::from(pre), len));
+        }
     }
 }

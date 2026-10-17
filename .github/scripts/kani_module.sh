@@ -14,13 +14,25 @@ mem_gb="${KANI_MEMORY_GB:-14}"   # public runners have 16 GiB
 mkdir -p kani-logs
 : > kani-logs/status.tsv
 
-names=$(python3 - "$file" <<'PY'
-import re, sys
+# Harness names, skipping those gated behind the `kani-extended` feature
+# unless KANI_EXTENDED=1 (which also enables the feature).
+names=$(KANI_EXTENDED="${KANI_EXTENDED:-0}" python3 - "$file" <<'PY'
+import os, re, sys
 src = open(sys.argv[1]).read()
-pat = r"#\[kani::proof\][^\n]*\n(?:\s*#\[[^\n]*\n)*\s*fn\s+(\w+)"
-print("\n".join(m.group(1) for m in re.finditer(pat, src)))
+extended = os.environ.get("KANI_EXTENDED") == "1"
+pat = r"((?:[ \t]*#\[[^\n]*\n)*)[ \t]*fn\s+(\w+)"
+for m in re.finditer(pat, src):
+    attrs, name = m.group(1), m.group(2)
+    if "kani::proof" not in attrs:
+        continue
+    if "kani-extended" in attrs and not extended:
+        continue
+    print(name)
 PY
 )
+if [ "${KANI_EXTENDED:-0}" = "1" ]; then
+  KANI_EXTRA_FLAGS="${KANI_EXTRA_FLAGS:-} --features kani-extended"
+fi
 echo "harnesses in $file:"; echo "$names"
 
 # Compile once without the memory cap; later runs reuse the build.

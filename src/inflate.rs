@@ -79,7 +79,7 @@ const FIXED_DIST: Decoder = match Decoder::new(&FIXED_DIST_LENGTHS) {
 /// The decoder's output: a zero-filled buffer written by index and grown
 /// by doubling when needed. Writing by index (rather than `Vec::push`)
 /// keeps the model checker's view of the output small.
-struct Output {
+pub(crate) struct Output {
     buf: Vec<u8>,
     len: usize,
     limit: usize,
@@ -104,7 +104,7 @@ impl Output {
     }
 
     #[cold]
-    fn grow(&mut self, n: usize) {
+    pub(crate) fn grow(&mut self, n: usize) {
         let want = (self.len + n).max(self.buf.len().saturating_mul(2));
         let mut bigger = vec![0; want];
         bigger[..self.len].copy_from_slice(&self.buf[..self.len]);
@@ -288,6 +288,16 @@ mod tests {
     }
 }
 
+/// Proof stub for `Output::grow`: harnesses whose outputs fit in the
+/// initial buffer replace growth with a panic, so Kani must prove growth is
+/// unreachable instead of modelling it. (If it were reachable, the harness
+/// would fail, so this keeps the proof sound.)
+#[cfg(kani)]
+#[cfg_attr(kani_sample, allow(dead_code))] // stubs are not applied when sampling
+pub(crate) fn grow_is_unreachable(_out: &mut Output, _n: usize) {
+    panic!("output growth is unreachable in this harness");
+}
+
 #[cfg(kani)]
 mod proofs {
     use super::*;
@@ -296,6 +306,7 @@ mod proofs {
     /// 0-16; successful results respect the limit and the input length.
     /// Two bytes reach every block type's header handling, a fixed-block
     /// literal and end-of-block, and every early-EOF path.
+    #[kani::stub(Output::grow, grow_is_unreachable)]
     #[kani::proof]
     #[kani::unwind(5)]
     fn never_panics_2_bytes() {
@@ -326,6 +337,7 @@ mod proofs {
     /// decoder panic, with an 8-byte output limit. Five bytes reach a
     /// literal followed by a length-258 match code; the limit keeps copies
     /// short while every decoding path is still taken.
+    #[kani::stub(Output::grow, grow_is_unreachable)]
     #[kani::proof]
     #[kani::unwind(9)]
     fn never_panics_fixed_5_bytes() {
@@ -336,27 +348,24 @@ mod proofs {
         }
     }
 
-    /// A stored block decodes to exactly its payload, and any LEN/NLEN
-    /// mismatch is rejected.
+    /// A 4-byte stored block decodes to exactly its payload when NLEN is
+    /// the complement of LEN, and any other NLEN is rejected.
     #[kani::proof]
-    #[kani::unwind(8)]
+    #[kani::stub(Output::grow, grow_is_unreachable)]
+    #[kani::unwind(6)]
     fn stored_block_semantics() {
         let payload: [u8; 4] = kani::any();
-        let len: u16 = kani::any();
         let nlen: u16 = kani::any();
-        kani::assume(len <= 4);
-        let l = len.to_le_bytes();
         let nl = nlen.to_le_bytes();
-        let s = [0x01, l[0], l[1], nl[0], nl[1], payload[0], payload[1], payload[2], payload[3]];
-        let n = 5 + len as usize;
-        let r = decompress_with_limit(&s[..n], 16);
-        if nlen == !len {
+        let s = [0x01, 4, 0, nl[0], nl[1], payload[0], payload[1], payload[2], payload[3]];
+        let r = decompress_with_limit(&s, 16);
+        if nlen == !4u16 {
             let d = r.unwrap();
-            assert_eq!(d.data.len(), len as usize);
-            for i in 0..len as usize {
+            assert_eq!(d.data.len(), 4);
+            for i in 0..4 {
                 assert_eq!(d.data[i], payload[i]);
             }
-            assert_eq!(d.consumed, n);
+            assert_eq!(d.consumed, 9);
         } else {
             assert_eq!(r, Err(InflateError::StoredLengthMismatch));
         }

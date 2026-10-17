@@ -29,6 +29,7 @@ fn roundtrip(data: &[u8], level: u8, strategy: Strategy) {
 /// Stored blocks: any 4 bytes, and the empty input, round-trip exactly.
 /// (Lengths are fixed per harness: a symbolic length makes every buffer
 /// size symbolic, which the model checker handles far less well.)
+#[kani::stub(crate::inflate::Output::grow, crate::inflate::grow_is_unreachable)]
 #[kani::proof]
 #[kani::unwind(6)]
 fn roundtrip_stored() {
@@ -41,6 +42,7 @@ fn roundtrip_stored() {
 /// exactly (four bytes allow a literal followed by an overlapping match),
 /// for every hash function.
 #[kani::stub(crate::lz77::Matcher::hash, crate::lz77::any_bucket)]
+#[kani::stub(crate::inflate::Output::grow, crate::inflate::grow_is_unreachable)]
 #[kani::proof]
 #[kani::unwind(7)]
 fn roundtrip_fixed_lazy() {
@@ -50,6 +52,7 @@ fn roundtrip_fixed_lazy() {
 
 /// Fixed Huffman with the greedy level-1 matcher on any 3 bytes.
 #[kani::stub(crate::lz77::Matcher::hash, crate::lz77::any_bucket)]
+#[kani::stub(crate::inflate::Output::grow, crate::inflate::grow_is_unreachable)]
 #[kani::proof]
 #[kani::unwind(6)]
 fn roundtrip_fixed_greedy() {
@@ -60,6 +63,7 @@ fn roundtrip_fixed_greedy() {
 /// Inputs built from two symbols are match-heavy; any 6 of them round-trip
 /// with the level-9 matcher.
 #[kani::stub(crate::lz77::Matcher::hash, crate::lz77::any_bucket)]
+#[kani::stub(crate::inflate::Output::grow, crate::inflate::grow_is_unreachable)]
 #[kani::proof]
 #[kani::unwind(8)]
 fn roundtrip_fixed_two_symbol_alphabet() {
@@ -75,6 +79,7 @@ fn roundtrip_fixed_two_symbol_alphabet() {
 
 /// A one-entry ZIP archive of any 3 bytes, stored, reads back exactly with
 /// its CRC check passing.
+#[kani::stub(crate::inflate::Output::grow, crate::inflate::grow_is_unreachable)]
 #[kani::proof]
 #[kani::unwind(8)]
 fn zip_roundtrip_stored() {

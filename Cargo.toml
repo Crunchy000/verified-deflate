@@ -26,6 +26,11 @@ path = "src/bin/vzip.rs"
 [target.'cfg(kani_sample)'.dev-dependencies]
 kani = { path = "tools/kani-sample", package = "kani-sample" }
 
+[features]
+# Enables Kani harnesses too large for the CI runners (16 GiB, 20 minutes
+# per harness). Has no effect on the library itself.
+kani-extended = []
+
 [lints.rust]
 unsafe_code = "forbid"
 missing_docs = "warn"
