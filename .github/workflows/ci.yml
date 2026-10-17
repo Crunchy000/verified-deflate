@@ -4,6 +4,11 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      modules:
+        description: "Only verify these Kani modules (comma-separated prefixes, e.g. zip,crc32); empty = all"
+        required: false
+        default: ""
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -70,9 +75,26 @@ jobs:
           - { module: "zip::proofs::", file: src/zip.rs }
           - { module: "e2e::", file: src/e2e.rs }
     steps:
+      - name: Select
+        id: sel
+        env:
+          ONLY: ${{ github.event.inputs.modules }}
+          MODULE: ${{ matrix.module }}
+        run: |
+          run=true
+          if [ -n "$ONLY" ]; then
+            run=false
+            for tok in ${ONLY//,/ }; do
+              case "$MODULE" in "$tok"*) run=true ;; esac
+            done
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v6
+        if: steps.sel.outputs.run == 'true'
       - uses: dtolnay/rust-toolchain@stable
+        if: steps.sel.outputs.run == 'true'
       - name: Cache Kani
+        if: steps.sel.outputs.run == 'true'
         uses: actions/cache@v4
         with:
           path: |
@@ -82,13 +104,15 @@ jobs:
             ~/.rustup/toolchains/nightly-*
           key: kani-${{ env.KANI_VERSION }}-${{ runner.os }}
       - name: Install Kani ${{ env.KANI_VERSION }}
+        if: steps.sel.outputs.run == 'true'
         run: |
           if ! command -v cargo-kani >/dev/null || ! cargo kani --version | grep -q "$KANI_VERSION"; then
             cargo install --locked kani-verifier --version "$KANI_VERSION"
           fi
           cargo kani setup
       - name: Verify (one process per harness)
+        if: steps.sel.outputs.run == 'true'
         run: .github/scripts/kani_module.sh "${{ matrix.module }}" "${{ matrix.file }}"
       - name: Report
-        if: always()
+        if: always() && steps.sel.outputs.run == 'true'
         run: python3 .github/scripts/kani_report.py kani-logs

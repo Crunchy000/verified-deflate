@@ -45,9 +45,15 @@ def main(logdir: str) -> int:
         vt = f"{float(t.group(1)):.1f}s" if t else "-"
         rows.append(f"{status:14} {vt:>9} {secs:>6}s wall  {harness}")
         if status != "OK":
-            lines = [l for l in log.splitlines() if l.strip()]
-            interesting = [l for l in lines if re.search(r"FAILURE|Failed Checks|unwinding|assert|error|File:|panicked", l)]
-            body = "\n".join(interesting[:60] or lines[-60:])
+            # Only look at verifier output, not compiler warnings before it.
+            start = log.rfind("Checking harness")
+            tail = log[start:] if start >= 0 else log
+            lines = [l for l in tail.splitlines() if l.strip()]
+            picked = []
+            for i, l in enumerate(lines):
+                if re.match(r"\s*(\*\*|Failed Checks|SUMMARY|VERIFICATION|Check \d+|- Status: FAILURE)", l):
+                    picked.extend(lines[i:i + 3])
+            body = "\n".join(dict.fromkeys(picked)) if picked else "\n".join(lines[-60:])
             failures.append((harness, status, body[:6000]))
     summary = "\n".join(rows) or "no harnesses ran"
     ok = sum(r.startswith("OK") for r in rows)

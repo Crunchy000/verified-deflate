@@ -1,11 +1,12 @@
 //! CRC-32 (ISO-HDLC / IEEE 802.3, reflected polynomial `0xEDB88320`), as
 //! used by ZIP, gzip and PNG.
 //!
-//! The fast path processes eight bytes per step using eight 256-entry
-//! tables ("slicing-by-8"). All tables are computed at compile time from a
-//! bit-at-a-time reference ([`update_bitwise`]), and the Kani harnesses
-//! prove that the table-driven code computes exactly what the reference
-//! computes.
+//! The implementation is the classic byte-at-a-time table method. Its
+//! table is computed at compile time from a bit-at-a-time reference
+//! ([`update_bitwise`]), and both functions are the same fold over the
+//! input with different step functions. Kani proves the two step functions
+//! equal for every register value and every byte, so the two CRCs agree on
+//! inputs of every length.
 
 /// The reflected CRC-32 polynomial.
 pub const POLY: u32 = 0xEDB8_8320;
@@ -21,61 +22,44 @@ const fn byte_bitwise(crc: u32, byte: u8) -> u32 {
     c
 }
 
-const fn make_tables() -> [[u32; 256]; 8] {
-    let mut t = [[0u32; 256]; 8];
+const fn make_table() -> [u32; 256] {
+    let mut t = [0u32; 256];
     let mut i = 0;
     while i < 256 {
-        t[0][i] = byte_bitwise(0, i as u8);
+        t[i] = byte_bitwise(0, i as u8);
         i += 1;
-    }
-    let mut k = 1;
-    while k < 8 {
-        let mut i = 0;
-        while i < 256 {
-            let prev = t[k - 1][i];
-            t[k][i] = (prev >> 8) ^ t[0][(prev & 0xff) as usize];
-            i += 1;
-        }
-        k += 1;
     }
     t
 }
 
-/// `TABLES[k][b]` is the CRC register after processing byte `b` followed by
-/// `k` zero bytes, starting from a zero register.
-static TABLES: [[u32; 256]; 8] = make_tables();
+/// `TABLE[b]` is the register after processing byte `b` from a zero register.
+static TABLE: [u32; 256] = make_table();
+
+/// Processes one byte with the table.
+#[inline]
+fn byte_table(crc: u32, byte: u8) -> u32 {
+    TABLE[((crc ^ u32::from(byte)) & 0xff) as usize] ^ (crc >> 8)
+}
+
+/// The shared loop: pre- and post-inversion around a per-byte step.
+#[inline]
+fn fold(crc: u32, data: &[u8], step: impl Fn(u32, u8) -> u32) -> u32 {
+    let mut c = !crc;
+    for &b in data {
+        c = step(c, b);
+    }
+    !c
+}
 
 /// Continues a CRC-32 computation: `update(crc32(a), b) == crc32(a ++ b)`.
 pub fn update(crc: u32, data: &[u8]) -> u32 {
-    let t = &TABLES;
-    let mut c = !crc;
-    let mut chunks = data.chunks_exact(8);
-    for ch in &mut chunks {
-        let lo = c ^ u32::from_le_bytes([ch[0], ch[1], ch[2], ch[3]]);
-        let hi = u32::from_le_bytes([ch[4], ch[5], ch[6], ch[7]]);
-        c = t[7][(lo & 0xff) as usize]
-            ^ t[6][((lo >> 8) & 0xff) as usize]
-            ^ t[5][((lo >> 16) & 0xff) as usize]
-            ^ t[4][(lo >> 24) as usize]
-            ^ t[3][(hi & 0xff) as usize]
-            ^ t[2][((hi >> 8) & 0xff) as usize]
-            ^ t[1][((hi >> 16) & 0xff) as usize]
-            ^ t[0][(hi >> 24) as usize];
-    }
-    for &b in chunks.remainder() {
-        c = t[0][((c ^ u32::from(b)) & 0xff) as usize] ^ (c >> 8);
-    }
-    !c
+    fold(crc, data, byte_table)
 }
 
 /// Bit-at-a-time reference implementation of [`update`]. Slow; used as the
 /// specification in proofs and tests.
 pub fn update_bitwise(crc: u32, data: &[u8]) -> u32 {
-    let mut c = !crc;
-    for &b in data {
-        c = byte_bitwise(c, b);
-    }
-    !c
+    fold(crc, data, byte_bitwise)
 }
 
 /// CRC-32 of `data`.
@@ -131,50 +115,35 @@ mod tests {
 mod proofs {
     use super::*;
 
-    /// Every entry of the base table equals the bitwise definition.
+    /// Every table entry equals the bitwise definition.
     #[kani::proof]
     #[kani::unwind(9)]
-    fn base_table_matches_definition() {
+    fn table_matches_definition() {
         let b: u8 = kani::any();
-        assert_eq!(TABLES[0][b as usize], byte_bitwise(0, b));
+        assert_eq!(TABLE[b as usize], byte_bitwise(0, b));
     }
 
-    /// Every entry of the higher tables means "byte then k zero bytes".
+    /// The key lemma: for every register value and every byte, the table
+    /// step equals eight bitwise steps. `update` and `update_bitwise` are
+    /// the same fold over these steps, so they agree on all inputs of every
+    /// length.
     #[kani::proof]
     #[kani::unwind(9)]
-    fn slice_tables_match_definition() {
+    fn table_step_equals_bitwise_step() {
+        let c: u32 = kani::any();
         let b: u8 = kani::any();
-        let k: usize = kani::any();
-        kani::assume(k >= 1 && k < 8);
-        let mut c = byte_bitwise(0, b);
-        let mut j = 0;
-        while j < 7 {
-            if j < k {
-                c = byte_bitwise(c, 0);
-            }
-            j += 1;
-        }
-        assert_eq!(TABLES[k][b as usize], c);
+        assert_eq!(byte_table(c, b), byte_bitwise(c, b));
     }
 
-    /// Eight arbitrary bytes (one slicing-by-8 step) from an arbitrary
-    /// starting CRC give the same result as the bitwise reference.
+    /// Direct check of whole computations on up to 4 bytes from any
+    /// starting value.
     #[kani::proof]
     #[kani::unwind(9)]
-    fn slicing_step_matches_reference() {
+    fn update_matches_reference() {
         let init: u32 = kani::any();
-        let data: [u8; 8] = kani::any();
-        assert_eq!(update(init, &data), update_bitwise(init, &data));
-    }
-
-    /// The byte-at-a-time tail path matches the reference too.
-    #[kani::proof]
-    #[kani::unwind(9)]
-    fn tail_matches_reference() {
-        let init: u32 = kani::any();
-        let data: [u8; 7] = kani::any();
+        let data: [u8; 4] = kani::any();
         let len: usize = kani::any();
-        kani::assume(len <= 7);
+        kani::assume(len <= 4);
         assert_eq!(update(init, &data[..len]), update_bitwise(init, &data[..len]));
     }
 
@@ -182,12 +151,12 @@ mod proofs {
     #[kani::proof]
     #[kani::unwind(9)]
     fn streaming_is_concatenation() {
-        let data: [u8; 6] = kani::any();
+        let data: [u8; 4] = kani::any();
         let split: usize = kani::any();
-        kani::assume(split <= 6);
+        kani::assume(split <= 4);
         let mut h = Crc32::new();
         h.update(&data[..split]);
         h.update(&data[split..]);
-        assert_eq!(h.finalize(), update_bitwise(0, &data));
+        assert_eq!(h.finalize(), update(0, &data));
     }
 }

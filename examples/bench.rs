@@ -23,6 +23,9 @@ fn main() {
     };
     let mb = data.len() as f64 / 1e6;
     println!("input: {:.1} MB", mb);
+    let t = Instant::now();
+    let crc = verified_deflate::crc32(&data);
+    println!("crc32 {crc:08x}: {:.0} MB/s", mb / t.elapsed().as_secs_f64());
     for level in [1u8, 6, 9] {
         let t = Instant::now();
         let c = compress(&data, level);
