@@ -1,0 +1,1454 @@
+Kani Rust Verifier 0.68.0 (cargo plugin)
+CBMC 6.11.0
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+warning: Found the following unsupported constructs:
+             - caller_location (1)
+             - foreign function (1)
+         
+         Verification will fail if one or more of these constructs is reachable.
+         See https://model-checking.github.io/kani/rust-feature-support.html for more details.
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.98s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.09s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+Checking harness bitio::proofs::read_bits_matches_read_bit...
+CBMC 6.11.0 (cbmc-6.11.0)
+CBMC version 6.11.0 (cbmc-6.11.0) 64-bit x86_64 linux
+Reading GOTO program from file /home/runner/work/verified-deflate/verified-deflate/target/kani/x86_64-unknown-linux-gnu/debug/build/verified-deflate/3356d4219f148396/out/verified_deflate-3356d4219f148396__RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs26read_bits_matches_read_bit.out
+Generating GOTO Program
+Adding CPROVER library (x86_64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+Running with 16 object bits, 48 offset bits (user-specified)
+Starting Bounded Model Checking
+Unwinding loop _RNvMs_NtCsk0OmT2SdITd_16verified_deflate5bitioNtB4_9BitReader4fillB6_.0 iteration 1 file src/bitio.rs line 116 column 9 function bitio::BitReader::<'_>::fill thread 0
+Unwinding loop _RNvMs_NtCsk0OmT2SdITd_16verified_deflate5bitioNtB4_9BitReader4fillB6_.0 iteration 2 file src/bitio.rs line 116 column 9 function bitio::BitReader::<'_>::fill thread 0
+Unwinding loop _RNvMs_NtCsk0OmT2SdITd_16verified_deflate5bitioNtB4_9BitReader4fillB6_.0 iteration 3 file src/bitio.rs line 116 column 9 function bitio::BitReader::<'_>::fill thread 0
+Unwinding loop _RNvMs_NtCsk0OmT2SdITd_16verified_deflate5bitioNtB4_9BitReader4fillB6_.0 iteration 4 file src/bitio.rs line 116 column 9 function bitio::BitReader::<'_>::fill thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<(), error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 135 column 9 function bitio::BitReader::<'_>::read_bits thread 0
+Unwinding loop _RNvMs_NtCsk0OmT2SdITd_16verified_deflate5bitioNtB4_9BitReader4fillB6_.0 iteration 1 file src/bitio.rs line 116 column 9 function bitio::BitReader::<'_>::fill thread 0
+Unwinding loop _RNvMs_NtCsk0OmT2SdITd_16verified_deflate5bitioNtB4_9BitReader4fillB6_.0 iteration 2 file src/bitio.rs line 116 column 9 function bitio::BitReader::<'_>::fill thread 0
+Unwinding loop _RNvMs_NtCsk0OmT2SdITd_16verified_deflate5bitioNtB4_9BitReader4fillB6_.0 iteration 3 file src/bitio.rs line 116 column 9 function bitio::BitReader::<'_>::fill thread 0
+Unwinding loop _RNvMs_NtCsk0OmT2SdITd_16verified_deflate5bitioNtB4_9BitReader4fillB6_.0 iteration 4 file src/bitio.rs line 116 column 9 function bitio::BitReader::<'_>::fill thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<(), error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 135 column 9 function bitio::BitReader::<'_>::read_bits thread 0
+Unwinding loop _RNvMs_NtCsk0OmT2SdITd_16verified_deflate5bitioNtB4_9BitReader4fillB6_.0 iteration 1 file src/bitio.rs line 116 column 9 function bitio::BitReader::<'_>::fill thread 0
+Unwinding loop _RNvMs_NtCsk0OmT2SdITd_16verified_deflate5bitioNtB4_9BitReader4fillB6_.0 iteration 2 file src/bitio.rs line 116 column 9 function bitio::BitReader::<'_>::fill thread 0
+Unwinding loop _RNvMs_NtCsk0OmT2SdITd_16verified_deflate5bitioNtB4_9BitReader4fillB6_.0 iteration 3 file src/bitio.rs line 116 column 9 function bitio::BitReader::<'_>::fill thread 0
+Unwinding loop _RNvMs_NtCsk0OmT2SdITd_16verified_deflate5bitioNtB4_9BitReader4fillB6_.0 iteration 4 file src/bitio.rs line 116 column 9 function bitio::BitReader::<'_>::fill thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<(), error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 135 column 9 function bitio::BitReader::<'_>::read_bits thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1230 column 15 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1871 column 5 function std::result::unwrap_failed thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1232 column 23 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 147 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1230 column 15 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1871 column 5 function std::result::unwrap_failed thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1232 column 23 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs26read_bits_matches_read_bit.0 iteration 1 file src/bitio.rs line 301 column 9 function bitio::proofs::read_bits_matches_read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 147 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1230 column 15 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1871 column 5 function std::result::unwrap_failed thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1232 column 23 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs26read_bits_matches_read_bit.0 iteration 2 file src/bitio.rs line 301 column 9 function bitio::proofs::read_bits_matches_read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 147 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1230 column 15 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1871 column 5 function std::result::unwrap_failed thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1232 column 23 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs26read_bits_matches_read_bit.0 iteration 3 file src/bitio.rs line 301 column 9 function bitio::proofs::read_bits_matches_read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 147 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1230 column 15 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1871 column 5 function std::result::unwrap_failed thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1232 column 23 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs26read_bits_matches_read_bit.0 iteration 4 file src/bitio.rs line 301 column 9 function bitio::proofs::read_bits_matches_read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 147 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1230 column 15 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1871 column 5 function std::result::unwrap_failed thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1232 column 23 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs26read_bits_matches_read_bit.0 iteration 5 file src/bitio.rs line 301 column 9 function bitio::proofs::read_bits_matches_read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 147 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1230 column 15 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1871 column 5 function std::result::unwrap_failed thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1232 column 23 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs26read_bits_matches_read_bit.0 iteration 6 file src/bitio.rs line 301 column 9 function bitio::proofs::read_bits_matches_read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 147 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1230 column 15 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1871 column 5 function std::result::unwrap_failed thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1232 column 23 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs26read_bits_matches_read_bit.0 iteration 7 file src/bitio.rs line 301 column 9 function bitio::proofs::read_bits_matches_read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 147 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1230 column 15 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1871 column 5 function std::result::unwrap_failed thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1232 column 23 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs26read_bits_matches_read_bit.0 iteration 8 file src/bitio.rs line 301 column 9 function bitio::proofs::read_bits_matches_read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 147 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1230 column 15 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1871 column 5 function std::result::unwrap_failed thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1232 column 23 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs26read_bits_matches_read_bit.0 iteration 9 file src/bitio.rs line 301 column 9 function bitio::proofs::read_bits_matches_read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 147 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1230 column 15 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1871 column 5 function std::result::unwrap_failed thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1232 column 23 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs26read_bits_matches_read_bit.0 iteration 10 file src/bitio.rs line 301 column 9 function bitio::proofs::read_bits_matches_read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 147 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1230 column 15 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1871 column 5 function std::result::unwrap_failed thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1232 column 23 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs26read_bits_matches_read_bit.0 iteration 11 file src/bitio.rs line 301 column 9 function bitio::proofs::read_bits_matches_read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 147 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1230 column 15 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1871 column 5 function std::result::unwrap_failed thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1232 column 23 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs26read_bits_matches_read_bit.0 iteration 12 file src/bitio.rs line 301 column 9 function bitio::proofs::read_bits_matches_read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 147 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1230 column 15 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1871 column 5 function std::result::unwrap_failed thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1232 column 23 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs26read_bits_matches_read_bit.0 iteration 13 file src/bitio.rs line 301 column 9 function bitio::proofs::read_bits_matches_read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 147 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1230 column 15 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1871 column 5 function std::result::unwrap_failed thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1232 column 23 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs26read_bits_matches_read_bit.0 iteration 14 file src/bitio.rs line 301 column 9 function bitio::proofs::read_bits_matches_read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 147 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1230 column 15 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1871 column 5 function std::result::unwrap_failed thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1232 column 23 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs26read_bits_matches_read_bit.0 iteration 15 file src/bitio.rs line 301 column 9 function bitio::proofs::read_bits_matches_read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 147 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1230 column 15 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1871 column 5 function std::result::unwrap_failed thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1232 column 23 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs26read_bits_matches_read_bit.0 iteration 16 file src/bitio.rs line 301 column 9 function bitio::proofs::read_bits_matches_read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 147 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1230 column 15 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1871 column 5 function std::result::unwrap_failed thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 1232 column 23 function std::result::Result::<u32, error::InflateError>::unwrap thread 0
+Not unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs26read_bits_matches_read_bit.0 iteration 17 file src/bitio.rs line 301 column 9 function bitio::proofs::read_bits_matches_read_bit thread 0
+Runtime Symex: 1.14509s
+size of program expression: 37088 steps
+simple slicing removed 16 assignments
+Generated 2443 VCC(s), 466 remaining after simplification
+Runtime Postprocess Equation: 0.0106069s
+Passing problem to propositional reduction
+converting SSA
+Runtime Convert SSA: 0.35534s
+Running propositional reduction
+Post-processing
+Runtime Post-process: 0.0232916s
+Solving with CaDiCaL 3.0.0
+495882 variables, 679179 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 1.86171s
+Runtime decision procedure: 2.22818s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+495883 variables, 679180 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.0311684s
+Runtime decision procedure: 0.0449952s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+495884 variables, 679181 clauses
+SAT checker: instance is UNSATISFIABLE
+Runtime Solver: 0.211752s
+Runtime decision procedure: 0.213841s
+
+RESULTS:
+Check 1: <std::result::Result<u32, error::InflateError> as std::ops::FromResidual<std::result::Result<std::convert::Infallible, error::InflateError>>>::from_residual.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2192:15 in function <std::result::Result<u32, error::InflateError> as std::ops::FromResidual<std::result::Result<std::convert::Infallible, error::InflateError>>>::from_residual
+
+Check 2: std::result::unwrap_failed.assertion.1
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:1871:5 in function std::result::unwrap_failed
+
+Check 3: <std::result::Result<(), error::InflateError> as std::ops::Try>::branch.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2177:15 in function <std::result::Result<(), error::InflateError> as std::ops::Try>::branch
+
+Check 4: std::option::Option::<&u8>::ok_or::<error::InflateError>.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs:1334:15 in function std::option::Option::<&u8>::ok_or::<error::InflateError>
+
+Check 5: bitio::BitReader::<'_>::bits_remaining.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/bitio.rs:198:10 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 6: bitio::BitReader::<'_>::bits_remaining.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to multiply with overflow"
+	 - Location: src/bitio.rs:198:9 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 7: bitio::BitReader::<'_>::bits_remaining.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/bitio.rs:198:9 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 8: bitio::BitReader::<'_>::fill.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/bitio.rs:110:20 in function bitio::BitReader::<'_>::fill
+
+Check 9: bitio::BitReader::<'_>::fill.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/bitio.rs:111:19 in function bitio::BitReader::<'_>::fill
+
+Check 10: bitio::BitReader::<'_>::fill.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/bitio.rs:118:49 in function bitio::BitReader::<'_>::fill
+
+Check 11: bitio::BitReader::<'_>::fill.assertion.4
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/bitio.rs:118:39 in function bitio::BitReader::<'_>::fill
+
+Check 12: bitio::BitReader::<'_>::fill.assertion.5
+	 - Status: SUCCESS
+	 - Description: "attempt to shift left with overflow"
+	 - Location: src/bitio.rs:118:29 in function bitio::BitReader::<'_>::fill
+
+Check 13: bitio::BitReader::<'_>::fill.assertion.6
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/bitio.rs:119:17 in function bitio::BitReader::<'_>::fill
+
+Check 14: bitio::BitReader::<'_>::fill.assertion.7
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/bitio.rs:121:13 in function bitio::BitReader::<'_>::fill
+
+Check 15: core::num::<impl u32>::div_ceil.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:3788:21 in function core::num::<impl u32>::div_ceil
+
+Check 16: core::num::<impl u32>::div_ceil.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to divide by zero"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:3788:21 in function core::num::<impl u32>::div_ceil
+
+Check 17: core::num::<impl u32>::div_ceil.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:3789:21 in function core::num::<impl u32>::div_ceil
+
+Check 18: core::num::<impl u32>::div_ceil.arithmetic_overflow.2
+	 - Status: SUCCESS
+	 - Description: "attempt to calculate the remainder with a divisor of zero"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:3789:21 in function core::num::<impl u32>::div_ceil
+
+Check 19: core::num::<impl u32>::div_ceil.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:3791:17 in function core::num::<impl u32>::div_ceil
+
+Check 20: bitio::proofs::read_bits_matches_read_bit.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to shift left with overflow"
+	 - Location: src/bitio.rs:302:26 in function bitio::proofs::read_bits_matches_read_bit
+
+Check 21: bitio::proofs::read_bits_matches_read_bit.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/bitio.rs:303:13 in function bitio::proofs::read_bits_matches_read_bit
+
+Check 22: bitio::proofs::read_bits_matches_read_bit.assertion.3
+	 - Status: SUCCESS
+	 - Description: "assertion failed: whole == assembled"
+	 - Location: src/bitio.rs:305:9 in function bitio::proofs::read_bits_matches_read_bit
+
+Check 23: bitio::proofs::read_bits_matches_read_bit.assertion.4
+	 - Status: SUCCESS
+	 - Description: "assertion failed: a.bits_remaining() == b.bits_remaining()"
+	 - Location: src/bitio.rs:306:9 in function bitio::proofs::read_bits_matches_read_bit
+
+Check 24: <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2177:15 in function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch
+
+Check 25: bitio::BitReader::<'_>::read_bit.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: src/bitio.rs:147:22 in function bitio::BitReader::<'_>::read_bit
+
+Check 26: bitio::BitReader::<'_>::read_bit.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/bitio.rs:149:13 in function bitio::BitReader::<'_>::read_bit
+
+Check 27: bitio::BitReader::<'_>::read_bit.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: src/bitio.rs:153:9 in function bitio::BitReader::<'_>::read_bit
+
+Check 28: bitio::BitReader::<'_>::read_bit.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/bitio.rs:154:9 in function bitio::BitReader::<'_>::read_bit
+
+Check 29: std::result::Result::<u32, error::InflateError>::unwrap.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:1230:15 in function std::result::Result::<u32, error::InflateError>::unwrap
+
+Check 30: bitio::BitReader::<'_>::read_bits.assertion.1
+	 - Status: SUCCESS
+	 - Description: ""read_bits: n = {n} exceeds 32""
+	 - Location: src/bitio.rs:130:9 in function bitio::BitReader::<'_>::read_bits
+
+Check 31: bitio::BitReader::<'_>::read_bits.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: src/bitio.rs:135:9 in function bitio::BitReader::<'_>::read_bits
+
+Check 32: bitio::BitReader::<'_>::read_bits.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to shift left with overflow"
+	 - Location: src/bitio.rs:136:30 in function bitio::BitReader::<'_>::read_bits
+
+Check 33: bitio::BitReader::<'_>::read_bits.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/bitio.rs:136:29 in function bitio::BitReader::<'_>::read_bits
+
+Check 34: bitio::BitReader::<'_>::read_bits.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: src/bitio.rs:137:9 in function bitio::BitReader::<'_>::read_bits
+
+Check 35: bitio::BitReader::<'_>::read_bits.assertion.5
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/bitio.rs:138:9 in function bitio::BitReader::<'_>::read_bits
+
+Check 36: std::option::Option::<&u8>::ok_or::<error::InflateError>.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs:1334:15 in function std::option::Option::<&u8>::ok_or::<error::InflateError>
+
+Check 37: core::num::<impl u32>::div_ceil.division-by-zero.1
+	 - Status: SUCCESS
+	 - Description: "division by zero"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:3788:21 in function core::num::<impl u32>::div_ceil
+
+Check 38: core::num::<impl u32>::div_ceil.division-by-zero.2
+	 - Status: SUCCESS
+	 - Description: "division by zero"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:3789:21 in function core::num::<impl u32>::div_ceil
+
+Check 39: bitio::BitReader::<'_>::bits_remaining.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:198:11 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 40: bitio::BitReader::<'_>::bits_remaining.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:198:11 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 41: bitio::BitReader::<'_>::bits_remaining.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:198:11 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 42: bitio::BitReader::<'_>::bits_remaining.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:198:11 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 43: bitio::BitReader::<'_>::bits_remaining.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:198:11 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 44: bitio::BitReader::<'_>::bits_remaining.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:198:11 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 45: bitio::BitReader::<'_>::bits_remaining.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:198:29 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 46: bitio::BitReader::<'_>::bits_remaining.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:198:29 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 47: bitio::BitReader::<'_>::bits_remaining.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:198:29 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 48: bitio::BitReader::<'_>::bits_remaining.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:198:29 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 49: bitio::BitReader::<'_>::bits_remaining.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:198:29 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 50: bitio::BitReader::<'_>::bits_remaining.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:198:29 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 51: bitio::BitReader::<'_>::bits_remaining.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:198:63 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 52: bitio::BitReader::<'_>::bits_remaining.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:198:63 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 53: bitio::BitReader::<'_>::bits_remaining.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:198:63 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 54: bitio::BitReader::<'_>::bits_remaining.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:198:63 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 55: bitio::BitReader::<'_>::bits_remaining.pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:198:63 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 56: bitio::BitReader::<'_>::bits_remaining.pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:198:63 in function bitio::BitReader::<'_>::bits_remaining
+
+Check 57: bitio::BitReader::<'_>::fill.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:105:12 in function bitio::BitReader::<'_>::fill
+
+Check 58: bitio::BitReader::<'_>::fill.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:105:12 in function bitio::BitReader::<'_>::fill
+
+Check 59: bitio::BitReader::<'_>::fill.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:105:12 in function bitio::BitReader::<'_>::fill
+
+Check 60: bitio::BitReader::<'_>::fill.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:105:12 in function bitio::BitReader::<'_>::fill
+
+Check 61: bitio::BitReader::<'_>::fill.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:105:12 in function bitio::BitReader::<'_>::fill
+
+Check 62: bitio::BitReader::<'_>::fill.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:105:12 in function bitio::BitReader::<'_>::fill
+
+Check 63: bitio::BitReader::<'_>::fill.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:106:20 in function bitio::BitReader::<'_>::fill
+
+Check 64: bitio::BitReader::<'_>::fill.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:110:25 in function bitio::BitReader::<'_>::fill
+
+Check 65: bitio::BitReader::<'_>::fill.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:110:25 in function bitio::BitReader::<'_>::fill
+
+Check 66: bitio::BitReader::<'_>::fill.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:110:25 in function bitio::BitReader::<'_>::fill
+
+Check 67: bitio::BitReader::<'_>::fill.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:110:25 in function bitio::BitReader::<'_>::fill
+
+Check 68: bitio::BitReader::<'_>::fill.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:110:25 in function bitio::BitReader::<'_>::fill
+
+Check 69: bitio::BitReader::<'_>::fill.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:110:25 in function bitio::BitReader::<'_>::fill
+
+Check 70: bitio::BitReader::<'_>::fill.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:111:19 in function bitio::BitReader::<'_>::fill
+
+Check 71: bitio::BitReader::<'_>::fill.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:111:19 in function bitio::BitReader::<'_>::fill
+
+Check 72: bitio::BitReader::<'_>::fill.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:111:19 in function bitio::BitReader::<'_>::fill
+
+Check 73: bitio::BitReader::<'_>::fill.pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:111:19 in function bitio::BitReader::<'_>::fill
+
+Check 74: bitio::BitReader::<'_>::fill.pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:111:19 in function bitio::BitReader::<'_>::fill
+
+Check 75: bitio::BitReader::<'_>::fill.pointer_dereference.19
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:111:19 in function bitio::BitReader::<'_>::fill
+
+Check 76: bitio::BitReader::<'_>::fill.pointer_dereference.20
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:112:18 in function bitio::BitReader::<'_>::fill
+
+Check 77: bitio::BitReader::<'_>::fill.pointer_dereference.21
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:112:18 in function bitio::BitReader::<'_>::fill
+
+Check 78: bitio::BitReader::<'_>::fill.pointer_dereference.22
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:112:18 in function bitio::BitReader::<'_>::fill
+
+Check 79: bitio::BitReader::<'_>::fill.pointer_dereference.23
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:112:18 in function bitio::BitReader::<'_>::fill
+
+Check 80: bitio::BitReader::<'_>::fill.pointer_dereference.24
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:112:18 in function bitio::BitReader::<'_>::fill
+
+Check 81: bitio::BitReader::<'_>::fill.pointer_dereference.25
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:112:18 in function bitio::BitReader::<'_>::fill
+
+Check 82: bitio::BitReader::<'_>::fill.pointer_dereference.26
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:118:49 in function bitio::BitReader::<'_>::fill
+
+Check 83: bitio::BitReader::<'_>::fill.pointer_dereference.27
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:118:49 in function bitio::BitReader::<'_>::fill
+
+Check 84: bitio::BitReader::<'_>::fill.pointer_dereference.28
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:118:49 in function bitio::BitReader::<'_>::fill
+
+Check 85: bitio::BitReader::<'_>::fill.pointer_dereference.29
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:118:49 in function bitio::BitReader::<'_>::fill
+
+Check 86: bitio::BitReader::<'_>::fill.pointer_dereference.30
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:118:49 in function bitio::BitReader::<'_>::fill
+
+Check 87: bitio::BitReader::<'_>::fill.pointer_dereference.31
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:118:49 in function bitio::BitReader::<'_>::fill
+
+Check 88: bitio::BitReader::<'_>::fill.pointer_dereference.32
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:118:39 in function bitio::BitReader::<'_>::fill
+
+Check 89: bitio::BitReader::<'_>::fill.pointer_dereference.33
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:118:39 in function bitio::BitReader::<'_>::fill
+
+Check 90: bitio::BitReader::<'_>::fill.pointer_dereference.34
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:118:39 in function bitio::BitReader::<'_>::fill
+
+Check 91: bitio::BitReader::<'_>::fill.pointer_dereference.35
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:118:39 in function bitio::BitReader::<'_>::fill
+
+Check 92: bitio::BitReader::<'_>::fill.pointer_dereference.36
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:118:39 in function bitio::BitReader::<'_>::fill
+
+Check 93: bitio::BitReader::<'_>::fill.pointer_dereference.37
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:118:39 in function bitio::BitReader::<'_>::fill
+
+Check 94: bitio::BitReader::<'_>::fill.pointer_dereference.38
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:118:39 in function bitio::BitReader::<'_>::fill
+
+Check 95: bitio::BitReader::<'_>::fill.pointer_dereference.39
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:118:39 in function bitio::BitReader::<'_>::fill
+
+Check 96: bitio::BitReader::<'_>::fill.pointer_dereference.40
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:118:39 in function bitio::BitReader::<'_>::fill
+
+Check 97: bitio::BitReader::<'_>::fill.pointer_dereference.41
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:118:39 in function bitio::BitReader::<'_>::fill
+
+Check 98: bitio::BitReader::<'_>::fill.pointer_dereference.42
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:118:39 in function bitio::BitReader::<'_>::fill
+
+Check 99: bitio::BitReader::<'_>::fill.pointer_dereference.43
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:118:39 in function bitio::BitReader::<'_>::fill
+
+Check 100: bitio::BitReader::<'_>::fill.pointer_dereference.44
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:118:39 in function bitio::BitReader::<'_>::fill
+
+Check 101: bitio::BitReader::<'_>::fill.pointer_dereference.45
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:118:39 in function bitio::BitReader::<'_>::fill
+
+Check 102: bitio::BitReader::<'_>::fill.pointer_dereference.46
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:118:39 in function bitio::BitReader::<'_>::fill
+
+Check 103: bitio::BitReader::<'_>::fill.pointer_dereference.47
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:118:39 in function bitio::BitReader::<'_>::fill
+
+Check 104: bitio::BitReader::<'_>::fill.pointer_dereference.48
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:118:39 in function bitio::BitReader::<'_>::fill
+
+Check 105: bitio::BitReader::<'_>::fill.pointer_dereference.49
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:118:39 in function bitio::BitReader::<'_>::fill
+
+Check 106: bitio::BitReader::<'_>::fill.pointer_dereference.50
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:118:67 in function bitio::BitReader::<'_>::fill
+
+Check 107: bitio::BitReader::<'_>::fill.pointer_dereference.51
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:118:67 in function bitio::BitReader::<'_>::fill
+
+Check 108: bitio::BitReader::<'_>::fill.pointer_dereference.52
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:118:67 in function bitio::BitReader::<'_>::fill
+
+Check 109: bitio::BitReader::<'_>::fill.pointer_dereference.53
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:118:67 in function bitio::BitReader::<'_>::fill
+
+Check 110: bitio::BitReader::<'_>::fill.pointer_dereference.54
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:118:67 in function bitio::BitReader::<'_>::fill
+
+Check 111: bitio::BitReader::<'_>::fill.pointer_dereference.55
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:118:67 in function bitio::BitReader::<'_>::fill
+
+Check 112: bitio::BitReader::<'_>::fill.pointer_dereference.56
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:118:17 in function bitio::BitReader::<'_>::fill
+
+Check 113: bitio::BitReader::<'_>::fill.pointer_dereference.57
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:118:17 in function bitio::BitReader::<'_>::fill
+
+Check 114: bitio::BitReader::<'_>::fill.pointer_dereference.58
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:118:17 in function bitio::BitReader::<'_>::fill
+
+Check 115: bitio::BitReader::<'_>::fill.pointer_dereference.59
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:118:17 in function bitio::BitReader::<'_>::fill
+
+Check 116: bitio::BitReader::<'_>::fill.pointer_dereference.60
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:118:17 in function bitio::BitReader::<'_>::fill
+
+Check 117: bitio::BitReader::<'_>::fill.pointer_dereference.61
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:118:17 in function bitio::BitReader::<'_>::fill
+
+Check 118: pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+
+Check 119: pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+
+Check 120: pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+
+Check 121: pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+
+Check 122: pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+
+Check 123: pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+
+Check 124: bitio::BitReader::<'_>::fill.pointer_dereference.62
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:119:17 in function bitio::BitReader::<'_>::fill
+
+Check 125: bitio::BitReader::<'_>::fill.pointer_dereference.63
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:119:17 in function bitio::BitReader::<'_>::fill
+
+Check 126: bitio::BitReader::<'_>::fill.pointer_dereference.64
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:119:17 in function bitio::BitReader::<'_>::fill
+
+Check 127: bitio::BitReader::<'_>::fill.pointer_dereference.65
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:119:17 in function bitio::BitReader::<'_>::fill
+
+Check 128: bitio::BitReader::<'_>::fill.pointer_dereference.66
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:119:17 in function bitio::BitReader::<'_>::fill
+
+Check 129: bitio::BitReader::<'_>::fill.pointer_dereference.67
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:119:17 in function bitio::BitReader::<'_>::fill
+
+Check 130: bitio::BitReader::<'_>::fill.pointer_dereference.68
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:123:9 in function bitio::BitReader::<'_>::fill
+
+Check 131: bitio::BitReader::<'_>::fill.pointer_dereference.69
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:123:9 in function bitio::BitReader::<'_>::fill
+
+Check 132: bitio::BitReader::<'_>::fill.pointer_dereference.70
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:123:9 in function bitio::BitReader::<'_>::fill
+
+Check 133: bitio::BitReader::<'_>::fill.pointer_dereference.71
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:123:9 in function bitio::BitReader::<'_>::fill
+
+Check 134: bitio::BitReader::<'_>::fill.pointer_dereference.72
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:123:9 in function bitio::BitReader::<'_>::fill
+
+Check 135: bitio::BitReader::<'_>::fill.pointer_dereference.73
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:123:9 in function bitio::BitReader::<'_>::fill
+
+Check 136: bitio::BitReader::<'_>::fill.pointer_dereference.74
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:124:9 in function bitio::BitReader::<'_>::fill
+
+Check 137: bitio::BitReader::<'_>::read_bit.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:145:12 in function bitio::BitReader::<'_>::read_bit
+
+Check 138: bitio::BitReader::<'_>::read_bit.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:145:12 in function bitio::BitReader::<'_>::read_bit
+
+Check 139: bitio::BitReader::<'_>::read_bit.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:145:12 in function bitio::BitReader::<'_>::read_bit
+
+Check 140: bitio::BitReader::<'_>::read_bit.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:145:12 in function bitio::BitReader::<'_>::read_bit
+
+Check 141: bitio::BitReader::<'_>::read_bit.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:145:12 in function bitio::BitReader::<'_>::read_bit
+
+Check 142: bitio::BitReader::<'_>::read_bit.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:145:12 in function bitio::BitReader::<'_>::read_bit
+
+Check 143: bitio::BitReader::<'_>::read_bit.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:147:22 in function bitio::BitReader::<'_>::read_bit
+
+Check 144: bitio::BitReader::<'_>::read_bit.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:147:22 in function bitio::BitReader::<'_>::read_bit
+
+Check 145: bitio::BitReader::<'_>::read_bit.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:147:22 in function bitio::BitReader::<'_>::read_bit
+
+Check 146: bitio::BitReader::<'_>::read_bit.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:147:22 in function bitio::BitReader::<'_>::read_bit
+
+Check 147: bitio::BitReader::<'_>::read_bit.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:147:22 in function bitio::BitReader::<'_>::read_bit
+
+Check 148: bitio::BitReader::<'_>::read_bit.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:147:22 in function bitio::BitReader::<'_>::read_bit
+
+Check 149: bitio::BitReader::<'_>::read_bit.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:147:36 in function bitio::BitReader::<'_>::read_bit
+
+Check 150: bitio::BitReader::<'_>::read_bit.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:147:36 in function bitio::BitReader::<'_>::read_bit
+
+Check 151: bitio::BitReader::<'_>::read_bit.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:147:36 in function bitio::BitReader::<'_>::read_bit
+
+Check 152: bitio::BitReader::<'_>::read_bit.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:147:36 in function bitio::BitReader::<'_>::read_bit
+
+Check 153: bitio::BitReader::<'_>::read_bit.pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:147:36 in function bitio::BitReader::<'_>::read_bit
+
+Check 154: bitio::BitReader::<'_>::read_bit.pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:147:36 in function bitio::BitReader::<'_>::read_bit
+
+Check 155: bitio::BitReader::<'_>::read_bit.pointer_dereference.19
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:147:21 in function bitio::BitReader::<'_>::read_bit
+
+Check 156: bitio::BitReader::<'_>::read_bit.pointer_dereference.20
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:147:21 in function bitio::BitReader::<'_>::read_bit
+
+Check 157: bitio::BitReader::<'_>::read_bit.pointer_dereference.21
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:147:21 in function bitio::BitReader::<'_>::read_bit
+
+Check 158: bitio::BitReader::<'_>::read_bit.pointer_dereference.22
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:147:21 in function bitio::BitReader::<'_>::read_bit
+
+Check 159: bitio::BitReader::<'_>::read_bit.pointer_dereference.23
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:147:21 in function bitio::BitReader::<'_>::read_bit
+
+Check 160: bitio::BitReader::<'_>::read_bit.pointer_dereference.24
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:147:21 in function bitio::BitReader::<'_>::read_bit
+
+Check 161: bitio::BitReader::<'_>::read_bit.pointer_dereference.25
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:148:13 in function bitio::BitReader::<'_>::read_bit
+
+Check 162: bitio::BitReader::<'_>::read_bit.pointer_dereference.26
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:148:13 in function bitio::BitReader::<'_>::read_bit
+
+Check 163: bitio::BitReader::<'_>::read_bit.pointer_dereference.27
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:148:13 in function bitio::BitReader::<'_>::read_bit
+
+Check 164: bitio::BitReader::<'_>::read_bit.pointer_dereference.28
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:148:13 in function bitio::BitReader::<'_>::read_bit
+
+Check 165: bitio::BitReader::<'_>::read_bit.pointer_dereference.29
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:148:13 in function bitio::BitReader::<'_>::read_bit
+
+Check 166: bitio::BitReader::<'_>::read_bit.pointer_dereference.30
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:148:13 in function bitio::BitReader::<'_>::read_bit
+
+Check 167: pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+
+Check 168: pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+
+Check 169: pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+
+Check 170: pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+
+Check 171: pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+
+Check 172: pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+
+Check 173: bitio::BitReader::<'_>::read_bit.pointer_dereference.31
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:149:13 in function bitio::BitReader::<'_>::read_bit
+
+Check 174: bitio::BitReader::<'_>::read_bit.pointer_dereference.32
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:149:13 in function bitio::BitReader::<'_>::read_bit
+
+Check 175: bitio::BitReader::<'_>::read_bit.pointer_dereference.33
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:149:13 in function bitio::BitReader::<'_>::read_bit
+
+Check 176: bitio::BitReader::<'_>::read_bit.pointer_dereference.34
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:149:13 in function bitio::BitReader::<'_>::read_bit
+
+Check 177: bitio::BitReader::<'_>::read_bit.pointer_dereference.35
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:149:13 in function bitio::BitReader::<'_>::read_bit
+
+Check 178: bitio::BitReader::<'_>::read_bit.pointer_dereference.36
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:149:13 in function bitio::BitReader::<'_>::read_bit
+
+Check 179: bitio::BitReader::<'_>::read_bit.pointer_dereference.37
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:150:13 in function bitio::BitReader::<'_>::read_bit
+
+Check 180: bitio::BitReader::<'_>::read_bit.pointer_dereference.38
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:150:13 in function bitio::BitReader::<'_>::read_bit
+
+Check 181: bitio::BitReader::<'_>::read_bit.pointer_dereference.39
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:150:13 in function bitio::BitReader::<'_>::read_bit
+
+Check 182: bitio::BitReader::<'_>::read_bit.pointer_dereference.40
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:150:13 in function bitio::BitReader::<'_>::read_bit
+
+Check 183: bitio::BitReader::<'_>::read_bit.pointer_dereference.41
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:150:13 in function bitio::BitReader::<'_>::read_bit
+
+Check 184: bitio::BitReader::<'_>::read_bit.pointer_dereference.42
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:150:13 in function bitio::BitReader::<'_>::read_bit
+
+Check 185: bitio::BitReader::<'_>::read_bit.pointer_dereference.43
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:152:18 in function bitio::BitReader::<'_>::read_bit
+
+Check 186: bitio::BitReader::<'_>::read_bit.pointer_dereference.44
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:152:18 in function bitio::BitReader::<'_>::read_bit
+
+Check 187: bitio::BitReader::<'_>::read_bit.pointer_dereference.45
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:152:18 in function bitio::BitReader::<'_>::read_bit
+
+Check 188: bitio::BitReader::<'_>::read_bit.pointer_dereference.46
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:152:18 in function bitio::BitReader::<'_>::read_bit
+
+Check 189: bitio::BitReader::<'_>::read_bit.pointer_dereference.47
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:152:18 in function bitio::BitReader::<'_>::read_bit
+
+Check 190: bitio::BitReader::<'_>::read_bit.pointer_dereference.48
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:152:18 in function bitio::BitReader::<'_>::read_bit
+
+Check 191: bitio::BitReader::<'_>::read_bit.pointer_dereference.49
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:153:9 in function bitio::BitReader::<'_>::read_bit
+
+Check 192: bitio::BitReader::<'_>::read_bit.pointer_dereference.50
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:153:9 in function bitio::BitReader::<'_>::read_bit
+
+Check 193: bitio::BitReader::<'_>::read_bit.pointer_dereference.51
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:153:9 in function bitio::BitReader::<'_>::read_bit
+
+Check 194: bitio::BitReader::<'_>::read_bit.pointer_dereference.52
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:153:9 in function bitio::BitReader::<'_>::read_bit
+
+Check 195: bitio::BitReader::<'_>::read_bit.pointer_dereference.53
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:153:9 in function bitio::BitReader::<'_>::read_bit
+
+Check 196: bitio::BitReader::<'_>::read_bit.pointer_dereference.54
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:153:9 in function bitio::BitReader::<'_>::read_bit
+
+Check 197: pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+
+Check 198: pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+
+Check 199: pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+
+Check 200: pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+
+Check 201: pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+
+Check 202: pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+
+Check 203: bitio::BitReader::<'_>::read_bit.pointer_dereference.55
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:154:9 in function bitio::BitReader::<'_>::read_bit
+
+Check 204: bitio::BitReader::<'_>::read_bit.pointer_dereference.56
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:154:9 in function bitio::BitReader::<'_>::read_bit
+
+Check 205: bitio::BitReader::<'_>::read_bit.pointer_dereference.57
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:154:9 in function bitio::BitReader::<'_>::read_bit
+
+Check 206: bitio::BitReader::<'_>::read_bit.pointer_dereference.58
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:154:9 in function bitio::BitReader::<'_>::read_bit
+
+Check 207: bitio::BitReader::<'_>::read_bit.pointer_dereference.59
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:154:9 in function bitio::BitReader::<'_>::read_bit
+
+Check 208: bitio::BitReader::<'_>::read_bit.pointer_dereference.60
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:154:9 in function bitio::BitReader::<'_>::read_bit
+
+Check 209: bitio::BitReader::<'_>::read_bits.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:135:9 in function bitio::BitReader::<'_>::read_bits
+
+Check 210: bitio::BitReader::<'_>::read_bits.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:136:18 in function bitio::BitReader::<'_>::read_bits
+
+Check 211: bitio::BitReader::<'_>::read_bits.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:136:18 in function bitio::BitReader::<'_>::read_bits
+
+Check 212: bitio::BitReader::<'_>::read_bits.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:136:18 in function bitio::BitReader::<'_>::read_bits
+
+Check 213: bitio::BitReader::<'_>::read_bits.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:136:18 in function bitio::BitReader::<'_>::read_bits
+
+Check 214: bitio::BitReader::<'_>::read_bits.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:136:18 in function bitio::BitReader::<'_>::read_bits
+
+Check 215: bitio::BitReader::<'_>::read_bits.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:136:18 in function bitio::BitReader::<'_>::read_bits
+
+Check 216: bitio::BitReader::<'_>::read_bits.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:137:9 in function bitio::BitReader::<'_>::read_bits
+
+Check 217: bitio::BitReader::<'_>::read_bits.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:137:9 in function bitio::BitReader::<'_>::read_bits
+
+Check 218: bitio::BitReader::<'_>::read_bits.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:137:9 in function bitio::BitReader::<'_>::read_bits
+
+Check 219: bitio::BitReader::<'_>::read_bits.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:137:9 in function bitio::BitReader::<'_>::read_bits
+
+Check 220: bitio::BitReader::<'_>::read_bits.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:137:9 in function bitio::BitReader::<'_>::read_bits
+
+Check 221: bitio::BitReader::<'_>::read_bits.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:137:9 in function bitio::BitReader::<'_>::read_bits
+
+Check 222: pointer_dereference.19
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+
+Check 223: pointer_dereference.20
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+
+Check 224: pointer_dereference.21
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+
+Check 225: pointer_dereference.22
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+
+Check 226: pointer_dereference.23
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+
+Check 227: pointer_dereference.24
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+
+Check 228: bitio::BitReader::<'_>::read_bits.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/bitio.rs:138:9 in function bitio::BitReader::<'_>::read_bits
+
+Check 229: bitio::BitReader::<'_>::read_bits.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/bitio.rs:138:9 in function bitio::BitReader::<'_>::read_bits
+
+Check 230: bitio::BitReader::<'_>::read_bits.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/bitio.rs:138:9 in function bitio::BitReader::<'_>::read_bits
+
+Check 231: bitio::BitReader::<'_>::read_bits.pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/bitio.rs:138:9 in function bitio::BitReader::<'_>::read_bits
+
+Check 232: bitio::BitReader::<'_>::read_bits.pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/bitio.rs:138:9 in function bitio::BitReader::<'_>::read_bits
+
+Check 233: bitio::BitReader::<'_>::read_bits.pointer_dereference.19
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/bitio.rs:138:9 in function bitio::BitReader::<'_>::read_bits
+
+Check 234: <usize as std::slice::SliceIndex<[u8]>>::get.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:188:13 in function <usize as std::slice::SliceIndex<[u8]>>::get
+
+Check 235: <std::result::Result<(), error::InflateError> as std::ops::Try>::branch.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2177:15 in function <std::result::Result<(), error::InflateError> as std::ops::Try>::branch
+
+Check 236: <std::result::Result<(), error::InflateError> as std::ops::Try>::branch.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2178:22 in function <std::result::Result<(), error::InflateError> as std::ops::Try>::branch
+
+Check 237: bitio::proofs::read_bits_matches_read_bit.unwind.0
+	 - Status: SUCCESS
+	 - Description: "unwinding assertion loop 0"
+	 - Location: src/bitio.rs:301:9 in function bitio::proofs::read_bits_matches_read_bit
+
+
+SUMMARY:
+ ** 0 of 237 failed
+
+VERIFICATION:- SUCCESSFUL
+Verification Time: 9.711485s
+
+WARNING: Kani could not produce a concrete playback for `bitio::proofs::read_bits_matches_read_bit` because there were no failing panic checks or satisfiable cover statements.
+INFO: The concrete playback feature never generated unit tests because there were no failing harnesses.
+Manual Harness Summary:
+Complete - 1 successfully verified harnesses, 0 failures, 1 total.
+	Command being timed: "timeout 1200 cargo kani --harness bitio::proofs::read_bits_matches_read_bit --exact -Z concrete-playback --concrete-playback=print"
+	User time (seconds): 11.90
+	System time (seconds): 1.47
+	Percent of CPU this job got: 107%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:12.39
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 472324
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 319315
+	Voluntary context switches: 28214
+	Involuntary context switches: 141
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 28296
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

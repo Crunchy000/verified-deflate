@@ -1,0 +1,216 @@
+Kani Rust Verifier 0.68.0 (cargo plugin)
+CBMC 6.11.0
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.53s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.09s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+Checking harness bitio::proofs::reverse_bits_is_reversal...
+CBMC 6.11.0 (cbmc-6.11.0)
+CBMC version 6.11.0 (cbmc-6.11.0) 64-bit x86_64 linux
+Reading GOTO program from file /home/runner/work/verified-deflate/verified-deflate/target/kani/x86_64-unknown-linux-gnu/debug/build/verified-deflate/7882662cf3bfa80f/out/verified_deflate-7882662cf3bfa80f__RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs24reverse_bits_is_reversal.out
+Generating GOTO Program
+Adding CPROVER library (x86_64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+Running with 16 object bits, 48 offset bits (user-specified)
+Starting Bounded Model Checking
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs24reverse_bits_is_reversal.0 iteration 1 file src/bitio.rs line 349 column 9 function bitio::proofs::reverse_bits_is_reversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs24reverse_bits_is_reversal.0 iteration 2 file src/bitio.rs line 349 column 9 function bitio::proofs::reverse_bits_is_reversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs24reverse_bits_is_reversal.0 iteration 3 file src/bitio.rs line 349 column 9 function bitio::proofs::reverse_bits_is_reversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs24reverse_bits_is_reversal.0 iteration 4 file src/bitio.rs line 349 column 9 function bitio::proofs::reverse_bits_is_reversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs24reverse_bits_is_reversal.0 iteration 5 file src/bitio.rs line 349 column 9 function bitio::proofs::reverse_bits_is_reversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs24reverse_bits_is_reversal.0 iteration 6 file src/bitio.rs line 349 column 9 function bitio::proofs::reverse_bits_is_reversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs24reverse_bits_is_reversal.0 iteration 7 file src/bitio.rs line 349 column 9 function bitio::proofs::reverse_bits_is_reversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs24reverse_bits_is_reversal.0 iteration 8 file src/bitio.rs line 349 column 9 function bitio::proofs::reverse_bits_is_reversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs24reverse_bits_is_reversal.0 iteration 9 file src/bitio.rs line 349 column 9 function bitio::proofs::reverse_bits_is_reversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs24reverse_bits_is_reversal.0 iteration 10 file src/bitio.rs line 349 column 9 function bitio::proofs::reverse_bits_is_reversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs24reverse_bits_is_reversal.0 iteration 11 file src/bitio.rs line 349 column 9 function bitio::proofs::reverse_bits_is_reversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs24reverse_bits_is_reversal.0 iteration 12 file src/bitio.rs line 349 column 9 function bitio::proofs::reverse_bits_is_reversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs24reverse_bits_is_reversal.0 iteration 13 file src/bitio.rs line 349 column 9 function bitio::proofs::reverse_bits_is_reversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs24reverse_bits_is_reversal.0 iteration 14 file src/bitio.rs line 349 column 9 function bitio::proofs::reverse_bits_is_reversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs24reverse_bits_is_reversal.0 iteration 15 file src/bitio.rs line 349 column 9 function bitio::proofs::reverse_bits_is_reversal thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate5bitio6proofs24reverse_bits_is_reversal.0 iteration 16 file src/bitio.rs line 349 column 9 function bitio::proofs::reverse_bits_is_reversal thread 0
+Runtime Symex: 0.0431454s
+size of program expression: 2006 steps
+simple slicing removed 4 assignments
+Generated 210 VCC(s), 177 remaining after simplification
+Runtime Postprocess Equation: 0.000233465s
+Passing problem to propositional reduction
+converting SSA
+Runtime Convert SSA: 0.0280085s
+Running propositional reduction
+Post-processing
+Runtime Post-process: 1.5128e-05s
+Solving with CaDiCaL 3.0.0
+29648 variables, 57129 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.00452382s
+Runtime decision procedure: 0.0346007s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+29649 variables, 57130 clauses
+SAT checker: instance is UNSATISFIABLE
+Runtime Solver: 0.0636874s
+Runtime decision procedure: 0.0640563s
+
+RESULTS:
+Check 1: bitio::reverse_bits.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/bitio.rs:214:32 in function bitio::reverse_bits
+
+Check 2: bitio::reverse_bits.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: src/bitio.rs:214:9 in function bitio::reverse_bits
+
+Check 3: bitio::proofs::reverse_bits_is_reversal.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to shift left with overflow"
+	 - Location: src/bitio.rs:345:40 in function bitio::proofs::reverse_bits_is_reversal
+
+Check 4: bitio::proofs::reverse_bits_is_reversal.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to shift left with overflow"
+	 - Location: src/bitio.rs:347:32 in function bitio::proofs::reverse_bits_is_reversal
+
+Check 5: bitio::proofs::reverse_bits_is_reversal.assertion.3
+	 - Status: SUCCESS
+	 - Description: "assertion failed: u32::from(r) < (1u32 << len)"
+	 - Location: src/bitio.rs:347:9 in function bitio::proofs::reverse_bits_is_reversal
+
+Check 6: bitio::proofs::reverse_bits_is_reversal.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: src/bitio.rs:350:24 in function bitio::proofs::reverse_bits_is_reversal
+
+Check 7: bitio::proofs::reverse_bits_is_reversal.assertion.5
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/bitio.rs:350:48 in function bitio::proofs::reverse_bits_is_reversal
+
+Check 8: bitio::proofs::reverse_bits_is_reversal.assertion.6
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/bitio.rs:350:47 in function bitio::proofs::reverse_bits_is_reversal
+
+Check 9: bitio::proofs::reverse_bits_is_reversal.assertion.7
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: src/bitio.rs:350:38 in function bitio::proofs::reverse_bits_is_reversal
+
+Check 10: bitio::proofs::reverse_bits_is_reversal.assertion.8
+	 - Status: SUCCESS
+	 - Description: "assertion failed: (r >> i) & 1 == (code >> (len - 1 - i)) & 1"
+	 - Location: src/bitio.rs:350:13 in function bitio::proofs::reverse_bits_is_reversal
+
+Check 11: bitio::proofs::reverse_bits_is_reversal.assertion.9
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/bitio.rs:351:13 in function bitio::proofs::reverse_bits_is_reversal
+
+Check 12: bitio::proofs::reverse_bits_is_reversal.assertion.10
+	 - Status: SUCCESS
+	 - Description: "assertion failed: reverse_bits(r, len) == code"
+	 - Location: src/bitio.rs:353:9 in function bitio::proofs::reverse_bits_is_reversal
+
+
+SUMMARY:
+ ** 0 of 12 failed
+
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.3004167s
+
+WARNING: Kani could not produce a concrete playback for `bitio::proofs::reverse_bits_is_reversal` because there were no failing panic checks or satisfiable cover statements.
+INFO: The concrete playback feature never generated unit tests because there were no failing harnesses.
+Manual Harness Summary:
+Complete - 1 successfully verified harnesses, 0 failures, 1 total.
+	Command being timed: "timeout 1200 cargo kani --harness bitio::proofs::reverse_bits_is_reversal --exact -Z concrete-playback --concrete-playback=print"
+	User time (seconds): 0.94
+	System time (seconds): 0.20
+	Percent of CPU this job got: 102%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.11
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 184812
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 55023
+	Voluntary context switches: 1189
+	Involuntary context switches: 25
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 2768
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
