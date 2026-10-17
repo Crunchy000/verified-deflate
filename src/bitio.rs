@@ -144,20 +144,10 @@ impl<'a> BitReader<'a> {
             self.pos += room;
             self.nbits += 8 * room as u32;
         } else {
-            // Fewer than 8 bytes left: load them zero-padded. The loop has a
-            // constant bound and constant indices, which keeps it cheap for
-            // the model checker (a copy of symbolic length is not).
+            // Fewer than 8 bytes left: load them zero-padded.
             let rest = &self.data[self.pos..];
             let k = if rest.len() < room { rest.len() } else { room };
-            let mut b = [0u8; 8];
-            let mut i = 0;
-            while i < 7 {
-                if i < k {
-                    b[i] = rest[i];
-                }
-                i += 1;
-            }
-            self.acc |= u64::from_le_bytes(b) << self.nbits;
+            self.acc |= padded_word(rest, k) << self.nbits;
             self.pos += k;
             self.nbits += 8 * k as u32;
         }
@@ -266,6 +256,25 @@ impl<'a> BitReader<'a> {
     pub fn bits_remaining(&self) -> u64 {
         ((self.data.len() - self.pos) as u64) * 8 + u64::from(self.nbits)
     }
+}
+
+/// The first `k` (at most 7) bytes of `rest` as a little-endian word,
+/// zero-padded. Out of line, as the bit reader needs it only in the last
+/// few bytes of its input. The loop has a constant bound and constant
+/// indices, which keeps it cheap for the model checker (a copy of symbolic
+/// length is not).
+#[cold]
+#[inline(never)]
+fn padded_word(rest: &[u8], k: usize) -> u64 {
+    let mut b = [0u8; 8];
+    let mut i = 0;
+    while i < 7 {
+        if i < k {
+            b[i] = rest[i];
+        }
+        i += 1;
+    }
+    u64::from_le_bytes(b)
 }
 
 /// Reverses the low `len` bits of `code` (`len` ≤ 16); higher bits must be zero.

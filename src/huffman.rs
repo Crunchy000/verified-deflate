@@ -383,16 +383,11 @@ fn sift_down(idx: &mut [u16], mut root: usize, end: usize, w: &[u64]) {
 pub const FAST_BITS: u32 = 10;
 const FAST_SIZE: usize = 1 << FAST_BITS;
 
-/// Canonical Huffman decoder.
-///
-/// The reference representation is per-length counts plus a symbol list
-/// sorted by code (as in zlib's `puff.c`), decoded bit by bit by
-/// [`decode_slow`](Self::decode_slow). On top of it sits a lookup table
-/// indexed by the next `fast_bits` input bits; [`decode`](Self::decode)
-/// uses it and falls back to `decode_slow`. Kani proves the two decode
-/// identically, so everything proven about the slow decoder carries over.
+/// Canonical Huffman decoder, bit by bit: per-length counts plus a symbol
+/// list sorted by code, as in zlib's `puff.c`. This is the reference
+/// decoder; [`Decoder`] adds a lookup table on top of it.
 #[derive(Clone, Debug)]
-pub struct Decoder {
+pub struct Canonical {
     /// `count[l]` = number of symbols with code length `l` (`count[0]` unused).
     count: [u16; MAX_CODE_LEN + 1],
     /// Coded symbols ordered by (length, symbol), i.e. by canonical code.
@@ -401,34 +396,11 @@ pub struct Decoder {
     coded: u16,
     /// Unused code space in units of `2^-15`; zero for a complete code.
     left: u16,
-    /// `fast[bits]` = `(len << 12) | symbol` for the code that the low
-    /// `len` of `bits` spell (bit-reversed), or 0 if no code of at most
-    /// `fast_bits` bits matches.
-    fast: [u16; FAST_SIZE],
-    /// Table width in bits, at most [`FAST_BITS`].
-    fast_bits: u32,
 }
 
-impl Decoder {
+impl Canonical {
     /// A decoder with no codes (every decode fails).
-    pub const EMPTY: Self = Self {
-        count: [0; MAX_CODE_LEN + 1],
-        symbol: [0; MAX_SYMBOLS],
-        coded: 0,
-        left: 1 << 15,
-        fast: [0; FAST_SIZE],
-        fast_bits: FAST_BITS,
-    };
-
-    /// Like [`new`](Self::new) with a lookup table of `fast_bits` bits
-    /// (clamped to [`FAST_BITS`]). Proofs use small tables.
-    pub const fn with_fast_bits(lengths: &[u8], fast_bits: u32) -> Result<Self, HuffmanError> {
-        let mut d = Self::EMPTY;
-        match d.rebuild_with_fast_bits(lengths, fast_bits) {
-            Ok(()) => Ok(d),
-            Err(e) => Err(e),
-        }
-    }
+    pub const EMPTY: Self = Self { count: [0; MAX_CODE_LEN + 1], symbol: [0; MAX_SYMBOLS], coded: 0, left: 1 << 15 };
 
     /// Builds a decoder for the given code lengths.
     ///
@@ -450,17 +422,10 @@ impl Decoder {
     ///
     /// [`new`]: Self::new
     pub const fn rebuild(&mut self, lengths: &[u8]) -> Result<(), HuffmanError> {
-        self.rebuild_with_fast_bits(lengths, FAST_BITS)
-    }
-
-    /// [`rebuild`](Self::rebuild) with a lookup table of `fast_bits` bits.
-    pub const fn rebuild_with_fast_bits(&mut self, lengths: &[u8], fast_bits: u32) -> Result<(), HuffmanError> {
         let n = lengths.len();
         self.count = [0; MAX_CODE_LEN + 1];
         self.coded = 0;
         self.left = 1 << 15;
-        self.fast = [0; FAST_SIZE];
-        self.fast_bits = if fast_bits > FAST_BITS { FAST_BITS } else { fast_bits };
         if n > MAX_SYMBOLS {
             return Err(HuffmanError::TooManySymbols);
         }
@@ -503,36 +468,6 @@ impl Decoder {
             }
             s += 1;
         }
-        // Lookup table: each code of at most fast_bits bits fills every
-        // entry whose low bits spell it (codes are packed bit-reversed).
-        // With no table (fast_bits = 0) there is nothing to fill.
-        let fb = self.fast_bits;
-        if fb > 0 {
-            let mut next = [0u32; MAX_CODE_LEN + 1];
-            let mut code = 0u32;
-            len = 1;
-            while len <= MAX_CODE_LEN {
-                code = (code + count[len - 1] as u32) << 1;
-                next[len] = code;
-                len += 1;
-            }
-            s = 0;
-            while s < n {
-                let l = lengths[s] as usize;
-                if l != 0 {
-                    let c = next[l];
-                    next[l] += 1;
-                    if l as u32 <= fb {
-                        let mut idx = crate::bitio::reverse_bits(c as u16, l as u32) as usize;
-                        while idx < (1 << fb) {
-                            self.fast[idx] = ((l as u16) << 12) | s as u16;
-                            idx += 1 << l;
-                        }
-                    }
-                }
-                s += 1;
-            }
-        }
         self.count = count;
         self.coded = coded;
         self.left = left as u16;
@@ -555,32 +490,15 @@ impl Decoder {
         self.coded == 1 && self.count[1] == 1
     }
 
-    /// Reads one symbol. Fails with `UnexpectedEof` if the input runs out
-    /// and `InvalidSymbol` if the bits match no code.
-    ///
-    /// One table lookup decodes any code of at most `fast_bits` bits that
-    /// is fully present in the input; everything else (longer codes, input
-    /// running out, invalid bits) goes to [`decode_slow`](Self::decode_slow),
-    /// which decides it exactly as if the table were not there.
-    #[inline(always)]
-    pub fn decode(&self, br: &mut BitReader<'_>) -> Result<u16, InflateError> {
-        let e = self.fast[br.peek(self.fast_bits) as usize];
-        let len = u32::from(e >> 12);
-        if len != 0 && len <= br.available() {
-            br.consume(len);
-            return Ok(e & 0x0fff);
-        }
-        self.decode_slow(br)
-    }
-
-    /// Reads one symbol bit by bit (the reference decoder).
+    /// Reads one symbol bit by bit. Fails with `UnexpectedEof` if the input
+    /// runs out and `InvalidSymbol` if the bits match no code.
     ///
     /// The fifteen per-length steps are written out rather than looped, so
     /// that the model checker's loop bound for the callers does not have to
     /// cover them.
     #[inline(never)]
     #[allow(unused_assignments)]
-    pub fn decode_slow(&self, br: &mut BitReader<'_>) -> Result<u16, InflateError> {
+    pub fn decode(&self, br: &mut BitReader<'_>) -> Result<u16, InflateError> {
         // Invariant at each step: first <= code, first is the smallest
         // canonical code of the current length, and index is the position
         // of that code in `symbol`.
@@ -615,6 +533,130 @@ impl Decoder {
         step!(14);
         step!(15);
         Err(InflateError::InvalidSymbol)
+    }
+}
+
+/// Huffman decoder: the [`Canonical`] decoder plus a lookup table indexed
+/// by the next `fast_bits` input bits. [`decode`](Self::decode) uses the
+/// table and falls back to the canonical walk. Kani proves the two decode
+/// identically, so everything proven about the canonical decoder carries
+/// over.
+#[derive(Clone, Debug)]
+pub struct Decoder {
+    canon: Canonical,
+    /// `fast[bits]` = `(len << 12) | symbol` for the code that the low
+    /// `len` of `bits` spell (bit-reversed), or 0 if no code of at most
+    /// `fast_bits` bits matches.
+    fast: [u16; FAST_SIZE],
+    /// Table width in bits, at most [`FAST_BITS`].
+    fast_bits: u32,
+}
+
+impl Decoder {
+    /// A decoder with no codes (every decode fails).
+    pub const EMPTY: Self = Self { canon: Canonical::EMPTY, fast: [0; FAST_SIZE], fast_bits: FAST_BITS };
+
+    /// Like [`new`](Self::new) with a lookup table of `fast_bits` bits
+    /// (clamped to [`FAST_BITS`]). Proofs use small tables.
+    pub const fn with_fast_bits(lengths: &[u8], fast_bits: u32) -> Result<Self, HuffmanError> {
+        let mut d = Self::EMPTY;
+        match d.rebuild_with_fast_bits(lengths, fast_bits) {
+            Ok(()) => Ok(d),
+            Err(e) => Err(e),
+        }
+    }
+
+    /// Builds a decoder for the given code lengths (see [`Canonical::new`]).
+    pub const fn new(lengths: &[u8]) -> Result<Self, HuffmanError> {
+        let mut d = Self::EMPTY;
+        match d.rebuild(lengths) {
+            Ok(()) => Ok(d),
+            Err(e) => Err(e),
+        }
+    }
+
+    /// Rebuilds this decoder in place for new code lengths. On error the
+    /// decoder decodes nothing.
+    pub const fn rebuild(&mut self, lengths: &[u8]) -> Result<(), HuffmanError> {
+        self.rebuild_with_fast_bits(lengths, FAST_BITS)
+    }
+
+    /// [`rebuild`](Self::rebuild) with a lookup table of `fast_bits` bits.
+    pub const fn rebuild_with_fast_bits(&mut self, lengths: &[u8], fast_bits: u32) -> Result<(), HuffmanError> {
+        self.fast = [0; FAST_SIZE];
+        let fb = if fast_bits > FAST_BITS { FAST_BITS } else { fast_bits };
+        self.fast_bits = fb;
+        if let Err(e) = self.canon.rebuild(lengths) {
+            return Err(e);
+        }
+        // Each code of at most fb bits fills every entry whose low bits
+        // spell it (codes are packed bit-reversed). The codes are the
+        // canonical ones, assigned in symbol order within each length.
+        let count = &self.canon.count;
+        let mut next = [0u32; MAX_CODE_LEN + 1];
+        let mut code = 0u32;
+        let mut len = 1;
+        while len <= MAX_CODE_LEN {
+            code = (code + count[len - 1] as u32) << 1;
+            next[len] = code;
+            len += 1;
+        }
+        let mut s = 0;
+        while s < lengths.len() {
+            let l = lengths[s] as usize;
+            if l != 0 {
+                let c = next[l];
+                next[l] += 1;
+                if l as u32 <= fb {
+                    let mut idx = crate::bitio::reverse_bits(c as u16, l as u32) as usize;
+                    while idx < (1 << fb) {
+                        self.fast[idx] = ((l as u16) << 12) | s as u16;
+                        idx += 1 << l;
+                    }
+                }
+            }
+            s += 1;
+        }
+        Ok(())
+    }
+
+    /// True when the code is complete (Kraft sum exactly 1).
+    pub const fn is_complete(&self) -> bool {
+        self.canon.is_complete()
+    }
+
+    /// Number of symbols with a code.
+    pub const fn coded_symbols(&self) -> usize {
+        self.canon.coded_symbols()
+    }
+
+    /// True for a code with exactly one symbol, of length 1: the only
+    /// incomplete code DEFLATE decoders (zlib included) accept.
+    pub const fn is_single_unit_code(&self) -> bool {
+        self.canon.is_single_unit_code()
+    }
+
+    /// Reads one symbol. Fails with `UnexpectedEof` if the input runs out
+    /// and `InvalidSymbol` if the bits match no code.
+    ///
+    /// One table lookup decodes any code of at most `fast_bits` bits that
+    /// is fully present in the input; everything else (longer codes, input
+    /// running out, invalid bits) goes to the canonical walk, which decides
+    /// it exactly as if the table were not there.
+    #[inline(always)]
+    pub fn decode(&self, br: &mut BitReader<'_>) -> Result<u16, InflateError> {
+        let e = self.fast[br.peek(self.fast_bits) as usize];
+        let len = u32::from(e >> 12);
+        if len != 0 && len <= br.available() {
+            br.consume(len);
+            return Ok(e & 0x0fff);
+        }
+        self.canon.decode(br)
+    }
+
+    /// Reads one symbol with the canonical walk only (the reference).
+    pub fn decode_slow(&self, br: &mut BitReader<'_>) -> Result<u16, InflateError> {
+        self.canon.decode(br)
     }
 }
 
@@ -821,9 +863,9 @@ mod proofs {
         let lengths: [u8; N] = any_lengths(MAX_CODE_LEN as u8);
         let mut codes = [0u16; N];
         kani::assume(canonical_codes(&lengths, &mut codes).is_ok());
-        // The reference bit-by-bit decoder (no lookup table is built);
-        // `fast_decode_matches_slow` shows the table path agrees with it.
-        let dec = Decoder::with_fast_bits(&lengths, 0).unwrap();
+        // The canonical (reference) decoder; `fast_decode_matches_slow`
+        // shows the table-driven `Decoder` agrees with it.
+        let dec = Canonical::new(&lengths).unwrap();
         let s: usize = kani::any_where(|&s: &usize| s < N);
         kani::assume(lengths[s] != 0);
         // Pack the code as `BitWriter::write_bits` does (proven in `bitio`),
@@ -833,7 +875,7 @@ mod proofs {
         let word = u32::from(reverse_bits(codes[s], len)) | (u32::from(trailing) << len);
         let bytes = word.to_le_bytes();
         let mut r = BitReader::new(&bytes);
-        assert_eq!(dec.decode_slow(&mut r), Ok(s as u16));
+        assert_eq!(dec.decode(&mut r), Ok(s as u16));
         assert_eq!(r.read_bits(16), Ok(u32::from(trailing)));
     }
 
@@ -843,11 +885,11 @@ mod proofs {
     #[kani::unwind(17)]
     fn decode_arbitrary_bits() {
         let lengths: [u8; N] = any_lengths(MAX_CODE_LEN as u8);
-        // The reference decoder, as in `encode_then_decode_symbol`.
-        let Ok(dec) = Decoder::with_fast_bits(&lengths, 0) else { return };
+        // The canonical decoder, as in `encode_then_decode_symbol`.
+        let Ok(dec) = Canonical::new(&lengths) else { return };
         let data: [u8; 2] = kani::any();
         let mut r = BitReader::new(&data);
-        if let Ok(s) = dec.decode_slow(&mut r) {
+        if let Ok(s) = dec.decode(&mut r) {
             assert!((s as usize) < N);
             assert!(lengths[s as usize] != 0);
         }
