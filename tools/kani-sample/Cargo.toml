@@ -1,0 +1,10 @@
+[package]
+name = "kani-sample"
+version = "0.0.0"
+edition = "2021"
+publish = false
+description = "Runs Kani proof harnesses as randomised tests (local sanity check, not verification)"
+license = "MIT"
+
+[dependencies]
+kani-sample-macros = { path = "macros" }

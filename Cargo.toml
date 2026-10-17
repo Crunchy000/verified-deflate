@@ -1,0 +1,36 @@
+[package]
+name = "verified-deflate"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.83"
+license = "MIT"
+description = "DEFLATE (RFC 1951) compression and ZIP archives in safe Rust, with bounded proofs checked by the Kani model checker"
+repository = "https://github.com/Crunchy000/verified-deflate"
+readme = "README.md"
+keywords = ["deflate", "zip", "compression", "kani", "verification"]
+categories = ["compression"]
+exclude = ["/.github"]
+
+[lib]
+name = "verified_deflate"
+path = "src/lib.rs"
+
+[[bin]]
+name = "vzip"
+path = "src/bin/vzip.rs"
+
+# The library has no dependencies. `kani-sample` is a tiny local stand-in
+# for the `kani` crate that runs every proof harness as a randomised test
+# (see tools/kani-sample/README.md). It is only built under `--cfg
+# kani_sample`; real Kani runs supply the genuine `kani` crate themselves.
+[target.'cfg(kani_sample)'.dev-dependencies]
+kani = { path = "tools/kani-sample", package = "kani-sample" }
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(kani)", "cfg(kani_sample)"] }
+
+[profile.release]
+codegen-units = 1
+lto = "thin"

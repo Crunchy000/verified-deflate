@@ -1,0 +1,9 @@
+[package]
+name = "kani-sample-macros"
+version = "0.0.0"
+edition = "2021"
+publish = false
+license = "MIT"
+
+[lib]
+proc-macro = true

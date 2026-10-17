@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Tests, lints, interop
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - name: Install zip/unzip for interop tests
+        run: sudo apt-get install -y zip unzip
+      - run: cargo fmt --all --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - name: Lint proof harnesses
+        run: cargo clippy --lib --profile test -- -D warnings
+        env:
+          RUSTFLAGS: --cfg kani --cfg kani_sample
+      - run: cargo test --release
+      - name: Run Kani harnesses as randomised tests (sanity check, not proof)
+        run: cargo test --lib --release -- proofs e2e
+        env:
+          RUSTFLAGS: --cfg kani --cfg kani_sample
+          KANI_SAMPLE_ITERS: "50000"
+      - run: cargo doc --no-deps
+        env:
+          RUSTDOCFLAGS: -D warnings
+
+  msrv:
+    name: MSRV (1.83)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.83
+      - run: cargo build --lib --bins
+
+  kani:
+    name: Kani (${{ matrix.module }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - bitio::proofs::
+          - crc32::proofs::
+          - tables::proofs::
+          - huffman::proofs::
+          - lz77::proofs::
+          - deflate::proofs::
+          - inflate::proofs::
+          - zip::proofs::
+          - e2e::
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify ${{ matrix.module }}
+        uses: model-checking/kani-github-action@v1.1
+        with:
+          kani-version: "0.68.0"
+          args: --harness ${{ matrix.module }} --output-format=terse
