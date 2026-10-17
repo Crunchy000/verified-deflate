@@ -9,7 +9,7 @@ set -uo pipefail
 prefix="$1"
 file="$2"
 timeout_s="${KANI_HARNESS_TIMEOUT:-1800}"
-mem_kb="${KANI_MEMORY_KB:-5767168}"   # 5.5 GiB
+mem_kb="${KANI_MEMORY_KB:-13631488}"  # 13 GiB (public runners have 16 GiB)
 
 mkdir -p kani-logs
 : > kani-logs/status.tsv

@@ -485,19 +485,42 @@ impl EndOfCentralDirectory {
 /// separated, with no empty, `.` or `..` components, no backslashes, NUL
 /// or drive prefix. A single trailing `/` (directory) is allowed.
 pub fn validate_name(name: &str) -> Result<(), ZipError> {
-    let bad = || Err(ZipError::InvalidName(name.to_string()));
-    if name.is_empty() || name.len() > 0xFFFF || name.contains('\0') || name.contains('\\') {
-        return bad();
+    if name_is_safe(name.as_bytes()) {
+        Ok(())
+    } else {
+        Err(ZipError::InvalidName(name.to_string()))
     }
-    let b = name.as_bytes();
+}
+
+/// Byte-level implementation of [`validate_name`], written with plain
+/// loops so the Kani harness can check it on arbitrary bytes.
+fn name_is_safe(b: &[u8]) -> bool {
+    if b.is_empty() || b.len() > 0xFFFF {
+        return false;
+    }
     if b.len() >= 2 && b[1] == b':' && b[0].is_ascii_alphabetic() {
-        return bad();
+        return false;
     }
-    let body = name.strip_suffix('/').unwrap_or(name);
-    if body.is_empty() || body.split('/').any(|c| c.is_empty() || c == "." || c == "..") {
-        return bad();
+    let body = if b[b.len() - 1] == b'/' { &b[..b.len() - 1] } else { b };
+    if body.is_empty() {
+        return false;
     }
-    Ok(())
+    let mut start = 0;
+    let mut i = 0;
+    while i <= body.len() {
+        if i == body.len() || body[i] == b'/' {
+            let len = i - start;
+            let dot = |k: usize| body[start + k] == b'.';
+            if len == 0 || (len == 1 && dot(0)) || (len == 2 && dot(0) && dot(1)) {
+                return false;
+            }
+            start = i + 1;
+        } else if body[i] == 0 || body[i] == b'\\' {
+            return false;
+        }
+        i += 1;
+    }
+    true
 }
 
 /// Per-entry settings for [`ZipWriter`].
@@ -1080,17 +1103,25 @@ mod proofs {
         assert!(DosDateTime::from_unix_seconds(s).is_valid());
     }
 
-    /// Name validation never panics and rejects every name containing a
-    /// `..` component or a leading `/`.
+    /// For every byte string of up to 8 bytes, an accepted name has no
+    /// leading `/`, no `..` component, no backslash and no NUL. The spec is
+    /// stated independently of the implementation.
     #[kani::proof]
-    #[kani::unwind(20)]
+    #[kani::unwind(10)]
     fn validate_name_rejects_traversal() {
-        let b: [u8; 6] = kani::any();
-        let Ok(name) = core::str::from_utf8(&b) else { return };
-        if validate_name(name).is_ok() {
-            assert!(!name.starts_with('/'));
-            assert!(!name.split('/').any(|c| c == ".."));
-            assert!(!name.contains('\\'));
+        let b: [u8; 8] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= 8);
+        let n = &b[..len];
+        if name_is_safe(n) {
+            assert!(len > 0 && n[0] != b'/');
+            for i in 0..len {
+                assert!(n[i] != b'\\' && n[i] != 0);
+                let starts_component = i == 0 || n[i - 1] == b'/';
+                let ends_component = i + 2 == len || (i + 2 < len && n[i + 2] == b'/');
+                let dotdot = i + 1 < len && n[i] == b'.' && n[i + 1] == b'.';
+                assert!(!(starts_component && dotdot && ends_component));
+            }
         }
     }
 }

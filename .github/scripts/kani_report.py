@@ -58,15 +58,16 @@ def main(logdir: str) -> int:
                 picked.append(m.group(1)[:3000])
             noise = re.compile(r"^(Unwinding loop|Not unwinding|aborting path|size of program|Runtime|Generated|Starting|Passing problem|Solving|.*variables, .*clauses)")
             rest = [l for l in lines if not noise.match(l)]
-            body = "\n".join(dict.fromkeys(picked)) if picked else "\n".join(rest[-60:])
-            failures.append((harness, status, body[:6000]))
+            start = next((i for i, l in enumerate(rest) if l.startswith("Checking harness")), 0)
+            body = "\n".join(list(dict.fromkeys(picked)) + ["..."] + rest[start:][-25:])
+            failures.append((harness, status, body[-6000:]))
     summary = "\n".join(rows) or "no harnesses ran"
     ok = sum(r.startswith("OK") for r in rows)
     summary += f"\n{ok}/{len(rows)} harnesses verified"
     print(summary)
     print(f"::notice title=Kani results::{esc(summary)}")
     for harness, status, body in failures[:9]:
-        print(f"::error title=Kani {status} {harness}::{esc(body)}")
+        print(f"::error title=Kani {status} {harness.replace('::', '.')}::{esc(body)}")
     if os.environ.get("GITHUB_STEP_SUMMARY"):
         with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
             f.write("```\n" + summary + "\n```\n")

@@ -60,6 +60,8 @@ jobs:
   kani:
     name: Kani ${{ matrix.module }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     timeout-minutes: 240
     strategy:
       fail-fast: false
@@ -116,3 +118,14 @@ jobs:
       - name: Report
         if: always() && steps.sel.outputs.run == 'true'
         run: python3 .github/scripts/kani_report.py kani-logs
+      - name: Publish raw logs (manual runs only)
+        if: always() && steps.sel.outputs.run == 'true' && github.event_name == 'workflow_dispatch'
+        env:
+          TOKEN: ${{ github.token }}
+          MODULE: ${{ matrix.module }}
+        run: |
+          slug=$(printf '%s' "$MODULE" | tr -c 'a-z0-9' '-')
+          cd kani-logs
+          git init -q && git checkout -q -b logs
+          git add . && git -c user.name=ci -c user.email=ci@localhost commit -qm "Kani logs, run ${{ github.run_id }}"
+          git push -qf "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}" "logs:refs/heads/ci-logs/${slug}"

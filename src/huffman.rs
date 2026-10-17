@@ -133,10 +133,34 @@ const MAX_HALVINGS: usize = 8;
 /// weight is set to 1: a Huffman code for equal weights has lengths in
 /// `{k, k+1}` with `k = floor(log2 n)`, so it fits whenever
 /// `n <= 2^limit`, which is checked up front.
+///
+/// No heap allocation is used: scratch space lives in fixed-size arrays,
+/// sized for small alphabets (up to 32 symbols, which is what the Kani
+/// harnesses exercise) or for the largest DEFLATE alphabet. Both sizes run
+/// the same generic code.
 pub fn build_lengths(freqs: &[u32], limit: usize, lengths: &mut [u8]) -> Result<(), HuffmanError> {
+    if freqs.len() <= SMALL_ALPHABET {
+        build_lengths_in::<SMALL_ALPHABET, { 2 * SMALL_ALPHABET }>(freqs, limit, lengths)
+    } else {
+        build_lengths_in::<MAX_SYMBOLS, { 2 * MAX_SYMBOLS }>(freqs, limit, lengths)
+    }
+}
+
+/// Scratch capacity used for alphabets of up to this many symbols.
+const SMALL_ALPHABET: usize = 32;
+
+/// [`build_lengths`] with scratch arrays for `N` symbols and `M` = 2`N` tree nodes.
+fn build_lengths_in<const N: usize, const M: usize>(
+    freqs: &[u32],
+    limit: usize,
+    lengths: &mut [u8],
+) -> Result<(), HuffmanError> {
     let n = freqs.len();
     if lengths.len() != n {
         return Err(HuffmanError::LengthMismatch);
+    }
+    if n > N {
+        return Err(HuffmanError::TooManySymbols);
     }
     if limit > MAX_CODE_LEN {
         return Err(HuffmanError::CodeTooLong);
@@ -144,37 +168,44 @@ pub fn build_lengths(freqs: &[u32], limit: usize, lengths: &mut [u8]) -> Result<
     if n < 2 || limit == 0 {
         return Err(HuffmanError::LimitTooSmall);
     }
-    for l in lengths.iter_mut() {
-        *l = 0;
-    }
-    let mut used: Vec<usize> = Vec::new();
-    for (i, &f) in freqs.iter().enumerate() {
-        if f != 0 {
-            used.push(i);
+    let mut used = [0u16; N];
+    let mut m = 0;
+    for i in 0..n {
+        lengths[i] = 0;
+        if freqs[i] != 0 {
+            used[m] = i as u16;
+            m += 1;
         }
     }
-    if used.len() < 2 {
-        let s = used.first().copied().unwrap_or(0);
+    if m < 2 {
+        let s = if m == 1 { used[0] as usize } else { 0 };
         lengths[s] = 1;
         lengths[if s == 0 { 1 } else { 0 }] = 1;
         return Ok(());
     }
-    if used.len() > (1usize << limit) {
+    if m > (1usize << limit) {
         return Err(HuffmanError::LimitTooSmall);
     }
-    let mut weights: Vec<u64> = used.iter().map(|&i| u64::from(freqs[i])).collect();
-    let mut depths = vec![0u32; used.len()];
+    let mut weight = [0u64; N];
+    for k in 0..m {
+        weight[k] = u64::from(freqs[used[k] as usize]);
+    }
+    let mut depth = [0u32; N];
     let mut attempt = 0;
     while attempt <= MAX_HALVINGS {
-        huffman_depths(&weights, &mut depths);
-        if depths.iter().all(|&d| d as usize <= limit) {
-            for (k, &s) in used.iter().enumerate() {
-                lengths[s] = depths[k] as u8;
+        huffman_depths::<N, M>(&weight, m, &mut depth);
+        let mut fits = true;
+        for k in 0..m {
+            fits &= depth[k] as usize <= limit;
+        }
+        if fits {
+            for k in 0..m {
+                lengths[used[k] as usize] = depth[k] as u8;
             }
             return Ok(());
         }
         let flatten = attempt + 1 == MAX_HALVINGS;
-        for w in weights.iter_mut() {
+        for w in weight.iter_mut().take(m) {
             *w = if flatten { 1 } else { (*w >> 1) | 1 };
         }
         attempt += 1;
@@ -182,46 +213,55 @@ pub fn build_lengths(freqs: &[u32], limit: usize, lengths: &mut [u8]) -> Result<
     Err(HuffmanError::LimitTooSmall)
 }
 
-/// Depth of each leaf in a Huffman tree over `weights` (at least two).
+/// Depth of each leaf in a Huffman tree over `weights[..m]` (`2 <= m <= N`).
 ///
-/// Nodes `0..m` are the leaves; each merge appends a node whose id is
-/// larger than both children's, so the root is the last node and depths
-/// can be filled in by walking ids downwards.
-fn huffman_depths(weights: &[u64], depths: &mut [u32]) {
-    let m = weights.len();
-    debug_assert!(m >= 2 && depths.len() == m);
-    let total = 2 * m - 1;
-    let mut w: Vec<u64> = Vec::with_capacity(total);
-    w.extend_from_slice(weights);
-    let mut parent = vec![0usize; total];
-    let mut active: Vec<usize> = (0..m).collect();
-    while active.len() > 1 {
-        let a = take_min(&mut active, &w);
-        let b = take_min(&mut active, &w);
-        let id = w.len();
-        w.push(w[a].saturating_add(w[b]));
-        parent[a] = id;
-        parent[b] = id;
-        active.push(id);
+/// Nodes `0..m` are the leaves; each merge creates the next node id, larger
+/// than both children's, so the root is the last node and depths can be
+/// filled in by walking ids downwards.
+fn huffman_depths<const N: usize, const M: usize>(weights: &[u64; N], m: usize, depths: &mut [u32; N]) {
+    debug_assert!((2..=N).contains(&m) && M >= 2 * N);
+    let mut w = [0u64; M];
+    let mut parent = [0u16; M];
+    let mut active = [0u16; N];
+    for i in 0..m {
+        w[i] = weights[i];
+        active[i] = i as u16;
     }
-    let mut depth = vec![0u32; total];
-    let mut id = total - 1;
+    let mut n_active = m;
+    let mut next = m;
+    while n_active > 1 {
+        let a = take_min(&mut active, &mut n_active, &w);
+        let b = take_min(&mut active, &mut n_active, &w);
+        w[next] = w[a].saturating_add(w[b]);
+        parent[a] = next as u16;
+        parent[b] = next as u16;
+        active[n_active] = next as u16;
+        n_active += 1;
+        next += 1;
+    }
+    let mut depth = [0u32; M];
+    let mut id = next - 1;
     while id > 0 {
         id -= 1;
-        depth[id] = depth[parent[id]] + 1;
+        depth[id] = depth[parent[id] as usize] + 1;
     }
-    depths.copy_from_slice(&depth[..m]);
+    for i in 0..m {
+        depths[i] = depth[i];
+    }
 }
 
 /// Removes and returns the active node with the smallest weight.
-fn take_min(active: &mut Vec<usize>, w: &[u64]) -> usize {
+fn take_min(active: &mut [u16], n_active: &mut usize, w: &[u64]) -> usize {
     let mut best = 0;
-    for i in 1..active.len() {
-        if w[active[i]] < w[active[best]] {
+    for i in 1..*n_active {
+        if w[active[i] as usize] < w[active[best] as usize] {
             best = i;
         }
     }
-    active.swap_remove(best)
+    let id = active[best];
+    *n_active -= 1;
+    active[best] = active[*n_active];
+    id as usize
 }
 
 /// Canonical Huffman decoder using per-length counts and a symbol list
