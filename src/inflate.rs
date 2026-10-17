@@ -271,20 +271,31 @@ mod tests {
 mod proofs {
     use super::*;
 
-    /// No 3-byte input can make the decoder panic, with any output limit
-    /// 0-16, and successful results respect the limit and the input length.
-    /// Three bytes reach every block type, stored headers, a literal plus a
-    /// match in a fixed block, and the start of a dynamic header.
+    /// No 2-byte input can make the decoder panic, with any output limit
+    /// 0-16; successful results respect the limit and the input length.
+    /// Two bytes reach every block type's header handling, a fixed-block
+    /// literal and end-of-block, and every early-EOF path.
     #[kani::proof]
     #[kani::unwind(5)]
-    fn never_panics_3_bytes() {
-        let data: [u8; 3] = kani::any();
+    fn never_panics_2_bytes() {
+        let data: [u8; 2] = kani::any();
         let limit: usize = kani::any();
         kani::assume(limit <= 16);
         if let Ok(d) = decompress_with_limit(&data, limit) {
             assert!(d.data.len() <= limit);
             assert!(d.consumed <= data.len());
         }
+    }
+
+    /// Reading a dynamic block header from any 4 bytes never panics: this
+    /// covers the header fields, the code-length code (built from as many
+    /// 3-bit lengths as fit) and the start of the run-length-coded lengths.
+    #[kani::proof]
+    #[kani::unwind(20)]
+    fn dynamic_header_never_panics() {
+        let data: [u8; 4] = kani::any();
+        let mut br = BitReader::new(&data);
+        let _ = read_dynamic_codes(&mut br);
     }
 
     /// No 5-byte input that is a single fixed-Huffman block can make the

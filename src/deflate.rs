@@ -78,13 +78,20 @@ pub fn compress_with(data: &[u8], opts: &CompressOptions) -> Vec<u8> {
 }
 
 fn encode(data: &[u8], opts: &CompressOptions) -> Vec<u8> {
+    encode_with_matcher(data, opts, MatchConfig::for_level(opts.level))
+}
+
+/// The encoder with an explicit match-finder configuration. `encode` uses
+/// the level's configuration; the end-to-end proofs use the same search
+/// parameters with smaller tables.
+pub(crate) fn encode_with_matcher(data: &[u8], opts: &CompressOptions, cfg: MatchConfig) -> Vec<u8> {
     let strategy = if opts.level == 0 { Strategy::Stored } else { opts.strategy };
     let mut w = BitWriter::with_capacity(data.len() / 2 + 16);
     if strategy == Strategy::Stored {
         write_stored(&mut w, data, true);
         return w.finish();
     }
-    let mut matcher = Matcher::new(MatchConfig::for_level(opts.level));
+    let mut matcher = Matcher::new(cfg);
     let mut tokens = vec![Token::Literal(0); BLOCK_TOKENS.min(data.len() + 1)];
     let mut pos = 0;
     loop {

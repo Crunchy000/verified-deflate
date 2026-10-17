@@ -281,6 +281,17 @@ pub fn replay(tokens: &[Token], out: &mut Vec<u8>) -> Result<(), InflateError> {
     Ok(())
 }
 
+/// Stand-in for `Matcher::hash` in proofs: an arbitrary bucket on every
+/// call. The tokenizer checks every candidate byte by byte, so its
+/// correctness cannot depend on the hash; proving a harness under this stub
+/// proves it for every hash function (and avoids a 32-bit multiplication
+/// per position in the model).
+#[cfg(kani)]
+#[cfg_attr(kani_sample, allow(dead_code))] // stubs are not applied when sampling
+pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    kani::any::<usize>() & (m.head.len() - 1)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -337,16 +348,6 @@ mod tests {
 #[cfg(kani)]
 mod proofs {
     use super::*;
-
-    /// Stand-in for `Matcher::hash`: an arbitrary bucket on every call.
-    /// The tokenizer checks every candidate byte by byte, so its
-    /// correctness cannot depend on the hash; proving the harnesses below
-    /// under this stub proves them for every hash function (and avoids a
-    /// 32-bit multiplication per position in the model).
-    #[cfg_attr(kani_sample, allow(dead_code))] // stubs are not applied when sampling
-    fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
-        kani::any::<usize>() & (m.head.len() - 1)
-    }
 
     /// Tokenizes `data` and checks every token is valid and that the
     /// tokens describe `data` exactly. The reference replay into a fixed
@@ -447,10 +448,9 @@ mod proofs {
     #[kani::unwind(13)]
     fn copy_within_buffer_meets_spec() {
         let before: [u8; 12] = kani::any();
-        let pos: usize = kani::any();
-        let dist: usize = kani::any();
-        let len: usize = kani::any();
-        kani::assume(dist >= 1 && dist <= pos && pos + len <= 12);
+        let pos: usize = kani::any_where(|&p: &usize| p <= 12);
+        let len: usize = kani::any_where(|&l: &usize| l <= 12 - pos);
+        let dist: usize = kani::any_where(|&d: &usize| d >= 1 && d <= pos);
         let mut buf = before;
         copy_within_buffer(&mut buf, pos, dist, len);
         for i in 0..12 {

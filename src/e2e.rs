@@ -7,12 +7,20 @@
 //! I/O; see the harnesses in `huffman`, `deflate` and `bitio`), by tests
 //! against zlib, and at run time by `CompressOptions::verify`.
 
-use crate::deflate::{compress_with, CompressOptions, Strategy};
+use crate::deflate::{compress_with, encode_with_matcher, CompressOptions, Strategy};
 use crate::inflate::decompress_with_limit;
+use crate::lz77::MatchConfig;
 use crate::zip::{FileOptions, ZipArchive, ZipWriter};
 
 fn roundtrip(data: &[u8], level: u8, strategy: Strategy) {
-    let packed = compress_with(data, &CompressOptions { level, strategy, verify: false });
+    let opts = CompressOptions { level, strategy, verify: false };
+    let packed = if level == 0 {
+        compress_with(data, &opts)
+    } else {
+        // The level's search parameters with small tables (see `lz77::proofs`).
+        let cfg = MatchConfig { window_bits: 3, hash_bits: 2, ..MatchConfig::for_level(level) };
+        encode_with_matcher(data, &opts, cfg)
+    };
     let d = decompress_with_limit(&packed, data.len()).unwrap();
     assert_eq!(d.data.as_slice(), data);
     assert_eq!(d.consumed, packed.len());
@@ -30,7 +38,9 @@ fn roundtrip_stored() {
 }
 
 /// Fixed Huffman with the level-6 lazy matcher: any 4 bytes round-trip
-/// exactly (four bytes allow a literal followed by an overlapping match).
+/// exactly (four bytes allow a literal followed by an overlapping match),
+/// for every hash function.
+#[kani::stub(crate::lz77::Matcher::hash, crate::lz77::any_bucket)]
 #[kani::proof]
 #[kani::unwind(7)]
 fn roundtrip_fixed_lazy() {
@@ -39,6 +49,7 @@ fn roundtrip_fixed_lazy() {
 }
 
 /// Fixed Huffman with the greedy level-1 matcher on any 3 bytes.
+#[kani::stub(crate::lz77::Matcher::hash, crate::lz77::any_bucket)]
 #[kani::proof]
 #[kani::unwind(6)]
 fn roundtrip_fixed_greedy() {
@@ -48,6 +59,7 @@ fn roundtrip_fixed_greedy() {
 
 /// Inputs built from two symbols are match-heavy; any 6 of them round-trip
 /// with the level-9 matcher.
+#[kani::stub(crate::lz77::Matcher::hash, crate::lz77::any_bucket)]
 #[kani::proof]
 #[kani::unwind(8)]
 fn roundtrip_fixed_two_symbol_alphabet() {
