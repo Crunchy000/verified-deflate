@@ -38,15 +38,22 @@ pub fn decompress(input: &[u8]) -> Result<Vec<u8>, InflateError> {
 /// [`InflateError::OutputLimitExceeded`] rather than producing more than
 /// `max_output` bytes.
 pub fn decompress_with_limit(input: &[u8], max_output: usize) -> Result<Decompressed, InflateError> {
-    let mut st = State { br: BitReader::new(input), out: Output::new(max_output) };
+    let mut st = State {
+        br: BitReader::new(input),
+        out: Output::new(max_output),
+        lit: Decoder::EMPTY,
+        dist: Decoder::EMPTY,
+        lengths: [0; NUM_LITLEN + NUM_DIST],
+    };
     loop {
         let header = st.br.read_bits(3)?;
         match header >> 1 {
             0 => st.stored()?,
-            1 => st.codes(&FIXED_LIT, &FIXED_DIST)?,
+            1 => codes(&mut st.br, &mut st.out, &FIXED_LIT, &FIXED_DIST)?,
             2 => {
-                let (lit, dist) = read_dynamic_codes(&mut st.br)?;
-                st.codes(&lit, &dist)?;
+                read_dynamic_codes(&mut st.br, &mut st.lit, &mut st.dist, &mut st.lengths)?;
+                let State { br, out, lit, dist, .. } = &mut st;
+                codes(br, out, lit, dist)?;
             }
             _ => return Err(InflateError::InvalidBlockType),
         }
@@ -99,7 +106,9 @@ impl Output {
     #[cold]
     fn grow(&mut self, n: usize) {
         let want = (self.len + n).max(self.buf.len().saturating_mul(2));
-        self.buf.resize(want, 0);
+        let mut bigger = vec![0; want];
+        bigger[..self.len].copy_from_slice(&self.buf[..self.len]);
+        self.buf = bigger;
     }
 
     fn finish(mut self) -> Vec<u8> {
@@ -111,6 +120,11 @@ impl Output {
 struct State<'a> {
     br: BitReader<'a>,
     out: Output,
+    /// Decoders for the current dynamic block, rebuilt in place.
+    lit: Decoder,
+    dist: Decoder,
+    /// Scratch space for a dynamic block's code lengths.
+    lengths: [u8; NUM_LITLEN + NUM_DIST],
 }
 
 impl State<'_> {
@@ -128,40 +142,46 @@ impl State<'_> {
         self.out.len += len;
         Ok(())
     }
+}
 
-    fn codes(&mut self, lit: &Decoder, dist: &Decoder) -> Result<(), InflateError> {
-        loop {
-            let sym = lit.decode(&mut self.br)? as usize;
-            if sym < 256 {
-                self.out.reserve(1)?;
-                self.out.buf[self.out.len] = sym as u8;
-                self.out.len += 1;
-            } else if sym == END_OF_BLOCK {
-                return Ok(());
-            } else {
-                let li = sym - 257;
-                if li >= LENGTH_BASE.len() {
-                    return Err(InflateError::InvalidSymbol);
-                }
-                let len = LENGTH_BASE[li] as usize + self.br.read_bits(u32::from(LENGTH_EXTRA[li]))? as usize;
-                let ds = dist.decode(&mut self.br)? as usize;
-                if ds >= DIST_BASE.len() {
-                    return Err(InflateError::InvalidSymbol);
-                }
-                let d = DIST_BASE[ds] as usize + self.br.read_bits(u32::from(DIST_EXTRA[ds]))? as usize;
-                if d > self.out.len {
-                    return Err(InflateError::DistanceTooFarBack);
-                }
-                self.out.reserve(len)?;
-                copy_within_buffer(&mut self.out.buf, self.out.len, d, len);
-                self.out.len += len;
+/// Decodes one block's symbols with the given codes.
+fn codes(br: &mut BitReader<'_>, out: &mut Output, lit: &Decoder, dist: &Decoder) -> Result<(), InflateError> {
+    loop {
+        let sym = lit.decode(br)? as usize;
+        if sym < 256 {
+            out.reserve(1)?;
+            out.buf[out.len] = sym as u8;
+            out.len += 1;
+        } else if sym == END_OF_BLOCK {
+            return Ok(());
+        } else {
+            let li = sym - 257;
+            if li >= LENGTH_BASE.len() {
+                return Err(InflateError::InvalidSymbol);
             }
+            let len = LENGTH_BASE[li] as usize + br.read_bits(u32::from(LENGTH_EXTRA[li]))? as usize;
+            let ds = dist.decode(br)? as usize;
+            if ds >= DIST_BASE.len() {
+                return Err(InflateError::InvalidSymbol);
+            }
+            let d = DIST_BASE[ds] as usize + br.read_bits(u32::from(DIST_EXTRA[ds]))? as usize;
+            if d > out.len {
+                return Err(InflateError::DistanceTooFarBack);
+            }
+            out.reserve(len)?;
+            copy_within_buffer(&mut out.buf, out.len, d, len);
+            out.len += len;
         }
     }
 }
 
 /// Reads a dynamic block header (§3.2.7) and builds its two decoders.
-fn read_dynamic_codes(br: &mut BitReader<'_>) -> Result<(Decoder, Decoder), InflateError> {
+fn read_dynamic_codes(
+    br: &mut BitReader<'_>,
+    lit: &mut Decoder,
+    dist: &mut Decoder,
+    lengths: &mut [u8; NUM_LITLEN + NUM_DIST],
+) -> Result<(), InflateError> {
     let nlen = br.read_bits(5)? as usize + 257;
     let ndist = br.read_bits(5)? as usize + 1;
     let ncode = br.read_bits(4)? as usize + 4;
@@ -172,13 +192,14 @@ fn read_dynamic_codes(br: &mut BitReader<'_>) -> Result<(Decoder, Decoder), Infl
     for &sym in &CODELEN_ORDER[..ncode] {
         cl[sym] = br.read_bits(3)? as u8;
     }
-    let clcode = Decoder::new(&cl).map_err(|_| InflateError::InvalidCodeLengthCode)?;
+    let mut clcode = Decoder::EMPTY;
+    clcode.rebuild(&cl).map_err(|_| InflateError::InvalidCodeLengthCode)?;
     if !clcode.is_complete() {
         return Err(InflateError::InvalidCodeLengthCode);
     }
 
+    // Every entry of lengths[..total] is written below before it is read.
     let total = nlen + ndist;
-    let mut lengths = [0u8; NUM_LITLEN + NUM_DIST];
     let mut idx = 0;
     while idx < total {
         let sym = clcode.decode(br)? as u8;
@@ -189,15 +210,15 @@ fn read_dynamic_codes(br: &mut BitReader<'_>) -> Result<(Decoder, Decoder), Infl
         return Err(InflateError::MissingEndOfBlock);
     }
 
-    let lit = Decoder::new(&lengths[..nlen]).map_err(|_| InflateError::InvalidLiteralLengthCode)?;
+    lit.rebuild(&lengths[..nlen]).map_err(|_| InflateError::InvalidLiteralLengthCode)?;
     if !(lit.is_complete() || lit.is_single_unit_code()) {
         return Err(InflateError::InvalidLiteralLengthCode);
     }
-    let dist = Decoder::new(&lengths[nlen..total]).map_err(|_| InflateError::InvalidDistanceCode)?;
+    dist.rebuild(&lengths[nlen..total]).map_err(|_| InflateError::InvalidDistanceCode)?;
     if !(dist.is_complete() || dist.is_single_unit_code() || dist.coded_symbols() == 0) {
         return Err(InflateError::InvalidDistanceCode);
     }
-    Ok((lit, dist))
+    Ok(())
 }
 
 /// Applies one code-length symbol (with its extra-bits value) to
@@ -295,7 +316,10 @@ mod proofs {
     fn dynamic_header_never_panics() {
         let data: [u8; 4] = kani::any();
         let mut br = BitReader::new(&data);
-        let _ = read_dynamic_codes(&mut br);
+        let mut lit = Decoder::EMPTY;
+        let mut dist = Decoder::EMPTY;
+        let mut lengths = [0u8; NUM_LITLEN + NUM_DIST];
+        let _ = read_dynamic_codes(&mut br, &mut lit, &mut dist, &mut lengths);
     }
 
     /// No 5-byte input that is a single fixed-Huffman block can make the

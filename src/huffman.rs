@@ -316,6 +316,9 @@ pub struct Decoder {
 }
 
 impl Decoder {
+    /// A decoder with no codes (every decode fails).
+    pub const EMPTY: Self = Self { count: [0; MAX_CODE_LEN + 1], symbol: [0; MAX_SYMBOLS], coded: 0, left: 1 << 15 };
+
     /// Builds a decoder for the given code lengths.
     ///
     /// Over-subscribed lengths are rejected. Incomplete codes are accepted
@@ -323,7 +326,23 @@ impl Decoder {
     /// [`is_single_unit_code`](Self::is_single_unit_code) let the caller
     /// apply DEFLATE's rules.
     pub const fn new(lengths: &[u8]) -> Result<Self, HuffmanError> {
+        let mut d = Self::EMPTY;
+        match d.rebuild(lengths) {
+            Ok(()) => Ok(d),
+            Err(e) => Err(e),
+        }
+    }
+
+    /// Rebuilds this decoder in place for new code lengths (as [`new`],
+    /// without moving a decoder around). On error the decoder decodes
+    /// nothing.
+    ///
+    /// [`new`]: Self::new
+    pub const fn rebuild(&mut self, lengths: &[u8]) -> Result<(), HuffmanError> {
         let n = lengths.len();
+        self.count = [0; MAX_CODE_LEN + 1];
+        self.coded = 0;
+        self.left = 1 << 15;
         if n > MAX_SYMBOLS {
             return Err(HuffmanError::TooManySymbols);
         }
@@ -348,24 +367,28 @@ impl Decoder {
             }
             len += 1;
         }
-        // offs[l] = index in `symbol` of the first code of length l.
+        // offs[l] = index in `symbol` of the first code of length l. Entries
+        // of `symbol` at or beyond `coded` are never read, so stale values
+        // from an earlier build need no clearing.
         let mut offs = [0u16; MAX_CODE_LEN + 2];
         len = 1;
         while len <= MAX_CODE_LEN {
             offs[len + 1] = offs[len] + count[len];
             len += 1;
         }
-        let mut symbol = [0u16; MAX_SYMBOLS];
         s = 0;
         while s < n {
             let l = lengths[s] as usize;
             if l != 0 {
-                symbol[offs[l] as usize] = s as u16;
+                self.symbol[offs[l] as usize] = s as u16;
                 offs[l] += 1;
             }
             s += 1;
         }
-        Ok(Self { count, symbol, coded, left: left as u16 })
+        self.count = count;
+        self.coded = coded;
+        self.left = left as u16;
+        Ok(())
     }
 
     /// True when the code is complete (Kraft sum exactly 1).

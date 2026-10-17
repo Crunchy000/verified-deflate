@@ -93,6 +93,15 @@ pub(crate) fn encode_with_matcher(data: &[u8], opts: &CompressOptions, cfg: Matc
     }
     let mut matcher = Matcher::new(cfg);
     let mut tokens = vec![Token::Literal(0); BLOCK_TOKENS.min(data.len() + 1)];
+    if data.len() < tokens.len() {
+        // Everything fits in one block: one tokenize call covers the whole
+        // input (each token covers at least one byte). This is the same as
+        // one pass of the loop below, without the loop.
+        let (end, count) = matcher.tokenize(data, 0, &mut tokens);
+        debug_assert_eq!(end, data.len());
+        write_block(&mut w, &tokens[..count], &data[..end], true, strategy);
+        return w.finish();
+    }
     let mut pos = 0;
     loop {
         let (end, count) = matcher.tokenize(data, pos, &mut tokens);
