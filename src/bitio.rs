@@ -38,15 +38,14 @@ impl BitWriter {
         debug_assert!(n <= 32, "write_bits: n = {n} exceeds 32");
         let n = if n > 32 { 32 } else { n };
         let masked = u64::from(value) & ((1u64 << n) - 1);
+        // Fewer than 32 bits are pending, so this fits in the accumulator.
         self.acc |= masked << self.nbits;
         self.nbits += n;
-        // Fewer than 8 bits were pending and n <= 32, so 1..=4 whole bytes
-        // are ready here. Flushing them without a loop keeps proofs small.
-        if self.nbits >= 8 {
-            let k = self.nbits / 8;
-            self.out.extend_from_slice(&self.acc.to_le_bytes()[..k as usize]);
-            self.acc >>= 8 * k;
-            self.nbits -= 8 * k;
+        // Flush in whole 4-byte words: a fixed-size copy, and no loop.
+        if self.nbits >= 32 {
+            self.out.extend_from_slice(&(self.acc as u32).to_le_bytes());
+            self.acc >>= 32;
+            self.nbits -= 32;
         }
     }
 
@@ -57,13 +56,15 @@ impl BitWriter {
 
     /// True when the next bit would start a new byte.
     pub fn is_byte_aligned(&self) -> bool {
-        self.nbits == 0
+        self.nbits % 8 == 0
     }
 
-    /// Fills the rest of the current byte with zero bits.
+    /// Fills the rest of the current byte with zero bits (and writes out
+    /// all pending bits).
     pub fn pad_to_byte(&mut self) {
         if self.nbits > 0 {
-            self.out.push(self.acc as u8);
+            let k = self.nbits.div_ceil(8) as usize;
+            self.out.extend_from_slice(&self.acc.to_le_bytes()[..k]);
             self.acc = 0;
             self.nbits = 0;
         }

@@ -141,6 +141,15 @@ impl<const N: usize> CodeTable<N> {
     pub(crate) fn put(&self, w: &mut BitWriter, sym: usize) {
         w.write_bits(u32::from(self.code[sym]), u32::from(self.len[sym]));
     }
+
+    /// Writes `sym`'s code followed by the low `n` bits of `extra`, in one
+    /// write. Requires `len[sym] + n <= 32`.
+    #[inline]
+    pub(crate) fn put_with_extra(&self, w: &mut BitWriter, sym: usize, extra: u32, n: u32) {
+        let l = u32::from(self.len[sym]);
+        let extra = extra & ((1u32 << n) - 1);
+        w.write_bits(u32::from(self.code[sym]) | (extra << l), l + n);
+    }
 }
 
 pub(crate) const FIXED_LIT: CodeTable<288> = match CodeTable::from_lengths(fixed_litlen_lengths()) {
@@ -227,12 +236,12 @@ fn write_tokens<const L: usize, const D: usize>(
             Token::Literal(b) => lit.put(w, b as usize),
             Token::Match { len, dist: d } => {
                 let (len, d) = (len as usize, d as usize);
+                // Each code goes out together with its extra bits: at most
+                // 15 + 5 and 15 + 13 bits.
                 let lc = length_code(len);
-                lit.put(w, 257 + lc);
-                w.write_bits((len - LENGTH_BASE[lc] as usize) as u32, u32::from(LENGTH_EXTRA[lc]));
+                lit.put_with_extra(w, 257 + lc, (len - LENGTH_BASE[lc] as usize) as u32, u32::from(LENGTH_EXTRA[lc]));
                 let dc = distance_code(d);
-                dist.put(w, dc);
-                w.write_bits((d - DIST_BASE[dc] as usize) as u32, u32::from(DIST_EXTRA[dc]));
+                dist.put_with_extra(w, dc, (d - DIST_BASE[dc] as usize) as u32, u32::from(DIST_EXTRA[dc]));
             }
         }
     }

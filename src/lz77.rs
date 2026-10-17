@@ -155,7 +155,7 @@ impl Matcher {
     ///
     /// The common case of no usable candidate is decided here, inline; the
     /// chain search itself is out of line.
-    #[inline]
+    #[inline(always)]
     fn find_match(
         &self,
         data: &[u8],
@@ -173,6 +173,7 @@ impl Matcher {
 
     /// The chain search behind [`Self::find_match`], starting from chain
     /// entry `cand`.
+    #[inline(never)]
     fn longest_match(
         &self,
         data: &[u8],
