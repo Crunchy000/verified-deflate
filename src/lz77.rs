@@ -244,19 +244,24 @@ pub fn match_is_valid(len: usize, dist: usize, produced: usize) -> bool {
     (MIN_MATCH..=MAX_MATCH).contains(&len) && (1..=MAX_DISTANCE).contains(&dist) && dist <= produced
 }
 
-/// Appends a match to `out`: copies `len` bytes starting `dist` bytes from
-/// the end, where the source may overlap the bytes being written (that is
-/// how DEFLATE expresses runs). Byte by byte, so each byte read has already
-/// been written. (A chunked `extend_from_within` version is faster but made
-/// the model-checking problem far larger.) Requires `1 <= dist <= out.len()`.
+/// The LZ77 copy on a buffer: writes `buf[pos..pos + len]`, each byte
+/// equal to the byte `dist` positions earlier. Source and destination may
+/// overlap (that is how DEFLATE expresses runs); copying front to back makes
+/// every byte read already final. Requires `1 <= dist <= pos` and
+/// `pos + len <= buf.len()`.
 #[inline]
-pub fn copy_match(out: &mut Vec<u8>, dist: usize, len: usize) {
-    out.reserve(len);
-    let start = out.len() - dist;
-    for i in 0..len {
-        let b = out[start + i];
-        out.push(b);
+pub fn copy_within_buffer(buf: &mut [u8], pos: usize, dist: usize, len: usize) {
+    for i in pos..pos + len {
+        buf[i] = buf[i - dist];
     }
+}
+
+/// Appends a match to `out` (see [`copy_within_buffer`]).
+/// Requires `1 <= dist <= out.len()`.
+pub fn copy_match(out: &mut Vec<u8>, dist: usize, len: usize) {
+    let pos = out.len();
+    out.resize(pos + len, 0);
+    copy_within_buffer(out, pos, dist, len);
 }
 
 /// Reconstructs the bytes described by `tokens`, appending to `out`
@@ -434,35 +439,26 @@ mod proofs {
         assert_eq!(toks[1], Token::Match { len: 5, dist: 1 });
     }
 
-    /// Match copying agrees with a reference copy into a fixed array,
-    /// including heavily overlapping matches.
+    /// The buffer copy meets the LZ77 specification for every distance and
+    /// length that fit, including heavily overlapping copies: each written
+    /// byte equals the byte `dist` earlier in the result, and nothing
+    /// outside the written range changes.
     #[kani::proof]
     #[kani::unwind(13)]
-    fn copy_match_equals_naive() {
-        let prefix: [u8; 3] = kani::any();
+    fn copy_within_buffer_meets_spec() {
+        let before: [u8; 12] = kani::any();
+        let pos: usize = kani::any();
         let dist: usize = kani::any();
         let len: usize = kani::any();
-        kani::assume(dist >= 1 && dist <= 3 && len <= 9);
-        let mut fast = Vec::with_capacity(12);
-        fast.extend_from_slice(&prefix);
-        copy_match(&mut fast, dist, len);
-        let mut slow = prefix;
-        let mut slow_len = 3;
-        let mut extended = [0u8; 12];
-        extended[..3].copy_from_slice(&slow);
-        let mut i = 0;
-        while i < len {
-            extended[slow_len] = extended[slow_len - dist];
-            slow_len += 1;
-            i += 1;
-        }
-        slow = [extended[0], extended[1], extended[2]];
-        assert_eq!(fast.len(), slow_len);
-        assert_eq!(&fast[..3], &slow[..]);
-        let mut j = 0;
-        while j < slow_len {
-            assert_eq!(fast[j], extended[j]);
-            j += 1;
+        kani::assume(dist >= 1 && dist <= pos && pos + len <= 12);
+        let mut buf = before;
+        copy_within_buffer(&mut buf, pos, dist, len);
+        for i in 0..12 {
+            if i >= pos && i < pos + len {
+                assert_eq!(buf[i], buf[i - dist]);
+            } else {
+                assert_eq!(buf[i], before[i]);
+            }
         }
     }
 

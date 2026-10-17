@@ -13,6 +13,11 @@ on:
         description: "Per-harness time limit in seconds"
         required: false
         default: "1800"
+      publish_logs:
+        description: "Push raw Kani logs to ci-logs/* branches as each harness finishes"
+        type: boolean
+        required: false
+        default: false
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -124,7 +129,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           MODULE: ${{ matrix.module }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if [ "${{ github.event.inputs.publish_logs }}" = "true" ]; then
             export PUBLISH_BRANCH="ci-logs/$(printf '%s' "$MODULE" | tr -c 'a-z0-9' '-')"
           fi
           .github/scripts/kani_module.sh "${{ matrix.module }}" "${{ matrix.file }}"

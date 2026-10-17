@@ -10,7 +10,7 @@
 use crate::bitio::BitReader;
 use crate::error::InflateError;
 use crate::huffman::Decoder;
-use crate::lz77::copy_match;
+use crate::lz77::copy_within_buffer;
 use crate::tables::{
     codelen_extra_bits, fixed_litlen_lengths, CODELEN_ORDER, DIST_BASE, DIST_EXTRA, END_OF_BLOCK, FIXED_DIST_LENGTHS,
     LENGTH_BASE, LENGTH_EXTRA, NUM_CODELEN, NUM_DIST, NUM_LITLEN,
@@ -38,9 +38,7 @@ pub fn decompress(input: &[u8]) -> Result<Vec<u8>, InflateError> {
 /// [`InflateError::OutputLimitExceeded`] rather than producing more than
 /// `max_output` bytes.
 pub fn decompress_with_limit(input: &[u8], max_output: usize) -> Result<Decompressed, InflateError> {
-    // A fixed initial capacity: the output grows as needed, and a constant
-    // allocation size keeps the model checker's memory model simple.
-    let mut st = State { br: BitReader::new(input), out: Vec::with_capacity(INITIAL_CAPACITY), limit: max_output };
+    let mut st = State { br: BitReader::new(input), out: Output::new(max_output) };
     loop {
         let header = st.br.read_bits(3)?;
         match header >> 1 {
@@ -56,7 +54,7 @@ pub fn decompress_with_limit(input: &[u8], max_output: usize) -> Result<Decompre
             break;
         }
     }
-    Ok(Decompressed { consumed: st.br.bytes_consumed(), data: st.out })
+    Ok(Decompressed { consumed: st.br.bytes_consumed(), data: st.out.finish() })
 }
 
 /// Initial output buffer size.
@@ -71,24 +69,51 @@ const FIXED_DIST: Decoder = match Decoder::new(&FIXED_DIST_LENGTHS) {
     Err(_) => panic!("fixed distance code is invalid"),
 };
 
-struct State<'a> {
-    br: BitReader<'a>,
-    out: Vec<u8>,
+/// The decoder's output: a zero-filled buffer written by index and grown
+/// by doubling when needed. Writing by index (rather than `Vec::push`)
+/// keeps the model checker's view of the output small.
+struct Output {
+    buf: Vec<u8>,
+    len: usize,
     limit: usize,
 }
 
-impl State<'_> {
-    /// Fails unless `n` more output bytes fit within the limit.
-    /// Invariant: `out.len() <= limit`.
-    #[inline]
-    fn reserve(&self, n: usize) -> Result<(), InflateError> {
-        if n > self.limit - self.out.len() {
-            Err(InflateError::OutputLimitExceeded)
-        } else {
-            Ok(())
-        }
+impl Output {
+    fn new(limit: usize) -> Self {
+        Self { buf: vec![0; INITIAL_CAPACITY], len: 0, limit }
     }
 
+    /// Makes room for `n` more bytes, failing if that would exceed the
+    /// limit. Invariants: `len <= limit` and `len <= buf.len()`.
+    #[inline]
+    fn reserve(&mut self, n: usize) -> Result<(), InflateError> {
+        if n > self.limit - self.len {
+            return Err(InflateError::OutputLimitExceeded);
+        }
+        if n > self.buf.len() - self.len {
+            self.grow(n);
+        }
+        Ok(())
+    }
+
+    #[cold]
+    fn grow(&mut self, n: usize) {
+        let want = (self.len + n).max(self.buf.len().saturating_mul(2));
+        self.buf.resize(want, 0);
+    }
+
+    fn finish(mut self) -> Vec<u8> {
+        self.buf.truncate(self.len);
+        self.buf
+    }
+}
+
+struct State<'a> {
+    br: BitReader<'a>,
+    out: Output,
+}
+
+impl State<'_> {
     fn stored(&mut self) -> Result<(), InflateError> {
         self.br.align_to_byte();
         let len = self.br.read_bits(16)?;
@@ -96,16 +121,21 @@ impl State<'_> {
         if len != (!nlen & 0xffff) {
             return Err(InflateError::StoredLengthMismatch);
         }
-        self.reserve(len as usize)?;
-        self.br.read_aligned_bytes(len as usize, &mut self.out)
+        let len = len as usize;
+        self.out.reserve(len)?;
+        let start = self.out.len;
+        self.br.read_aligned_bytes(&mut self.out.buf[start..start + len])?;
+        self.out.len += len;
+        Ok(())
     }
 
     fn codes(&mut self, lit: &Decoder, dist: &Decoder) -> Result<(), InflateError> {
         loop {
             let sym = lit.decode(&mut self.br)? as usize;
             if sym < 256 {
-                self.reserve(1)?;
-                self.out.push(sym as u8);
+                self.out.reserve(1)?;
+                self.out.buf[self.out.len] = sym as u8;
+                self.out.len += 1;
             } else if sym == END_OF_BLOCK {
                 return Ok(());
             } else {
@@ -119,11 +149,12 @@ impl State<'_> {
                     return Err(InflateError::InvalidSymbol);
                 }
                 let d = DIST_BASE[ds] as usize + self.br.read_bits(u32::from(DIST_EXTRA[ds]))? as usize;
-                if d > self.out.len() {
+                if d > self.out.len {
                     return Err(InflateError::DistanceTooFarBack);
                 }
-                self.reserve(len)?;
-                copy_match(&mut self.out, d, len);
+                self.out.reserve(len)?;
+                copy_within_buffer(&mut self.out.buf, self.out.len, d, len);
+                self.out.len += len;
             }
         }
     }

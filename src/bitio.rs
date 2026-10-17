@@ -162,15 +162,18 @@ impl<'a> BitReader<'a> {
         self.nbits -= drop;
     }
 
-    /// Copies `len` whole bytes to `out`. The reader must be byte-aligned
-    /// (call [`align_to_byte`](Self::align_to_byte) first).
-    pub fn read_aligned_bytes(&mut self, len: usize, out: &mut Vec<u8>) -> Result<(), InflateError> {
+    /// Fills `out` with the next `out.len()` whole bytes. The reader must
+    /// be byte-aligned (call [`align_to_byte`](Self::align_to_byte) first).
+    /// On failure the reader's position is unspecified.
+    pub fn read_aligned_bytes(&mut self, out: &mut [u8]) -> Result<(), InflateError> {
         debug_assert!(self.nbits % 8 == 0, "read_aligned_bytes on unaligned reader");
         self.align_to_byte();
+        let len = out.len();
         // Whole bytes already sitting in the accumulator (at most 4) come first.
         let buffered = (self.nbits / 8) as usize;
         let k = if len < buffered { len } else { buffered };
-        out.extend_from_slice(&self.acc.to_le_bytes()[..k]);
+        let acc = self.acc.to_le_bytes();
+        out[..k].copy_from_slice(&acc[..k]);
         if k > 0 {
             self.acc >>= 8 * k as u32;
             self.nbits -= 8 * k as u32;
@@ -180,7 +183,7 @@ impl<'a> BitReader<'a> {
             Some(end) if end <= self.data.len() => end,
             _ => return Err(InflateError::UnexpectedEof),
         };
-        out.extend_from_slice(&self.data[self.pos..end]);
+        out[k..].copy_from_slice(&self.data[self.pos..end]);
         self.pos = end;
         Ok(())
     }
@@ -321,14 +324,15 @@ mod proofs {
         let mut r = BitReader::new(&bytes);
         assert_eq!(r.read_bits(head_len), Ok(head & mask(head_len)));
         r.align_to_byte();
-        let mut out = Vec::new();
-        assert!(r.read_aligned_bytes(3, &mut out).is_ok());
-        assert_eq!(out.as_slice(), &payload[..]);
+        let mut out = [0u8; 3];
+        assert!(r.read_aligned_bytes(&mut out).is_ok());
+        assert_eq!(out, payload);
         assert_eq!(r.read_bits(5), Ok(tail & 31));
         assert_eq!(r.bytes_consumed(), bytes.len());
         // Asking for more bytes than exist is an error, not a panic.
         let mut r2 = BitReader::new(&bytes);
-        assert_eq!(r2.read_aligned_bytes(bytes.len() + 1, &mut out), Err(InflateError::UnexpectedEof));
+        let mut big = [0u8; 16];
+        assert_eq!(r2.read_aligned_bytes(&mut big[..bytes.len() + 1]), Err(InflateError::UnexpectedEof));
     }
 
     /// `reverse_bits` reverses exactly the low `len` bits and is an involution.
