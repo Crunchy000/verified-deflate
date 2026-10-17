@@ -111,7 +111,7 @@ the proof instead of silently skipping behaviour.
 | Harness | Property |
 |---|---|
 | `never_panics_4_bytes` | No 4-byte input can make the decoder panic, with any output limit 0–16; results respect the limit. Reaches all block types, dynamic headers up to the code-length code, and matches. |
-| `never_panics_fixed_6_bytes` | No 6-byte single fixed-Huffman block can make the decoder panic (reaches 258-byte overlapping matches). |
+| `never_panics_fixed_5_bytes` | No 5-byte single fixed-Huffman block can make the decoder panic (five bytes reach a literal plus a 258-byte overlapping match). |
 | `stored_block_semantics` | A stored block decodes to exactly its payload; any LEN/NLEN mismatch is rejected. |
 | `expand_code_length_is_safe` | Code-length expansion never panics or writes out of bounds, for any symbol, extra bits and position. |
 

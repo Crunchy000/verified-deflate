@@ -9,6 +9,10 @@ on:
         description: "Only verify these Kani modules (comma-separated prefixes, e.g. zip,crc32); empty = all"
         required: false
         default: ""
+      harness_timeout:
+        description: "Per-harness time limit in seconds"
+        required: false
+        default: "1800"
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -114,18 +118,15 @@ jobs:
           cargo kani setup
       - name: Verify (one process per harness)
         if: steps.sel.outputs.run == 'true'
-        run: .github/scripts/kani_module.sh "${{ matrix.module }}" "${{ matrix.file }}"
+        env:
+          KANI_HARNESS_TIMEOUT: ${{ github.event.inputs.harness_timeout || '1800' }}
+          GITHUB_TOKEN: ${{ github.token }}
+          MODULE: ${{ matrix.module }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            export PUBLISH_BRANCH="ci-logs/$(printf '%s' "$MODULE" | tr -c 'a-z0-9' '-')"
+          fi
+          .github/scripts/kani_module.sh "${{ matrix.module }}" "${{ matrix.file }}"
       - name: Report
         if: always() && steps.sel.outputs.run == 'true'
         run: python3 .github/scripts/kani_report.py kani-logs
-      - name: Publish raw logs (manual runs only)
-        if: always() && steps.sel.outputs.run == 'true' && github.event_name == 'workflow_dispatch'
-        env:
-          TOKEN: ${{ github.token }}
-          MODULE: ${{ matrix.module }}
-        run: |
-          slug=$(printf '%s' "$MODULE" | tr -c 'a-z0-9' '-')
-          cd kani-logs
-          git init -q && git checkout -q -b logs
-          git add . && git -c user.name=ci -c user.email=ci@localhost commit -qm "Kani logs, run ${{ github.run_id }}"
-          git push -qf "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}" "logs:refs/heads/ci-logs/${slug}"

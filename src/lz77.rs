@@ -339,7 +339,7 @@ mod proofs {
 
     fn check_tokens(data: &[u8], cfg: MatchConfig) {
         let mut m = Matcher::new(cfg);
-        let mut toks = Vec::new();
+        let mut toks = Vec::with_capacity(data.len());
         let end = m.tokenize(data, 0, usize::MAX, &mut toks);
         assert_eq!(end, data.len());
         let mut produced = 0usize;
@@ -350,7 +350,7 @@ mod proofs {
             produced += t.output_len();
         }
         assert_eq!(produced, data.len());
-        let mut out = Vec::new();
+        let mut out = Vec::with_capacity(data.len());
         assert!(replay(&toks, &mut out).is_ok());
         assert_eq!(out.as_slice(), data);
     }

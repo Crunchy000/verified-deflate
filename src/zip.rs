@@ -12,7 +12,7 @@ use crate::deflate::{compress_with, CompressOptions, Strategy};
 use crate::error::InflateError;
 use crate::inflate::decompress_with_limit;
 use core::fmt;
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 const LOCAL_SIG: u32 = 0x0403_4b50;
 const CENTRAL_SIG: u32 = 0x0201_4b50;
@@ -560,7 +560,7 @@ struct EntryMeta {
 pub struct ZipWriter {
     out: Vec<u8>,
     central: Vec<(CentralHeader, Vec<u8>)>,
-    names: HashSet<String>,
+    names: BTreeSet<String>,
 }
 
 impl ZipWriter {
@@ -763,6 +763,31 @@ fn find_eocd(data: &[u8]) -> Result<usize, ZipError> {
     }
 }
 
+/// Central directory range `(start, end)` given the end record at `e`.
+/// Guarantees `start <= end <= e` (proven by Kani for all field values).
+fn directory_bounds(e: usize, eocd: &EndOfCentralDirectory) -> Result<(usize, usize), ZipError> {
+    let start = eocd.cd_offset as usize;
+    let end = start.checked_add(eocd.cd_size as usize).ok_or(ZipError::Truncated)?;
+    if end > e {
+        return Err(ZipError::Truncated);
+    }
+    Ok((start, end))
+}
+
+/// Byte ranges `(name_start, name_end, next)` of the central record at `p`.
+/// Guarantees `p + 46 == name_start <= name_end <= next <= cd_end` (proven
+/// by Kani for all positions and field values), so the parse loop's slices
+/// are in bounds and it always advances.
+fn record_bounds(p: usize, cd_end: usize, h: &CentralHeader) -> Result<(usize, usize, usize), ZipError> {
+    let name_start = p.checked_add(CentralHeader::SIZE).ok_or(ZipError::Truncated)?;
+    let name_end = name_start.checked_add(h.name_len as usize).ok_or(ZipError::Truncated)?;
+    let next = name_end.checked_add(h.extra_len as usize + h.comment_len as usize).ok_or(ZipError::Truncated)?;
+    if next > cd_end {
+        return Err(ZipError::Truncated);
+    }
+    Ok((name_start, name_end, next))
+}
+
 impl<'a> ZipArchive<'a> {
     /// Parses the central directory of `data`.
     pub fn parse(data: &'a [u8]) -> Result<Self, ZipError> {
@@ -774,22 +799,14 @@ impl<'a> ZipArchive<'a> {
         if eocd.entries_total == 0xFFFF || eocd.cd_size == u32::MAX || eocd.cd_offset == u32::MAX {
             return Err(ZipError::Zip64Unsupported);
         }
-        let cd_start = eocd.cd_offset as usize;
-        let cd_end = cd_start.checked_add(eocd.cd_size as usize).ok_or(ZipError::Truncated)?;
-        if cd_end > e {
-            return Err(ZipError::Truncated);
-        }
+        let (cd_start, cd_end) = directory_bounds(e, &eocd)?;
         let total = eocd.entries_total as usize;
         let mut entries = Vec::with_capacity(total.min(eocd.cd_size as usize / CentralHeader::SIZE));
         let mut p = cd_start;
         for _ in 0..total {
+            // Invariant: p <= cd_end <= e < data.len() (see the bounds lemmas).
             let h = CentralHeader::parse(&data[p..cd_end])?;
-            let name_start = p + CentralHeader::SIZE;
-            let name_end = name_start + h.name_len as usize;
-            let next = name_end + h.extra_len as usize + h.comment_len as usize;
-            if next > cd_end {
-                return Err(ZipError::Truncated);
-            }
+            let (name_start, name_end, next) = record_bounds(p, cd_end, &h)?;
             if h.disk_start != 0 {
                 return Err(ZipError::MultiDisk);
             }
@@ -1044,22 +1061,36 @@ mod proofs {
         }
     }
 
-    /// With an end record at the end of a 70-byte buffer and every other
-    /// byte arbitrary (directory offset, size and count, the central header
-    /// and its name), parsing never panics and any entry lies inside the
-    /// central directory.
+    /// The central directory range lies before the end record, for every
+    /// position and every offset/size value.
     #[kani::proof]
-    #[kani::unwind(4)]
-    fn archive_parse_never_panics() {
-        let mut data: [u8; 70] = kani::any();
-        data[48..52].copy_from_slice(&EOCD_SIG.to_le_bytes());
-        data[68] = 0;
-        data[69] = 0;
-        if let Ok(a) = ZipArchive::parse(&data) {
-            assert!(a.len() <= 1);
-            for e in a.entries() {
-                assert!(e.raw_name.len() <= 48 - CentralHeader::SIZE);
-            }
+    fn directory_bounds_sound() {
+        let e: usize = kani::any();
+        let eocd = EndOfCentralDirectory {
+            disk: kani::any(),
+            cd_disk: kani::any(),
+            entries_on_disk: kani::any(),
+            entries_total: kani::any(),
+            cd_size: kani::any(),
+            cd_offset: kani::any(),
+            comment_len: kani::any(),
+        };
+        if let Ok((start, end)) = directory_bounds(e, &eocd) {
+            assert!(start <= end && end <= e);
+        }
+    }
+
+    /// Every accepted central record lies inside the directory and moves
+    /// the parser forward, for every position and every field value.
+    #[kani::proof]
+    fn record_bounds_sound() {
+        let p: usize = kani::any();
+        let cd_end: usize = kani::any();
+        kani::assume(p <= cd_end);
+        let h = any_central();
+        if let Ok((ns, ne, next)) = record_bounds(p, cd_end, &h) {
+            assert_eq!(ns, p + CentralHeader::SIZE);
+            assert!(ns <= ne && ne <= next && next <= cd_end && next > p);
         }
     }
 

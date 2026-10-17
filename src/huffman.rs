@@ -112,10 +112,6 @@ pub const fn canonical_codes(lengths: &[u8], codes: &mut [u16]) -> Result<(), Hu
     Ok(())
 }
 
-/// After this many halvings of the frequencies, [`build_lengths`] falls
-/// back to equal weights, which always fit (see its documentation).
-const MAX_HALVINGS: usize = 8;
-
 /// Computes code lengths for `freqs`, each at most `limit` bits, writing
 /// them to `lengths` (same length as `freqs`, at least 2).
 ///
@@ -127,17 +123,20 @@ const MAX_HALVINGS: usize = 8;
 /// When fewer than two symbols are used, symbols 0 and/or 1 are given
 /// length-1 codes so the code stays complete.
 ///
-/// The lengths come from a Huffman tree built over the frequencies. If the
-/// tree is deeper than `limit`, the frequencies are halved (keeping them
-/// nonzero) and the tree rebuilt. After eight halvings every
-/// weight is set to 1: a Huffman code for equal weights has lengths in
-/// `{k, k+1}` with `k = floor(log2 n)`, so it fits whenever
-/// `n <= 2^limit`, which is checked up front.
+/// The lengths come from a Huffman tree over the frequencies. If the tree
+/// is deeper than `limit`, long codes are clamped to `limit` and the Kraft
+/// sum is repaired, as in Zstandard's `HUF_setMaxHeight`: while the code is
+/// over-subscribed, the least frequent of the longest codes below the limit
+/// is lengthened (each step removes code space); then, while code space is
+/// unused, the most frequent of the longest codes is shortened. Shortening
+/// a longest code never overshoots, because the unused space is a multiple
+/// of that code's share, so the result is exactly complete. A suitable code
+/// to lengthen always exists when at most `2^limit` symbols are used, which
+/// is checked up front.
 ///
 /// No heap allocation is used: scratch space lives in fixed-size arrays,
-/// sized for small alphabets (up to 32 symbols, which is what the Kani
-/// harnesses exercise) or for the largest DEFLATE alphabet. Both sizes run
-/// the same generic code.
+/// sized for small alphabets (up to 32 symbols) or for the largest DEFLATE
+/// alphabet. Both sizes run the same generic code.
 pub fn build_lengths(freqs: &[u32], limit: usize, lengths: &mut [u8]) -> Result<(), HuffmanError> {
     if freqs.len() <= SMALL_ALPHABET {
         build_lengths_in::<SMALL_ALPHABET, { 2 * SMALL_ALPHABET }>(freqs, limit, lengths)
@@ -191,26 +190,55 @@ fn build_lengths_in<const N: usize, const M: usize>(
         weight[k] = u64::from(freqs[used[k] as usize]);
     }
     let mut depth = [0u32; N];
-    let mut attempt = 0;
-    while attempt <= MAX_HALVINGS {
-        huffman_depths::<N, M>(&weight, m, &mut depth);
-        let mut fits = true;
-        for k in 0..m {
-            fits &= depth[k] as usize <= limit;
+    huffman_depths::<N, M>(&weight, m, &mut depth);
+
+    // Kraft sum in units of 2^-limit; a complete code sums to `full`.
+    let limit32 = limit as u32;
+    let full = 1u64 << limit;
+    let mut kraft = 0u64;
+    for d in depth.iter_mut().take(m) {
+        if *d > limit32 {
+            *d = limit32;
         }
-        if fits {
-            for k in 0..m {
-                lengths[used[k] as usize] = depth[k] as u8;
-            }
-            return Ok(());
-        }
-        let flatten = attempt + 1 == MAX_HALVINGS;
-        for w in weight.iter_mut().take(m) {
-            *w = if flatten { 1 } else { (*w >> 1) | 1 };
-        }
-        attempt += 1;
+        kraft += 1u64 << (limit32 - *d);
     }
-    Err(HuffmanError::LimitTooSmall)
+    // Over-subscribed: lengthen the least frequent of the longest codes
+    // that are still below the limit. Each step frees 2^-(len+1).
+    while kraft > full {
+        let mut pick = None;
+        for k in 0..m {
+            if depth[k] < limit32 {
+                pick = match pick {
+                    Some(p) if (depth[p], u64::MAX - weight[p]) >= (depth[k], u64::MAX - weight[k]) => Some(p),
+                    _ => Some(k),
+                };
+            }
+        }
+        let Some(p) = pick else { return Err(HuffmanError::LimitTooSmall) };
+        kraft -= 1u64 << (limit32 - depth[p] - 1);
+        depth[p] += 1;
+    }
+    // Under-subscribed: shorten the most frequent of the longest codes.
+    // The deficit is a multiple of that code's share, so this lands
+    // exactly on a complete code.
+    while kraft < full {
+        let mut pick = None;
+        for k in 0..m {
+            if depth[k] > 1 {
+                pick = match pick {
+                    Some(p) if (depth[p], weight[p]) >= (depth[k], weight[k]) => Some(p),
+                    _ => Some(k),
+                };
+            }
+        }
+        let Some(p) = pick else { return Err(HuffmanError::LimitTooSmall) };
+        kraft += 1u64 << (limit32 - depth[p]);
+        depth[p] -= 1;
+    }
+    for k in 0..m {
+        lengths[used[k] as usize] = depth[k] as u8;
+    }
+    Ok(())
 }
 
 /// Depth of each leaf in a Huffman tree over `weights[..m]` (`2 <= m <= N`).
@@ -420,7 +448,7 @@ mod tests {
 #[cfg(kani)]
 mod proofs {
     use super::*;
-    use crate::bitio::{reverse_bits, BitWriter};
+    use crate::bitio::reverse_bits;
 
     const N: usize = 6;
 
@@ -455,9 +483,10 @@ mod proofs {
         }
     }
 
-    /// `build_lengths` always yields a complete code within the limit that
-    /// codes every used symbol. A limit of 3 on five symbols forces the
-    /// frequency-halving path.
+    /// The length builder always yields a complete code within the limit
+    /// that codes every used symbol. A limit of 3 on five symbols forces
+    /// the clamp-and-repair path. (`build_lengths` runs this same generic
+    /// function with larger scratch arrays.)
     #[kani::proof]
     #[kani::unwind(11)]
     fn build_lengths_complete_and_limited() {
@@ -465,7 +494,7 @@ mod proofs {
         let limit: usize = kani::any();
         kani::assume(limit >= 3 && limit <= MAX_CODE_LEN);
         let mut lengths = [0u8; 5];
-        assert!(build_lengths(&freqs, limit, &mut lengths).is_ok());
+        assert!(build_lengths_in::<5, 10>(&freqs, limit, &mut lengths).is_ok());
         assert!(is_complete(&lengths));
         for i in 0..5 {
             assert!(lengths[i] as usize <= limit);
@@ -475,14 +504,14 @@ mod proofs {
         }
     }
 
-    /// Small-weight version that can actually reach deep trees and the
-    /// flattening fallback: limit 2 with four symbols.
+    /// The tightest feasible case: four symbols in two bits, where every
+    /// skewed distribution needs repair.
     #[kani::proof]
     #[kani::unwind(11)]
     fn build_lengths_tight_limit() {
         let freqs: [u32; 4] = kani::any();
         let mut lengths = [0u8; 4];
-        assert!(build_lengths(&freqs, 2, &mut lengths).is_ok());
+        assert!(build_lengths_in::<4, 8>(&freqs, 2, &mut lengths).is_ok());
         assert!(is_complete(&lengths));
         for i in 0..4 {
             assert!(lengths[i] <= 2);
@@ -502,7 +531,7 @@ mod proofs {
             kani::assume(f != 0);
         }
         let mut lengths = [0u8; 5];
-        assert_eq!(build_lengths(&freqs, 2, &mut lengths), Err(HuffmanError::LimitTooSmall));
+        assert_eq!(build_lengths_in::<5, 10>(&freqs, 2, &mut lengths), Err(HuffmanError::LimitTooSmall));
     }
 
     /// The decoder builder never panics, and accepts exactly the lengths
@@ -523,8 +552,8 @@ mod proofs {
         }
     }
 
-    /// Core round trip: for any valid lengths and any coded symbol, writing
-    /// the symbol's canonical code (bit-reversed, as the encoder does) and
+    /// Core round trip: for any valid lengths and any coded symbol, packing
+    /// the symbol's canonical code bit-reversed (as the encoder does) and
     /// decoding it returns the symbol and consumes exactly its length.
     #[kani::proof]
     #[kani::unwind(17)]
@@ -535,15 +564,15 @@ mod proofs {
         let dec = Decoder::new(&lengths).unwrap();
         let s: usize = kani::any_where(|&s: &usize| s < N);
         kani::assume(lengths[s] != 0);
-        let trailing: u32 = kani::any();
-        let mut w = BitWriter::new();
+        // Pack the code as `BitWriter::write_bits` does (proven in `bitio`),
+        // followed by 16 arbitrary bits, and decode it.
         let len = u32::from(lengths[s]);
-        w.write_bits(u32::from(reverse_bits(codes[s], len)), len);
-        w.write_bits(trailing, 16);
-        let bytes = w.finish();
+        let trailing: u16 = kani::any();
+        let word = u32::from(reverse_bits(codes[s], len)) | (u32::from(trailing) << len);
+        let bytes = word.to_le_bytes();
         let mut r = BitReader::new(&bytes);
         assert_eq!(dec.decode(&mut r), Ok(s as u16));
-        assert_eq!(r.read_bits(16), Ok(trailing & 0xffff));
+        assert_eq!(r.read_bits(16), Ok(u32::from(trailing)));
     }
 
     /// Decoding arbitrary bits with arbitrary accepted lengths never panics

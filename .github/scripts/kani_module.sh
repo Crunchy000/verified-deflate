@@ -29,6 +29,20 @@ if grep -q "^error" kani-logs/_build.log; then
   cat kani-logs/_build.log
 fi
 
+# Optionally publish logs to a branch after every harness, so partial
+# results can be read while the job is still running.
+publish() {
+  [ -n "${PUBLISH_BRANCH:-}" ] || return 0
+  local tmp
+  tmp=$(mktemp -d)
+  cp -r kani-logs/. "$tmp"/
+  ( cd "$tmp" && git init -q && git checkout -q -b logs && git add . \
+      && git -c user.name=ci -c user.email=ci@localhost commit -qm "Kani logs" \
+      && git push -qf "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}" "logs:refs/heads/${PUBLISH_BRANCH}" ) \
+    || echo "log publish failed"
+  rm -rf "$tmp"
+}
+
 for n in $names; do
   h="${prefix}${n}"
   echo "::group::$h"
@@ -44,4 +58,5 @@ for n in $names; do
   echo "::endgroup::"
   printf '%s\t%s\t%s\n' "$h" "$status" "$secs" >> kani-logs/status.tsv
   echo "$h: exit $status after ${secs}s"
+  publish
 done

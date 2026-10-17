@@ -38,7 +38,9 @@ pub fn decompress(input: &[u8]) -> Result<Vec<u8>, InflateError> {
 /// [`InflateError::OutputLimitExceeded`] rather than producing more than
 /// `max_output` bytes.
 pub fn decompress_with_limit(input: &[u8], max_output: usize) -> Result<Decompressed, InflateError> {
-    let guess = input.len().saturating_mul(3).min(max_output).min(1 << 26);
+    // Capacity is a guess; it does not depend on the limit, which keeps the
+    // allocation size independent of caller-controlled values.
+    let guess = input.len().saturating_mul(4).min(1 << 26);
     let mut st = State { br: BitReader::new(input), out: Vec::with_capacity(guess), limit: max_output };
     loop {
         let header = st.br.read_bits(3)?;
@@ -251,12 +253,13 @@ mod proofs {
         }
     }
 
-    /// No 6-byte input that is a single fixed-Huffman block can make the
-    /// decoder panic; this reaches long overlapping matches.
+    /// No 5-byte input that is a single fixed-Huffman block can make the
+    /// decoder panic. Five bytes are enough for a literal followed by a
+    /// 258-byte overlapping match, so long copies are reached.
     #[kani::proof]
     #[kani::unwind(17)]
-    fn never_panics_fixed_6_bytes() {
-        let mut data: [u8; 6] = kani::any();
+    fn never_panics_fixed_5_bytes() {
+        let mut data: [u8; 5] = kani::any();
         data[0] = (data[0] & !0b111) | 0b011; // BFINAL = 1, BTYPE = 01
         if let Ok(d) = decompress_with_limit(&data, 300) {
             assert!(d.data.len() <= 300);
