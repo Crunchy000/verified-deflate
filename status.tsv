@@ -1,0 +1,5 @@
+inflate::proofs::never_panics_2_bytes	143	182
+inflate::proofs::dynamic_header_never_panics	143	194
+inflate::proofs::never_panics_fixed_5_bytes	143	244
+inflate::proofs::stored_block_semantics	0	18
+inflate::proofs::expand_code_length_is_safe	0	3
