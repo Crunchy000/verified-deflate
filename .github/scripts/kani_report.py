@@ -51,8 +51,12 @@ def main(logdir: str) -> int:
             lines = [l for l in tail.splitlines() if l.strip()]
             picked = []
             for i, l in enumerate(lines):
-                if re.match(r"\s*(\*\*|Failed Checks|SUMMARY|VERIFICATION|Check \d+|- Status: FAILURE)", l):
-                    picked.extend(lines[i:i + 3])
+                if re.match(r"\s*(\*\* \d+ of|Failed Checks)", l):
+                    picked.extend(lines[i:i + 2])
+            # Concrete playback: the counterexample as a unit test.
+            m = re.search(r"(?s)(#\[test\]\s*fn kani_concrete_playback.*?\n\})", tail)
+            if m:
+                picked.append(m.group(1)[:3000])
             body = "\n".join(dict.fromkeys(picked)) if picked else "\n".join(lines[-60:])
             failures.append((harness, status, body[:6000]))
     summary = "\n".join(rows) or "no harnesses ran"

@@ -24,7 +24,7 @@ PY
 echo "harnesses in $file:"; echo "$names"
 
 # Compile once without the memory cap; later runs reuse the build.
-cargo kani --harness "${prefix}__compile_only__" --exact --output-format=terse > kani-logs/_build.log 2>&1 || true
+cargo kani --harness "${prefix}__compile_only__" --exact > kani-logs/_build.log 2>&1 || true
 if grep -q "^error" kani-logs/_build.log; then
   cat kani-logs/_build.log
 fi
@@ -33,11 +33,14 @@ for n in $names; do
   h="${prefix}${n}"
   echo "::group::$h"
   start=$SECONDS
-  ( ulimit -v "$mem_kb"; exec timeout "$timeout_s" cargo kani --harness "$h" --exact --output-format=terse ) \
+  # Regular output names failed checks; concrete playback prints a unit
+  # test reproducing any counterexample.
+  ( ulimit -v "$mem_kb"; exec timeout "$timeout_s" cargo kani --harness "$h" --exact \
+      -Z concrete-playback --concrete-playback=print ) \
     > "kani-logs/$n.log" 2>&1
   status=$?
   secs=$((SECONDS - start))
-  tail -n 30 "kani-logs/$n.log"
+  grep -E "VERIFICATION|Failed Checks|^ File:|Verification Time" "kani-logs/$n.log" | tail -n 30
   echo "::endgroup::"
   printf '%s\t%s\t%s\n' "$h" "$status" "$secs" >> kani-logs/status.tsv
   echo "$h: exit $status after ${secs}s"
