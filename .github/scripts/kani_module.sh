@@ -24,7 +24,8 @@ PY
 echo "harnesses in $file:"; echo "$names"
 
 # Compile once without the memory cap; later runs reuse the build.
-cargo kani --harness "${prefix}__compile_only__" --exact > kani-logs/_build.log 2>&1 || true
+# shellcheck disable=SC2086
+cargo kani --harness "${prefix}__compile_only__" --exact ${KANI_EXTRA_FLAGS:-} > kani-logs/_build.log 2>&1 || true
 if grep -q "^error" kani-logs/_build.log; then
   cat kani-logs/_build.log
 fi
@@ -62,8 +63,9 @@ for n in $names; do
   start=$SECONDS
   # Regular output names failed checks; concrete playback prints a unit
   # test reproducing any counterexample.
+  # shellcheck disable=SC2086
   run_capped /usr/bin/time -v timeout "$timeout_s" cargo kani --harness "$h" --exact \
-      -Z concrete-playback --concrete-playback=print \
+      -Z concrete-playback --concrete-playback=print ${KANI_EXTRA_FLAGS:-} \
     > "kani-logs/$n.log" 2>&1
   status=$?
   secs=$((SECONDS - start))

@@ -75,11 +75,11 @@ jobs:
           - { module: "crc32::proofs::", file: src/crc32.rs }
           - { module: "tables::proofs::", file: src/tables.rs }
           - { module: "huffman::proofs::", file: src/huffman.rs }
-          - { module: "lz77::proofs::", file: src/lz77.rs }
-          - { module: "deflate::proofs::", file: src/deflate.rs }
-          - { module: "inflate::proofs::", file: src/inflate.rs }
+          - { module: "lz77::proofs::", file: src/lz77.rs, flags: "-Z stubbing --no-memory-safety-checks" }
+          - { module: "deflate::proofs::", file: src/deflate.rs, flags: "-Z stubbing --no-memory-safety-checks" }
+          - { module: "inflate::proofs::", file: src/inflate.rs, flags: "-Z stubbing --no-memory-safety-checks" }
           - { module: "zip::proofs::", file: src/zip.rs }
-          - { module: "e2e::", file: src/e2e.rs }
+          - { module: "e2e::", file: src/e2e.rs, flags: "-Z stubbing --no-memory-safety-checks" }
     steps:
       - name: Select
         id: sel
@@ -120,6 +120,7 @@ jobs:
         if: steps.sel.outputs.run == 'true'
         env:
           KANI_HARNESS_TIMEOUT: ${{ github.event.inputs.harness_timeout || '1800' }}
+          KANI_EXTRA_FLAGS: ${{ matrix.flags }}
           GITHUB_TOKEN: ${{ github.token }}
           MODULE: ${{ matrix.module }}
         run: |

@@ -329,6 +329,16 @@ mod tests {
 mod proofs {
     use super::*;
 
+    /// Stand-in for `Matcher::hash`: an arbitrary bucket on every call.
+    /// The tokenizer checks every candidate byte by byte, so its
+    /// correctness cannot depend on the hash; proving the harnesses below
+    /// under this stub proves them for every hash function (and avoids a
+    /// 32-bit multiplication per position in the model).
+    #[cfg_attr(kani_sample, allow(dead_code))] // stubs are not applied when sampling
+    fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+        kani::any::<usize>() & (m.head.len() - 1)
+    }
+
     fn check_tokens(data: &[u8], cfg: MatchConfig) {
         let mut m = Matcher::new(cfg);
         let mut toks = Vec::with_capacity(data.len());
@@ -352,6 +362,7 @@ mod proofs {
     /// matching on, every token is valid and the tokens replay to the input.
     #[kani::proof]
     #[kani::unwind(6)]
+    #[kani::stub(Matcher::hash, any_bucket)]
     fn tokens_valid_and_replay_small_tables() {
         let data: [u8; 5] = kani::any();
         let cfg = MatchConfig {
@@ -369,6 +380,7 @@ mod proofs {
     /// Same property for any 4 bytes with the production level-9 configuration.
     #[kani::proof]
     #[kani::unwind(5)]
+    #[kani::stub(Matcher::hash, any_bucket)]
     fn tokens_valid_and_replay_level9() {
         let data: [u8; 4] = kani::any();
         check_tokens(&data, MatchConfig::for_level(9));
@@ -377,6 +389,7 @@ mod proofs {
     /// Same property for any 4 bytes without lazy matching (level 1).
     #[kani::proof]
     #[kani::unwind(5)]
+    #[kani::stub(Matcher::hash, any_bucket)]
     fn tokens_valid_and_replay_greedy() {
         let data: [u8; 4] = kani::any();
         check_tokens(&data, MatchConfig::for_level(1));
