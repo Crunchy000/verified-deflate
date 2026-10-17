@@ -37,7 +37,7 @@ publish() {
   tmp=$(mktemp -d)
   cp -r kani-logs/. "$tmp"/
   ( cd "$tmp" && git init -q && git checkout -q -b logs && git add . \
-      && git -c user.name=ci -c user.email=ci@localhost commit -qm "Kani logs" \
+      && git -c user.name=ci -c user.email=ci@localhost commit -qm "Kani logs, run ${GITHUB_RUN_ID:-local}" \
       && git push -qf "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}" "logs:refs/heads/${PUBLISH_BRANCH}" ) \
     || echo "log publish failed"
   rm -rf "$tmp"

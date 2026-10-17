@@ -174,42 +174,51 @@ impl Matcher {
     /// on the same buffer), but never past `data.len()`.
     pub fn tokenize(&mut self, data: &[u8], start: usize, max_tokens: usize, out: &mut Vec<Token>) -> usize {
         let n = data.len();
-        let mut pos = start;
+        // First position not yet covered by an emitted token.
+        let mut next = start;
         let mut emitted = 0;
-        // A match already found for `pos` by the lazy look-ahead.
+        // A match already found for `next` by the lazy look-ahead.
         let mut pending: Option<(usize, usize)> = None;
-        while pos < n && emitted < max_tokens {
+        // Every position is visited once, in order; positions inside an
+        // emitted match are only recorded in the hash chains. Stepping one
+        // position at a time (rather than jumping by match lengths) keeps
+        // each data index a plain loop counter, which keeps the model
+        // checker's problem small.
+        for pos in start..n {
+            if pos < next {
+                self.insert(data, pos);
+                continue;
+            }
+            if emitted == max_tokens {
+                return pos;
+            }
             let found = match pending.take() {
                 Some(m) => Some(m),
                 None => self.longest_match(data, pos, MIN_MATCH - 1, self.cfg.max_chain),
             };
+            self.insert(data, pos);
             let Some((len, dist)) = found else {
-                self.insert(data, pos);
                 out.push(Token::Literal(data[pos]));
                 emitted += 1;
-                pos += 1;
+                next = pos + 1;
                 continue;
             };
-            self.insert(data, pos);
             if self.cfg.lazy && len < self.cfg.max_lazy && pos + 1 < n {
                 let chain = if len >= self.cfg.good_len { self.cfg.max_chain / 4 + 1 } else { self.cfg.max_chain };
-                if let Some(next) = self.longest_match(data, pos + 1, len, chain) {
+                if let Some(m) = self.longest_match(data, pos + 1, len, chain) {
                     // Better match one byte later: emit a literal instead.
                     out.push(Token::Literal(data[pos]));
                     emitted += 1;
-                    pos += 1;
-                    pending = Some(next);
+                    next = pos + 1;
+                    pending = Some(m);
                     continue;
                 }
             }
             out.push(Token::Match { len: len as u16, dist: dist as u16 });
             emitted += 1;
-            for p in pos + 1..pos + len {
-                self.insert(data, p);
-            }
-            pos += len;
+            next = pos + len;
         }
-        pos
+        next
     }
 }
 
@@ -390,7 +399,7 @@ mod proofs {
     /// Match copying agrees with a reference copy into a fixed array,
     /// including heavily overlapping matches.
     #[kani::proof]
-    #[kani::unwind(11)]
+    #[kani::unwind(13)]
     fn copy_match_equals_naive() {
         let prefix: [u8; 3] = kani::any();
         let dist: usize = kani::any();

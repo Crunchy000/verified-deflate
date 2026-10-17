@@ -272,43 +272,56 @@ pub(crate) struct ClToken {
 
 /// Run-length encodes a code-length sequence with symbols 16 (repeat the
 /// previous length 3-6 times), 17 (3-10 zeros) and 18 (11-138 zeros).
+///
+/// Runs are found in a single pass over the input; each completed run is
+/// then emitted by [`emit_run`].
 pub(crate) fn rle_code_lengths(lengths: &[u8], out: &mut Vec<ClToken>) {
-    let n = lengths.len();
-    let mut i = 0;
-    while i < n {
-        let v = lengths[i];
-        let mut run = 1;
-        while i + run < n && lengths[i + run] == v {
+    let mut value = 0u8;
+    let mut run = 0usize;
+    for &v in lengths {
+        if run > 0 && v == value {
             run += 1;
+            continue;
         }
-        i += run;
-        if v == 0 {
-            let mut r = run;
-            while r >= 11 {
-                let k = if r < 138 { r } else { 138 };
-                out.push(ClToken { sym: 18, extra: (k - 11) as u8 });
-                r -= k;
-            }
-            if r >= 3 {
-                out.push(ClToken { sym: 17, extra: (r - 3) as u8 });
-                r = 0;
-            }
-            while r > 0 {
-                out.push(ClToken { sym: 0, extra: 0 });
-                r -= 1;
-            }
-        } else {
+        if run > 0 {
+            emit_run(value, run, out);
+        }
+        value = v;
+        run = 1;
+    }
+    if run > 0 {
+        emit_run(value, run, out);
+    }
+}
+
+/// Emits a run of `run` (at least one) copies of the code length `v`.
+fn emit_run(v: u8, run: usize, out: &mut Vec<ClToken>) {
+    if v == 0 {
+        let mut r = run;
+        while r >= 11 {
+            let k = if r < 138 { r } else { 138 };
+            out.push(ClToken { sym: 18, extra: (k - 11) as u8 });
+            r -= k;
+        }
+        if r >= 3 {
+            out.push(ClToken { sym: 17, extra: (r - 3) as u8 });
+            r = 0;
+        }
+        while r > 0 {
+            out.push(ClToken { sym: 0, extra: 0 });
+            r -= 1;
+        }
+    } else {
+        out.push(ClToken { sym: v, extra: 0 });
+        let mut r = run - 1;
+        while r >= 3 {
+            let k = if r < 6 { r } else { 6 };
+            out.push(ClToken { sym: 16, extra: (k - 3) as u8 });
+            r -= k;
+        }
+        while r > 0 {
             out.push(ClToken { sym: v, extra: 0 });
-            let mut r = run - 1;
-            while r >= 3 {
-                let k = if r < 6 { r } else { 6 };
-                out.push(ClToken { sym: 16, extra: (k - 3) as u8 });
-                r -= k;
-            }
-            while r > 0 {
-                out.push(ClToken { sym: v, extra: 0 });
-                r -= 1;
-            }
+            r -= 1;
         }
     }
 }
