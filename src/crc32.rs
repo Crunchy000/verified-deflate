@@ -6,8 +6,9 @@
 //! bytes. The tables are computed at compile time from a bit-at-a-time
 //! reference ([`update_bitwise`]). Kani proves, for every register value
 //! and every input, that one table step equals eight bitwise steps, and
-//! that one eight-byte step equals eight table steps; so the fast CRC
-//! agrees with the bitwise definition on inputs of every length.
+//! (by linearity) that one eight-byte step equals eight table steps; so
+//! the fast CRC agrees with the bitwise definition on inputs of every
+//! length.
 
 /// The reflected CRC-32 polynomial.
 pub const POLY: u32 = 0xEDB8_8320;
@@ -187,11 +188,57 @@ mod proofs {
         assert_eq!(TABLES[k][b as usize], byte_table(TABLES[k - 1][b as usize], 0));
     }
 
-    /// The eight-byte step equals eight table steps, for every register
-    /// value and every eight bytes. With `table_step_equals_bitwise_step`
-    /// this makes `update` equal `update_bitwise` on inputs of every length:
-    /// both are folds over the input, eight bytes at a time and then byte
-    /// by byte, of steps proved equal.
+    // The eight-byte step equals eight table steps, for every register and
+    // every eight bytes. Checking that directly is too hard for the SAT
+    // solver (eight dependent table lookups against eight independent
+    // ones), so it is proved by linearity. Both sides are GF(2)-linear
+    // maps of the 96 input bits (register and bytes): eight table steps by
+    // `byte_step_is_linear` (a fold of linear steps is linear), and the
+    // eight-byte step by `lanes_are_linear` (it is two lane lookups of
+    // XORs of its inputs). Linear maps that agree on a basis are equal, and
+    // `eight_byte_step_matches_on_a_basis` checks all 96 basis vectors.
+    // With `table_step_equals_bitwise_step`, `update` therefore equals
+    // `update_bitwise` on inputs of every length.
+
+    /// One table step is linear in the register and the byte together.
+    #[kani::proof]
+    fn byte_step_is_linear() {
+        let (r, s): (u32, u32) = (kani::any(), kani::any());
+        let (a, b): (u8, u8) = (kani::any(), kani::any());
+        assert_eq!(byte_table(r ^ s, a ^ b), byte_table(r, a) ^ byte_table(s, b));
+    }
+
+    /// Each four-lane lookup is linear.
+    #[kani::proof]
+    fn lanes_are_linear() {
+        let k: usize = kani::any_where(|&k: &usize| k == 0 || k == 4);
+        let (x, y): (u32, u32) = (kani::any(), kani::any());
+        assert_eq!(lanes(x ^ y, k), lanes(x, k) ^ lanes(y, k));
+    }
+
+    /// The eight-byte step and eight table steps agree on every basis
+    /// vector: each single set bit of the register or of the eight bytes.
+    #[kani::proof]
+    #[kani::unwind(9)]
+    fn eight_byte_step_matches_on_a_basis() {
+        let bit: usize = kani::any_where(|&i: &usize| i < 96);
+        let mut c = 0u32;
+        let mut b = [0u8; 8];
+        if bit < 32 {
+            c = 1 << bit;
+        } else {
+            b[(bit - 32) / 8] = 1 << ((bit - 32) % 8);
+        }
+        let mut r = c;
+        for &x in &b {
+            r = byte_table(r, x);
+        }
+        assert_eq!(step8(c, &b), r);
+    }
+
+    /// The direct statement, for every register and every eight bytes
+    /// (proved above by linearity; too slow for CI as a single query).
+    #[cfg(any(feature = "kani-extended", kani_sample))]
     #[kani::proof]
     #[kani::unwind(9)]
     fn eight_byte_step_equals_table_steps() {
@@ -205,8 +252,8 @@ mod proofs {
     }
 
     /// Four table steps from any register over any four bytes equal the
-    /// four-lane lookup of their XOR (the building block of the eight-byte
-    /// step).
+    /// four-lane lookup of their XOR (also too slow for CI as one query).
+    #[cfg(any(feature = "kani-extended", kani_sample))]
     #[kani::proof]
     #[kani::unwind(5)]
     fn four_byte_lanes_equal_table_steps() {
