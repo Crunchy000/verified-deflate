@@ -301,8 +301,20 @@ fn take_min(active: &mut [u16], n_active: &mut usize, w: &[u64]) -> usize {
     id as usize
 }
 
-/// Canonical Huffman decoder using per-length counts and a symbol list
-/// sorted by code (the representation used by zlib's `puff.c`).
+/// Bits looked up at once by [`Decoder::decode`]'s table. Codes up to
+/// this long (all fixed-Huffman codes, and nearly all dynamic ones) decode
+/// with one lookup; longer ones fall back to the canonical bit-by-bit walk.
+pub const FAST_BITS: u32 = 10;
+const FAST_SIZE: usize = 1 << FAST_BITS;
+
+/// Canonical Huffman decoder.
+///
+/// The reference representation is per-length counts plus a symbol list
+/// sorted by code (as in zlib's `puff.c`), decoded bit by bit by
+/// [`decode_slow`](Self::decode_slow). On top of it sits a lookup table
+/// indexed by the next `fast_bits` input bits; [`decode`](Self::decode)
+/// uses it and falls back to `decode_slow`. Kani proves the two decode
+/// identically, so everything proven about the slow decoder carries over.
 #[derive(Clone, Debug)]
 pub struct Decoder {
     /// `count[l]` = number of symbols with code length `l` (`count[0]` unused).
@@ -313,11 +325,34 @@ pub struct Decoder {
     coded: u16,
     /// Unused code space in units of `2^-15`; zero for a complete code.
     left: u16,
+    /// `fast[bits]` = `(len << 12) | symbol` for the code that the low
+    /// `len` of `bits` spell (bit-reversed), or 0 if no code of at most
+    /// `fast_bits` bits matches.
+    fast: [u16; FAST_SIZE],
+    /// Table width in bits, at most [`FAST_BITS`].
+    fast_bits: u32,
 }
 
 impl Decoder {
     /// A decoder with no codes (every decode fails).
-    pub const EMPTY: Self = Self { count: [0; MAX_CODE_LEN + 1], symbol: [0; MAX_SYMBOLS], coded: 0, left: 1 << 15 };
+    pub const EMPTY: Self = Self {
+        count: [0; MAX_CODE_LEN + 1],
+        symbol: [0; MAX_SYMBOLS],
+        coded: 0,
+        left: 1 << 15,
+        fast: [0; FAST_SIZE],
+        fast_bits: FAST_BITS,
+    };
+
+    /// Like [`new`](Self::new) with a lookup table of `fast_bits` bits
+    /// (clamped to [`FAST_BITS`]). Proofs use small tables.
+    pub const fn with_fast_bits(lengths: &[u8], fast_bits: u32) -> Result<Self, HuffmanError> {
+        let mut d = Self::EMPTY;
+        match d.rebuild_with_fast_bits(lengths, fast_bits) {
+            Ok(()) => Ok(d),
+            Err(e) => Err(e),
+        }
+    }
 
     /// Builds a decoder for the given code lengths.
     ///
@@ -339,10 +374,17 @@ impl Decoder {
     ///
     /// [`new`]: Self::new
     pub const fn rebuild(&mut self, lengths: &[u8]) -> Result<(), HuffmanError> {
+        self.rebuild_with_fast_bits(lengths, FAST_BITS)
+    }
+
+    /// [`rebuild`](Self::rebuild) with a lookup table of `fast_bits` bits.
+    pub const fn rebuild_with_fast_bits(&mut self, lengths: &[u8], fast_bits: u32) -> Result<(), HuffmanError> {
         let n = lengths.len();
         self.count = [0; MAX_CODE_LEN + 1];
         self.coded = 0;
         self.left = 1 << 15;
+        self.fast = [0; FAST_SIZE];
+        self.fast_bits = if fast_bits > FAST_BITS { FAST_BITS } else { fast_bits };
         if n > MAX_SYMBOLS {
             return Err(HuffmanError::TooManySymbols);
         }
@@ -385,6 +427,33 @@ impl Decoder {
             }
             s += 1;
         }
+        // Lookup table: each code of at most fast_bits bits fills every
+        // entry whose low bits spell it (codes are packed bit-reversed).
+        let fb = self.fast_bits;
+        let mut next = [0u32; MAX_CODE_LEN + 1];
+        let mut code = 0u32;
+        len = 1;
+        while len <= MAX_CODE_LEN {
+            code = (code + count[len - 1] as u32) << 1;
+            next[len] = code;
+            len += 1;
+        }
+        s = 0;
+        while s < n {
+            let l = lengths[s] as usize;
+            if l != 0 {
+                let c = next[l];
+                next[l] += 1;
+                if l as u32 <= fb {
+                    let mut idx = crate::bitio::reverse_bits(c as u16, l as u32) as usize;
+                    while idx < (1 << fb) {
+                        self.fast[idx] = ((l as u16) << 12) | s as u16;
+                        idx += 1 << l;
+                    }
+                }
+            }
+            s += 1;
+        }
         self.count = count;
         self.coded = coded;
         self.left = left as u16;
@@ -410,12 +479,29 @@ impl Decoder {
     /// Reads one symbol. Fails with `UnexpectedEof` if the input runs out
     /// and `InvalidSymbol` if the bits match no code.
     ///
+    /// One table lookup decodes any code of at most `fast_bits` bits that
+    /// is fully present in the input; everything else (longer codes, input
+    /// running out, invalid bits) goes to [`decode_slow`](Self::decode_slow),
+    /// which decides it exactly as if the table were not there.
+    #[inline(always)]
+    pub fn decode(&self, br: &mut BitReader<'_>) -> Result<u16, InflateError> {
+        let e = self.fast[br.peek(self.fast_bits) as usize];
+        let len = u32::from(e >> 12);
+        if len != 0 && len <= br.available() {
+            br.consume(len);
+            return Ok(e & 0x0fff);
+        }
+        self.decode_slow(br)
+    }
+
+    /// Reads one symbol bit by bit (the reference decoder).
+    ///
     /// The fifteen per-length steps are written out rather than looped, so
     /// that the model checker's loop bound for the callers does not have to
     /// cover them.
-    #[inline]
+    #[inline(never)]
     #[allow(unused_assignments)]
-    pub fn decode(&self, br: &mut BitReader<'_>) -> Result<u16, InflateError> {
+    pub fn decode_slow(&self, br: &mut BitReader<'_>) -> Result<u16, InflateError> {
         // Invariant at each step: first <= code, first is the smallest
         // canonical code of the current length, and index is the position
         // of that code in `symbol`.
@@ -606,7 +692,9 @@ mod proofs {
     #[kani::unwind(17)]
     fn decoder_new_never_panics() {
         let lengths: [u8; 8] = kani::any();
-        let res = Decoder::new(&lengths);
+        // A 4-bit table keeps the fill loop small; `new` runs the same code
+        // with a 10-bit table.
+        let res = Decoder::with_fast_bits(&lengths, 4);
         match kraft_sum(&lengths) {
             Err(_) => assert!(res.is_err()),
             Ok(k) => {
@@ -627,7 +715,7 @@ mod proofs {
         let lengths: [u8; N] = any_lengths(MAX_CODE_LEN as u8);
         let mut codes = [0u16; N];
         kani::assume(canonical_codes(&lengths, &mut codes).is_ok());
-        let dec = Decoder::new(&lengths).unwrap();
+        let dec = Decoder::with_fast_bits(&lengths, 4).unwrap();
         let s: usize = kani::any_where(|&s: &usize| s < N);
         kani::assume(lengths[s] != 0);
         // Pack the code as `BitWriter::write_bits` does (proven in `bitio`),
@@ -647,12 +735,36 @@ mod proofs {
     #[kani::unwind(17)]
     fn decode_arbitrary_bits() {
         let lengths: [u8; N] = any_lengths(MAX_CODE_LEN as u8);
-        let Ok(dec) = Decoder::new(&lengths) else { return };
+        let Ok(dec) = Decoder::with_fast_bits(&lengths, 4) else { return };
         let data: [u8; 2] = kani::any();
         let mut r = BitReader::new(&data);
         if let Ok(s) = dec.decode(&mut r) {
             assert!((s as usize) < N);
             assert!(lengths[s as usize] != 0);
+        }
+    }
+
+    /// The table-driven decoder is the bit-by-bit reference decoder: for
+    /// any valid lengths, any table width 1-5 bits, and any 0-3 bytes of
+    /// input, `decode` and `decode_slow` return the same result and, on
+    /// success, consume the same number of bits. Codes shorter than, equal
+    /// to and longer than the table, and input running out mid-code, are
+    /// all covered.
+    #[kani::proof]
+    #[kani::unwind(17)]
+    fn fast_decode_matches_slow() {
+        let lengths: [u8; N] = any_lengths(MAX_CODE_LEN as u8);
+        let fast_bits: u32 = kani::any_where(|&b: &u32| (1..=5).contains(&b));
+        let Ok(dec) = Decoder::with_fast_bits(&lengths, fast_bits) else { return };
+        let data: [u8; 3] = kani::any();
+        let len: usize = kani::any_where(|&l: &usize| l <= 3);
+        let mut fast = BitReader::new(&data[..len]);
+        let mut slow = BitReader::new(&data[..len]);
+        let a = dec.decode(&mut fast);
+        let b = dec.decode_slow(&mut slow);
+        assert_eq!(a, b);
+        if a.is_ok() {
+            assert_eq!(fast.bits_remaining(), slow.bits_remaining());
         }
     }
 }

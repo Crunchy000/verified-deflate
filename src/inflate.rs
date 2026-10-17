@@ -40,7 +40,7 @@ pub fn decompress(input: &[u8]) -> Result<Vec<u8>, InflateError> {
 pub fn decompress_with_limit(input: &[u8], max_output: usize) -> Result<Decompressed, InflateError> {
     let mut st = State {
         br: BitReader::new(input),
-        out: Output::new(max_output),
+        out: Output::new(input.len(), max_output),
         lit: Decoder::EMPTY,
         dist: Decoder::EMPTY,
         lengths: [0; NUM_LITLEN + NUM_DIST],
@@ -64,8 +64,9 @@ pub fn decompress_with_limit(input: &[u8], max_output: usize) -> Result<Decompre
     Ok(Decompressed { consumed: st.br.bytes_consumed(), data: st.out.finish() })
 }
 
-/// Initial output buffer size.
+/// Initial output buffer size bounds.
 const INITIAL_CAPACITY: usize = 4096;
+const MAX_INITIAL_CAPACITY: usize = 1 << 26;
 
 const FIXED_LIT: Decoder = match Decoder::new(&fixed_litlen_lengths()) {
     Ok(d) => d,
@@ -86,8 +87,11 @@ pub(crate) struct Output {
 }
 
 impl Output {
-    fn new(limit: usize) -> Self {
-        Self { buf: vec![0; INITIAL_CAPACITY], len: 0, limit }
+    /// An empty output for a stream of `input_len` bytes, with room for a
+    /// typical expansion of it (DEFLATE rarely expands more than 4x).
+    fn new(input_len: usize, limit: usize) -> Self {
+        let cap = input_len.saturating_mul(4).clamp(INITIAL_CAPACITY, MAX_INITIAL_CAPACITY);
+        Self { buf: vec![0; cap], len: 0, limit }
     }
 
     /// Makes room for `n` more bytes, failing if that would exceed the

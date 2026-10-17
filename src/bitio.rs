@@ -98,33 +98,39 @@ impl<'a> BitReader<'a> {
         Self { data, pos: 0, acc: 0, nbits: 0 }
     }
 
-    /// Loads the whole bytes needed to have at least `n` (≤ 32) bits
-    /// buffered. On failure nothing is consumed.
+    /// Tops up the accumulator: to at least 57 bits when 8 or more input
+    /// bytes remain (one unaligned 8-byte load), otherwise with whatever
+    /// whole bytes are left. Bits above `nbits` stay zero.
     #[inline]
-    fn fill(&mut self, n: u32) -> Result<(), InflateError> {
-        if self.nbits >= n {
-            return Ok(());
+    fn refill(&mut self) {
+        if self.nbits > 56 {
+            return;
         }
-        // 1..=4 bytes; the loop below has a constant bound so that Kani
-        // unrolls it exactly four times.
-        let need = (n - self.nbits).div_ceil(8) as usize;
-        let end = self.pos + need;
-        if end > self.data.len() {
-            return Err(InflateError::UnexpectedEof);
-        }
-        let mut j = 0;
-        while j < 4 {
-            if j < need {
-                self.acc |= u64::from(self.data[self.pos + j]) << self.nbits;
-                self.nbits += 8;
+        if let Some(c) = self.data.get(self.pos..self.pos + 8) {
+            let w = u64::from_le_bytes([c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7]]);
+            // Whole bytes that fit (1..=8); keep only those.
+            let take = (64 - self.nbits) / 8;
+            let w = if take == 8 { w } else { w & ((1u64 << (take * 8)) - 1) };
+            self.acc |= w << self.nbits;
+            self.pos += take as usize;
+            self.nbits += take * 8;
+        } else {
+            // Fewer than 8 bytes left. The loop has a constant trip count,
+            // which keeps it cheap for the model checker.
+            let mut j = 0;
+            while j < 8 {
+                if self.nbits <= 56 && self.pos < self.data.len() {
+                    self.acc |= u64::from(self.data[self.pos]) << self.nbits;
+                    self.pos += 1;
+                    self.nbits += 8;
+                }
+                j += 1;
             }
-            j += 1;
         }
-        self.pos = end;
-        Ok(())
     }
 
     /// Reads `n` bits (at most 32) as an unsigned integer, first bit in bit 0.
+    /// On failure the reader's position is unspecified.
     #[inline]
     pub fn read_bits(&mut self, n: u32) -> Result<u32, InflateError> {
         debug_assert!(n <= 32, "read_bits: n = {n} exceeds 32");
@@ -132,7 +138,12 @@ impl<'a> BitReader<'a> {
         if n == 0 {
             return Ok(0);
         }
-        self.fill(n)?;
+        if self.nbits < n {
+            self.refill();
+            if self.nbits < n {
+                return Err(InflateError::UnexpectedEof);
+            }
+        }
         let v = (self.acc & ((1u64 << n) - 1)) as u32;
         self.acc >>= n;
         self.nbits -= n;
@@ -143,16 +154,43 @@ impl<'a> BitReader<'a> {
     #[inline]
     pub fn read_bit(&mut self) -> Result<u32, InflateError> {
         if self.nbits == 0 {
-            // The accumulator is empty, so load exactly one byte.
-            let b = *self.data.get(self.pos).ok_or(InflateError::UnexpectedEof)?;
-            self.acc = u64::from(b);
-            self.pos += 1;
-            self.nbits = 8;
+            self.refill();
+            if self.nbits == 0 {
+                return Err(InflateError::UnexpectedEof);
+            }
         }
         let v = (self.acc & 1) as u32;
         self.acc >>= 1;
         self.nbits -= 1;
         Ok(v)
+    }
+
+    /// The next `n` (at most 32) bits without consuming them, with zeros in
+    /// place of any bits past the end of the input. Check
+    /// [`available`](Self::available) before relying on them.
+    #[inline]
+    pub fn peek(&mut self, n: u32) -> u32 {
+        debug_assert!(n <= 32);
+        if self.nbits < n {
+            self.refill();
+        }
+        (self.acc & ((1u64 << n) - 1)) as u32
+    }
+
+    /// Bits currently buffered, all of which are real input. After
+    /// [`peek`](Self::peek)`(n)` this is at least `n` unless the input ends
+    /// sooner.
+    #[inline]
+    pub fn available(&self) -> u32 {
+        self.nbits
+    }
+
+    /// Discards `n` buffered bits. Requires `n <= available()`.
+    #[inline]
+    pub fn consume(&mut self, n: u32) {
+        debug_assert!(n <= self.nbits);
+        self.acc >>= n;
+        self.nbits -= n;
     }
 
     /// Discards bits up to the next byte boundary.
@@ -169,15 +207,17 @@ impl<'a> BitReader<'a> {
         debug_assert!(self.nbits % 8 == 0, "read_aligned_bytes on unaligned reader");
         self.align_to_byte();
         let len = out.len();
-        // Whole bytes already sitting in the accumulator (at most 4) come first.
+        // Whole bytes already sitting in the accumulator (at most 8) come first.
         let buffered = (self.nbits / 8) as usize;
         let k = if len < buffered { len } else { buffered };
         let acc = self.acc.to_le_bytes();
         out[..k].copy_from_slice(&acc[..k]);
-        if k > 0 {
+        if k == 8 {
+            self.acc = 0;
+        } else {
             self.acc >>= 8 * k as u32;
-            self.nbits -= 8 * k as u32;
         }
+        self.nbits -= 8 * k as u32;
         let remaining = len - k;
         let end = match self.pos.checked_add(remaining) {
             Some(end) if end <= self.data.len() => end,

@@ -246,13 +246,28 @@ pub fn match_is_valid(len: usize, dist: usize, produced: usize) -> bool {
 
 /// The LZ77 copy on a buffer: writes `buf[pos..pos + len]`, each byte
 /// equal to the byte `dist` positions earlier. Source and destination may
-/// overlap (that is how DEFLATE expresses runs); copying front to back makes
-/// every byte read already final. Requires `1 <= dist <= pos` and
-/// `pos + len <= buf.len()`.
+/// overlap (that is how DEFLATE expresses runs). Requires
+/// `1 <= dist <= pos` and `pos + len <= buf.len()`.
+///
+/// Copies in chunks with `copy_within`: once a multiple of `dist` bytes
+/// has been written, the output is periodic with period `dist`, so the
+/// next chunk (up to everything written so far plus `dist`) can be copied
+/// from the start of the source in one non-overlapping move. Runs of a
+/// single byte are a fill.
 #[inline]
 pub fn copy_within_buffer(buf: &mut [u8], pos: usize, dist: usize, len: usize) {
-    for i in pos..pos + len {
-        buf[i] = buf[i - dist];
+    let src = pos - dist;
+    if dist == 1 {
+        let b = buf[src];
+        buf[pos..pos + len].fill(b);
+        return;
+    }
+    let mut copied = 0;
+    while copied < len {
+        let avail = dist + copied;
+        let chunk = if len - copied < avail { len - copied } else { avail };
+        buf.copy_within(src..src + chunk, pos + copied);
+        copied += chunk;
     }
 }
 
