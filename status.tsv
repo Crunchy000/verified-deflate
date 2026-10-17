@@ -1,0 +1,4 @@
+deflate::proofs::code_length_rle_roundtrip	0	64
+deflate::proofs::code_length_rle_zero_runs	0	268
+deflate::proofs::fixed_code_table_matches_rfc	0	3
+deflate::proofs::stored_cost_is_exact	0	73

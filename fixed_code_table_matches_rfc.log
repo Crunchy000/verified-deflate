@@ -1,0 +1,252 @@
+Kani Rust Verifier 0.68.0 (cargo plugin)
+CBMC 6.11.0
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `grow_is_unreachable` is never used
+   --> src/inflate.rs:297:15
+    |
+297 | pub(crate) fn grow_is_unreachable(_out: &mut Output, _n: usize) {
+    |               ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.52s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `grow_is_unreachable` is never used
+   --> src/inflate.rs:297:15
+    |
+297 | pub(crate) fn grow_is_unreachable(_out: &mut Output, _n: usize) {
+    |               ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.09s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+Checking harness deflate::proofs::fixed_code_table_matches_rfc...
+CBMC 6.11.0 (cbmc-6.11.0)
+CBMC version 6.11.0 (cbmc-6.11.0) 64-bit x86_64 linux
+Reading GOTO program from file /home/runner/work/verified-deflate/verified-deflate/target/kani/x86_64-unknown-linux-gnu/debug/build/verified-deflate/b25a7ff18c78880e/out/verified_deflate-b25a7ff18c78880e__RNvNtNtCsk0OmT2SdITd_16verified_deflate7deflate6proofs28fixed_code_table_matches_rfc.out
+Generating GOTO Program
+Adding CPROVER library (x86_64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+Running with 16 object bits, 48 offset bits (user-specified)
+Starting Bounded Model Checking
+Runtime Symex: 0.0350721s
+size of program expression: 770 steps
+simple slicing removed 4 assignments
+Generated 72 VCC(s), 38 remaining after simplification
+Runtime Postprocess Equation: 6.3775e-05s
+Passing problem to propositional reduction
+converting SSA
+Runtime Convert SSA: 0.0152784s
+Running propositional reduction
+Post-processing
+Runtime Post-process: 9.554e-06s
+Solving with CaDiCaL 3.0.0
+117699 variables, 2996 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.00495057s
+Runtime decision procedure: 0.0222335s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+117700 variables, 2997 clauses
+SAT checker: instance is UNSATISFIABLE
+Runtime Solver: 0.00239614s
+Runtime decision procedure: 0.00291431s
+
+RESULTS:
+Check 1: bitio::reverse_bits.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/bitio.rs:214:32 in function bitio::reverse_bits
+
+Check 2: bitio::reverse_bits.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: src/bitio.rs:214:9 in function bitio::reverse_bits
+
+Check 3: deflate::proofs::fixed_code_table_matches_rfc.assertion.1
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/deflate.rs:555:20 in function deflate::proofs::fixed_code_table_matches_rfc
+
+Check 4: deflate::proofs::fixed_code_table_matches_rfc.assertion.2
+	 - Status: SUCCESS
+	 - Description: "assertion failed: FIXED_LIT.code[0] == reverse_bits(0b0011_0000, 8)"
+	 - Location: src/deflate.rs:555:9 in function deflate::proofs::fixed_code_table_matches_rfc
+
+Check 5: deflate::proofs::fixed_code_table_matches_rfc.assertion.3
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/deflate.rs:556:20 in function deflate::proofs::fixed_code_table_matches_rfc
+
+Check 6: deflate::proofs::fixed_code_table_matches_rfc.assertion.4
+	 - Status: SUCCESS
+	 - Description: "assertion failed: FIXED_LIT.code[143] == reverse_bits(0b1011_1111, 8)"
+	 - Location: src/deflate.rs:556:9 in function deflate::proofs::fixed_code_table_matches_rfc
+
+Check 7: deflate::proofs::fixed_code_table_matches_rfc.assertion.5
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/deflate.rs:557:20 in function deflate::proofs::fixed_code_table_matches_rfc
+
+Check 8: deflate::proofs::fixed_code_table_matches_rfc.assertion.6
+	 - Status: SUCCESS
+	 - Description: "assertion failed: FIXED_LIT.code[144] == reverse_bits(0b1_1001_0000, 9)"
+	 - Location: src/deflate.rs:557:9 in function deflate::proofs::fixed_code_table_matches_rfc
+
+Check 9: deflate::proofs::fixed_code_table_matches_rfc.assertion.7
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/deflate.rs:558:20 in function deflate::proofs::fixed_code_table_matches_rfc
+
+Check 10: deflate::proofs::fixed_code_table_matches_rfc.assertion.8
+	 - Status: SUCCESS
+	 - Description: "assertion failed: FIXED_LIT.code[255] == reverse_bits(0b1_1111_1111, 9)"
+	 - Location: src/deflate.rs:558:9 in function deflate::proofs::fixed_code_table_matches_rfc
+
+Check 11: deflate::proofs::fixed_code_table_matches_rfc.assertion.9
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/deflate.rs:559:20 in function deflate::proofs::fixed_code_table_matches_rfc
+
+Check 12: deflate::proofs::fixed_code_table_matches_rfc.assertion.10
+	 - Status: SUCCESS
+	 - Description: "assertion failed: FIXED_LIT.code[256] == reverse_bits(0, 7)"
+	 - Location: src/deflate.rs:559:9 in function deflate::proofs::fixed_code_table_matches_rfc
+
+Check 13: deflate::proofs::fixed_code_table_matches_rfc.assertion.11
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/deflate.rs:560:20 in function deflate::proofs::fixed_code_table_matches_rfc
+
+Check 14: deflate::proofs::fixed_code_table_matches_rfc.assertion.12
+	 - Status: SUCCESS
+	 - Description: "assertion failed: FIXED_LIT.code[279] == reverse_bits(0b001_0111, 7)"
+	 - Location: src/deflate.rs:560:9 in function deflate::proofs::fixed_code_table_matches_rfc
+
+Check 15: deflate::proofs::fixed_code_table_matches_rfc.assertion.13
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/deflate.rs:561:20 in function deflate::proofs::fixed_code_table_matches_rfc
+
+Check 16: deflate::proofs::fixed_code_table_matches_rfc.assertion.14
+	 - Status: SUCCESS
+	 - Description: "assertion failed: FIXED_LIT.code[280] == reverse_bits(0b1100_0000, 8)"
+	 - Location: src/deflate.rs:561:9 in function deflate::proofs::fixed_code_table_matches_rfc
+
+Check 17: deflate::proofs::fixed_code_table_matches_rfc.assertion.15
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/deflate.rs:562:20 in function deflate::proofs::fixed_code_table_matches_rfc
+
+Check 18: deflate::proofs::fixed_code_table_matches_rfc.assertion.16
+	 - Status: SUCCESS
+	 - Description: "assertion failed: FIXED_LIT.code[287] == reverse_bits(0b1100_0111, 8)"
+	 - Location: src/deflate.rs:562:9 in function deflate::proofs::fixed_code_table_matches_rfc
+
+Check 19: deflate::proofs::fixed_code_table_matches_rfc.assertion.17
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/deflate.rs:565:20 in function deflate::proofs::fixed_code_table_matches_rfc
+
+Check 20: deflate::proofs::fixed_code_table_matches_rfc.assertion.18
+	 - Status: SUCCESS
+	 - Description: "assertion failed: FIXED_DIST.code[d] == reverse_bits(d as u16, 5)"
+	 - Location: src/deflate.rs:565:9 in function deflate::proofs::fixed_code_table_matches_rfc
+
+
+SUMMARY:
+ ** 0 of 20 failed
+
+VERIFICATION:- SUCCESSFUL
+Verification Time: 2.6161165s
+
+WARNING: Kani could not produce a concrete playback for `deflate::proofs::fixed_code_table_matches_rfc` because there were no failing panic checks or satisfiable cover statements.
+INFO: The concrete playback feature never generated unit tests because there were no failing harnesses.
+Manual Harness Summary:
+Complete - 1 successfully verified harnesses, 0 failures, 1 total.
+	Command being timed: "timeout 1200 cargo kani --harness deflate::proofs::fixed_code_table_matches_rfc --exact -Z concrete-playback --concrete-playback=print -Z stubbing --no-memory-safety-checks"
+	User time (seconds): 3.25
+	System time (seconds): 0.62
+	Percent of CPU this job got: 112%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:03.44
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 311496
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 112262
+	Voluntary context switches: 20976
+	Involuntary context switches: 38
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 2976
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
