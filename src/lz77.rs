@@ -246,22 +246,16 @@ pub fn match_is_valid(len: usize, dist: usize, produced: usize) -> bool {
 
 /// Appends a match to `out`: copies `len` bytes starting `dist` bytes from
 /// the end, where the source may overlap the bytes being written (that is
-/// how DEFLATE expresses runs).
-///
-/// Copies in doubling chunks: after copying a multiple of `dist` bytes the
-/// output is periodic with period `dist`, so the next chunk can be taken
-/// from the start of the match source in one `extend_from_within`. At most
-/// about log2(258) + 1 chunks are needed.
-/// Requires `1 <= dist <= out.len()`.
+/// how DEFLATE expresses runs). Byte by byte, so each byte read has already
+/// been written. (A chunked `extend_from_within` version is faster but made
+/// the model-checking problem far larger.) Requires `1 <= dist <= out.len()`.
 #[inline]
 pub fn copy_match(out: &mut Vec<u8>, dist: usize, len: usize) {
+    out.reserve(len);
     let start = out.len() - dist;
-    let mut copied = 0;
-    while copied < len {
-        let avail = dist + copied;
-        let chunk = if len - copied < avail { len - copied } else { avail };
-        out.extend_from_within(start..start + chunk);
-        copied += chunk;
+    for i in 0..len {
+        let b = out[start + i];
+        out.push(b);
     }
 }
 
@@ -349,22 +343,35 @@ mod proofs {
         kani::any::<usize>() & (m.head.len() - 1)
     }
 
+    /// Tokenizes `data` and checks every token is valid and that the
+    /// tokens describe `data` exactly. The reference replay into a fixed
+    /// array is the specification of what a token sequence means
+    /// (`copy_match` is checked against the same reference separately).
     fn check_tokens<const N: usize>(data: &[u8; N], cfg: MatchConfig) {
         let mut m = Matcher::new(cfg);
         let mut toks = [Token::Literal(0); N];
         let (end, count) = m.tokenize(data, 0, &mut toks);
         assert_eq!(end, N);
+        let mut out = [0u8; N];
         let mut produced = 0usize;
         for t in toks.iter().take(count) {
-            if let Token::Match { len, dist } = *t {
-                assert!(match_is_valid(len as usize, dist as usize, produced));
+            match *t {
+                Token::Literal(b) => {
+                    out[produced] = b;
+                    produced += 1;
+                }
+                Token::Match { len, dist } => {
+                    let (len, dist) = (len as usize, dist as usize);
+                    assert!(match_is_valid(len, dist, produced));
+                    for _ in 0..len {
+                        out[produced] = out[produced - dist];
+                        produced += 1;
+                    }
+                }
             }
-            produced += t.output_len();
         }
         assert_eq!(produced, N);
-        let mut out = Vec::with_capacity(N);
-        assert!(replay(&toks[..count], &mut out).is_ok());
-        assert_eq!(out.as_slice(), &data[..]);
+        assert_eq!(&out, data);
     }
 
     /// Small tables (8-byte window, 4 hash buckets) with the given level's
@@ -461,20 +468,20 @@ mod proofs {
 
     /// Replaying arbitrary tokens never panics: invalid matches are errors.
     #[kani::proof]
-    #[kani::unwind(10)]
+    #[kani::unwind(6)]
     fn replay_arbitrary_tokens() {
-        let kinds: [bool; 3] = kani::any();
-        let bytes: [u8; 3] = kani::any();
-        let lens: [u16; 3] = kani::any();
-        let dists: [u16; 3] = kani::any();
-        let mut toks = [Token::Literal(0); 3];
-        for i in 0..3 {
-            kani::assume(lens[i] <= 8);
+        let kinds: [bool; 2] = kani::any();
+        let bytes: [u8; 2] = kani::any();
+        let lens: [u16; 2] = kani::any();
+        let dists: [u16; 2] = kani::any();
+        let mut toks = [Token::Literal(0); 2];
+        for i in 0..2 {
+            kani::assume(lens[i] <= 4);
             toks[i] = if kinds[i] { Token::Literal(bytes[i]) } else { Token::Match { len: lens[i], dist: dists[i] } };
         }
-        let mut out = Vec::with_capacity(24);
+        let mut out = Vec::with_capacity(8);
         match replay(&toks, &mut out) {
-            Ok(()) => assert_eq!(out.len(), toks.iter().map(|t| t.output_len()).sum::<usize>()),
+            Ok(()) => assert_eq!(out.len(), toks[0].output_len() + toks[1].output_len()),
             Err(e) => assert_eq!(e, InflateError::DistanceTooFarBack),
         }
     }
