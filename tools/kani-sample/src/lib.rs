@@ -80,7 +80,11 @@ impl<T: Arbitrary, const N: usize> Arbitrary for [T; N] {
 
 impl<T: Arbitrary> Arbitrary for Option<T> {
     fn any() -> Self {
-        if bool::any() { Some(T::any()) } else { None }
+        if bool::any() {
+            Some(T::any())
+        } else {
+            None
+        }
     }
 }
 

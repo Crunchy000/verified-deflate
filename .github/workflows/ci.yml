@@ -6,32 +6,37 @@ on:
   workflow_dispatch:
 
 env:
-  CARGO_TERM_COLOR: always
+  CARGO_TERM_COLOR: never
+  KANI_VERSION: "0.68.0"
 
 jobs:
   test:
     name: Tests, lints, interop
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
       - name: Install zip/unzip for interop tests
         run: sudo apt-get install -y zip unzip
-      - run: cargo fmt --all --check
-      - run: cargo clippy --all-targets -- -D warnings
-      - name: Lint proof harnesses
-        run: cargo clippy --lib --profile test -- -D warnings
+      - name: Format
+        run: .github/scripts/run-and-report.sh fmt cargo fmt --all --check
+      - name: Clippy
+        run: .github/scripts/run-and-report.sh clippy cargo clippy --all-targets -- -D warnings
+      - name: Clippy (proof harnesses)
+        run: .github/scripts/run-and-report.sh clippy-harnesses cargo clippy --lib --profile test -- -D warnings
         env:
           RUSTFLAGS: --cfg kani --cfg kani_sample
-      - run: cargo test --release
-      - name: Run Kani harnesses as randomised tests (sanity check, not proof)
-        run: cargo test --lib --release -- proofs e2e
+      - name: Tests (including zlib, unzip and Info-ZIP interop)
+        run: .github/scripts/run-and-report.sh tests cargo test --release
+      - name: Kani harnesses as randomised tests (sanity check, not proof)
+        run: .github/scripts/run-and-report.sh sampled-harnesses cargo test --lib --release -- proofs e2e
         env:
           RUSTFLAGS: --cfg kani --cfg kani_sample
           KANI_SAMPLE_ITERS: "50000"
-      - run: cargo doc --no-deps
+      - name: Docs
+        run: .github/scripts/run-and-report.sh docs cargo doc --no-deps
         env:
           RUSTDOCFLAGS: -D warnings
 
@@ -39,31 +44,49 @@ jobs:
     name: MSRV (1.83)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@1.83
-      - run: cargo build --lib --bins
+      - run: .github/scripts/run-and-report.sh msrv cargo build --lib --bins
 
   kani:
-    name: Kani (${{ matrix.module }})
+    name: Kani ${{ matrix.module }}
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 240
     strategy:
       fail-fast: false
       matrix:
         module:
-          - bitio::proofs::
-          - crc32::proofs::
-          - tables::proofs::
-          - huffman::proofs::
-          - lz77::proofs::
-          - deflate::proofs::
-          - inflate::proofs::
-          - zip::proofs::
-          - e2e::
+          - "bitio::proofs::"
+          - "crc32::proofs::"
+          - "tables::proofs::"
+          - "huffman::proofs::"
+          - "lz77::proofs::"
+          - "deflate::proofs::"
+          - "inflate::proofs::"
+          - "zip::proofs::"
+          - "e2e::"
     steps:
-      - uses: actions/checkout@v4
-      - name: Verify ${{ matrix.module }}
-        uses: model-checking/kani-github-action@v1.1
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Cache Kani
+        uses: actions/cache@v4
         with:
-          kani-version: "0.68.0"
-          args: --harness ${{ matrix.module }} --output-format=terse
+          path: |
+            ~/.cargo/bin/kani
+            ~/.cargo/bin/cargo-kani
+            ~/.kani
+            ~/.rustup/toolchains/nightly-*
+          key: kani-${{ env.KANI_VERSION }}-${{ runner.os }}
+      - name: Install Kani ${{ env.KANI_VERSION }}
+        run: |
+          if ! command -v cargo-kani >/dev/null || ! cargo kani --version | grep -q "$KANI_VERSION"; then
+            cargo install --locked kani-verifier --version "$KANI_VERSION"
+          fi
+          cargo kani setup
+      - name: Verify
+        run: |
+          set -o pipefail
+          cargo kani --harness "${{ matrix.module }}" --output-format=terse 2>&1 | tee kani.log
+      - name: Report
+        if: always()
+        run: python3 .github/scripts/kani_report.py kani.log
