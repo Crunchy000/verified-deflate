@@ -5,7 +5,7 @@ weakest:
 
 1. **Kani proofs**: bounded model checking of the real code, for *every*
    input up to the stated size. Each harness is a `#[kani::proof]` function
-   next to the code it checks. 54 harnesses run in CI on every push; 9
+   next to the code it checks. 54 harnesses run in CI on every push; 10
    more are too large for CI runners and are gated behind the
    `kani-extended` feature (see below).
 2. **Safe Rust**: `#![forbid(unsafe_code)]`, so memory safety comes from
@@ -81,9 +81,9 @@ one either preserves the claim or is stated in the claim.
   `copy_within_buffer_ref` also meets. Larger harnesses replace the fast
   routine with its reference, whose model is much smaller; the claim is
   unchanged because the two compute the same function. In the same way,
-  the Huffman decoder's property harnesses use a decoder with no lookup
-  table, so decoding is the reference bit-by-bit walk, and
-  `fast_decode_matches_slow` proves the table path equal to that walk.
+  the Huffman decoder's property harnesses run on `Canonical`, the
+  bit-by-bit decoder, and `fast_decode_matches_slow` proves the
+  table-driven `Decoder` (which wraps a `Canonical`) equal to it.
 - **Specification stub for sorting.** The Huffman length builder's
   harnesses replace its heapsort with the heapsort's specification: the
   permutation of the input sorted by (weight, index), chosen
@@ -156,7 +156,7 @@ the zlib interop tests confirm the output is unchanged.
 | `decoder_new_never_panics` | For any lengths (0–255) over 8 symbols, the decoder builder never panics. It accepts exactly the lengths whose Kraft sum is ≤ 1 and reports completeness exactly. |
 | `encode_then_decode_symbol` | For any valid lengths over 6 symbols and any coded symbol, packing its canonical code as the encoder does and decoding returns that symbol. Exactly its length is consumed. |
 | `decode_arbitrary_bits` | Decoding arbitrary bits with any accepted lengths never panics, and only yields symbols that have codes. |
-| `fast_decode_matches_slow` | For any valid lengths over 6 symbols, any lookup-table width of 1–5 bits and any 0–2 bytes of input, the table-driven decoder returns exactly what the bit-by-bit decoder returns and consumes the same bits. This covers codes shorter than, as long as and longer than the table, and input ending mid-code. (The two harnesses above check the bit-by-bit decoder.) |
+| `fast_decode_matches_slow` | For any valid lengths over 4 symbols (up to 6 bits), any lookup-table width of 1–4 bits and any 0–1 bytes of input, the table-driven decoder returns exactly what the bit-by-bit decoder returns and consumes the same bits. This covers codes shorter than, as long as and longer than the table, and input ending mid-code. (The two harnesses above check the bit-by-bit decoder.) |
 | `sort_by_weight_sorts` | For any weights and any 0–5 distinct indices, the length builder's heapsort returns them sorted by (weight, index). The length-builder harnesses above use this as a specification stub. |
 
 ### LZ77 (`lz77`)
@@ -223,6 +223,7 @@ machine or further restructuring of the decoder.
 | `e2e::roundtrip_fixed_greedy` | Any 3 bytes round-trip through fixed Huffman with the greedy matcher. |
 | `e2e::roundtrip_fixed_two_symbol_alphabet` | Any 6 bytes over a two-symbol alphabet round-trip with level 9. |
 | `e2e::zip_roundtrip_stored` | A one-entry archive of any 3 bytes, stored, reads back exactly and passes its CRC check. |
+| `huffman::proofs::fast_decode_matches_slow_wide` | The table-driven decoder equals the bit-by-bit one for 5 symbols of up to 9 bits and 0–2 bytes of input. |
 | `crc32::proofs::eight_byte_step_equals_table_steps` | The eight-byte CRC step lemma as a single query. CI proves it by linearity instead (see above). |
 | `crc32::proofs::four_byte_lanes_equal_table_steps` | Its four-byte half as a single query. |
 

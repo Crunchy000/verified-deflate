@@ -913,6 +913,7 @@ mod proofs {
     }
 
     /// The same for 5 symbols of up to 9 bits and 0-2 bytes of input.
+    #[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
     #[kani::proof]
     #[kani::unwind(17)]
     fn fast_decode_matches_slow_wide() {

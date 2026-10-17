@@ -42,11 +42,12 @@ properties:
 - ZIP headers round-trip. Every slice the archive parser takes is in
   bounds, for archives of any size. Name validation blocks path traversal.
 
-Nine larger harnesses are gated behind the `kani-extended` feature
+Ten larger harnesses are gated behind the `kani-extended` feature
 because they need more memory or time than a CI runner has: whole-stream
 decoder no-panic, fixed-Huffman round trips, a whole-archive round trip,
-and single-query forms of the CRC slicing lemma (which CI proves by
-linearity instead). Dynamic-Huffman blocks are covered
+single-query forms of the CRC slicing lemma (which CI proves by
+linearity instead), and the Huffman table-decoder equivalence at larger
+bounds. Dynamic-Huffman blocks are covered
 compositionally rather than end to end.
 [VERIFICATION.md](VERIFICATION.md) lists every harness, its bounds, the
 modelling choices behind it, and what is **not** proven.
