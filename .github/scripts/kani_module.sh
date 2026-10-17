@@ -30,6 +30,10 @@ for m in re.finditer(pat, src):
     print(name)
 PY
 )
+# Optionally only the harnesses whose names match an extended regex.
+if [ -n "${KANI_HARNESS_FILTER:-}" ]; then
+  names=$(printf '%s\n' "$names" | grep -E -- "$KANI_HARNESS_FILTER" || true)
+fi
 if [ "${KANI_EXTENDED:-0}" = "1" ]; then
   KANI_EXTRA_FLAGS="${KANI_EXTRA_FLAGS:-} --features kani-extended"
 fi

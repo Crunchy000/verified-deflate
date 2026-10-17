@@ -9,6 +9,10 @@ on:
         description: "Only verify these Kani modules (comma-separated prefixes, e.g. zip,crc32); empty = all"
         required: false
         default: ""
+      harnesses:
+        description: "Only verify harnesses whose names match this extended regex (e.g. 'decode|sort'); empty = all"
+        required: false
+        default: ""
       harness_timeout:
         description: "Per-harness time limit in seconds"
         required: false
@@ -130,6 +134,7 @@ jobs:
         if: steps.sel.outputs.run == 'true'
         env:
           KANI_HARNESS_TIMEOUT: ${{ github.event.inputs.harness_timeout || '1800' }}
+          KANI_HARNESS_FILTER: ${{ github.event.inputs.harnesses }}
           KANI_EXTRA_FLAGS: ${{ matrix.flags }}
           KANI_EXTENDED: ${{ github.event.inputs.extended == 'true' && '1' || '0' }}
           GITHUB_TOKEN: ${{ github.token }}

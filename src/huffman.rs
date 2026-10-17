@@ -505,30 +505,33 @@ impl Decoder {
         }
         // Lookup table: each code of at most fast_bits bits fills every
         // entry whose low bits spell it (codes are packed bit-reversed).
+        // With no table (fast_bits = 0) there is nothing to fill.
         let fb = self.fast_bits;
-        let mut next = [0u32; MAX_CODE_LEN + 1];
-        let mut code = 0u32;
-        len = 1;
-        while len <= MAX_CODE_LEN {
-            code = (code + count[len - 1] as u32) << 1;
-            next[len] = code;
-            len += 1;
-        }
-        s = 0;
-        while s < n {
-            let l = lengths[s] as usize;
-            if l != 0 {
-                let c = next[l];
-                next[l] += 1;
-                if l as u32 <= fb {
-                    let mut idx = crate::bitio::reverse_bits(c as u16, l as u32) as usize;
-                    while idx < (1 << fb) {
-                        self.fast[idx] = ((l as u16) << 12) | s as u16;
-                        idx += 1 << l;
+        if fb > 0 {
+            let mut next = [0u32; MAX_CODE_LEN + 1];
+            let mut code = 0u32;
+            len = 1;
+            while len <= MAX_CODE_LEN {
+                code = (code + count[len - 1] as u32) << 1;
+                next[len] = code;
+                len += 1;
+            }
+            s = 0;
+            while s < n {
+                let l = lengths[s] as usize;
+                if l != 0 {
+                    let c = next[l];
+                    next[l] += 1;
+                    if l as u32 <= fb {
+                        let mut idx = crate::bitio::reverse_bits(c as u16, l as u32) as usize;
+                        while idx < (1 << fb) {
+                            self.fast[idx] = ((l as u16) << 12) | s as u16;
+                            idx += 1 << l;
+                        }
                     }
                 }
+                s += 1;
             }
-            s += 1;
         }
         self.count = count;
         self.coded = coded;
