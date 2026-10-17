@@ -1,0 +1,5 @@
+tables::proofs::length_code_covers_every_length	0	1
+tables::proofs::length_decode_is_inverse	0	0
+tables::proofs::distance_code_covers_every_distance	0	0
+tables::proofs::distance_decode_is_inverse	0	0
+tables::proofs::fixed_lengths_match_rfc	0	1
