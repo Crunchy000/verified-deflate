@@ -87,10 +87,13 @@ pub(crate) struct Output {
 }
 
 impl Output {
-    /// An empty output for a stream of `input_len` bytes, with room for a
-    /// typical expansion of it (DEFLATE rarely expands more than 4x).
+    /// An empty output for a stream of `input_len` bytes, with room for as
+    /// many bytes as the input has (more is added as needed, by doubling),
+    /// but never more than `limit`, so a caller that knows the exact size,
+    /// as a ZIP reader does, gets an exact buffer.
     fn new(input_len: usize, limit: usize) -> Self {
-        let cap = input_len.saturating_mul(4).clamp(INITIAL_CAPACITY, MAX_INITIAL_CAPACITY);
+        let cap = input_len.clamp(INITIAL_CAPACITY, MAX_INITIAL_CAPACITY);
+        let cap = if cap < limit { cap } else { limit };
         Self { buf: vec![0; cap], len: 0, limit }
     }
 
@@ -109,10 +112,11 @@ impl Output {
 
     #[cold]
     pub(crate) fn grow(&mut self, n: usize) {
-        let want = (self.len + n).max(self.buf.len().saturating_mul(2));
-        let mut bigger = vec![0; want];
-        bigger[..self.len].copy_from_slice(&self.buf[..self.len]);
-        self.buf = bigger;
+        // At least double, but never past the limit (`reserve` has checked
+        // that `len + n` is within it). Resizing in place lets the
+        // allocator extend the block, so only the new part is zeroed.
+        let want = (self.len + n).max(self.buf.len().saturating_mul(2)).min(self.limit);
+        self.buf.resize(want, 0);
     }
 
     fn finish(mut self) -> Vec<u8> {
