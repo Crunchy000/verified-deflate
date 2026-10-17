@@ -1,0 +1,533 @@
+Kani Rust Verifier 0.68.0 (cargo plugin)
+CBMC 6.11.0
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:805:23
+    |
+805 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused imports: `FileOptions`, `ZipArchive`, and `ZipWriter`
+  --> src/e2e.rs:13:18
+   |
+13 | use crate::zip::{FileOptions, ZipArchive, ZipWriter};
+   |                  ^^^^^^^^^^^  ^^^^^^^^^^  ^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `sort_by_weight_spec` is never used
+   --> src/huffman.rs:336:4
+    |
+336 | fn sort_by_weight_spec(idx: &mut [u16], w: &[u64]) {
+    |    ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `grow_is_unreachable` is never used
+   --> src/inflate.rs:305:15
+    |
+305 | pub(crate) fn grow_is_unreachable(_out: &mut Output, _n: usize) {
+    |               ^^^^^^^^^^^^^^^^^^^
+
+warning: function `copy_within_buffer_ref` is never used
+   --> src/lz77.rs:415:15
+    |
+415 | pub(crate) fn copy_within_buffer_ref(buf: &mut [u8], pos: usize, dist: usize, len: usize) {
+    |               ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:453:15
+    |
+453 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+warning: Found the following unsupported constructs:
+             - caller_location (1)
+             - foreign function (1)
+         
+         Verification will fail if one or more of these constructs is reachable.
+         See https://model-checking.github.io/kani/rust-feature-support.html for more details.
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.78s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:805:23
+    |
+805 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused imports: `FileOptions`, `ZipArchive`, and `ZipWriter`
+  --> src/e2e.rs:13:18
+   |
+13 | use crate::zip::{FileOptions, ZipArchive, ZipWriter};
+   |                  ^^^^^^^^^^^  ^^^^^^^^^^  ^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `sort_by_weight_spec` is never used
+   --> src/huffman.rs:336:4
+    |
+336 | fn sort_by_weight_spec(idx: &mut [u16], w: &[u64]) {
+    |    ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `grow_is_unreachable` is never used
+   --> src/inflate.rs:305:15
+    |
+305 | pub(crate) fn grow_is_unreachable(_out: &mut Output, _n: usize) {
+    |               ^^^^^^^^^^^^^^^^^^^
+
+warning: function `copy_within_buffer_ref` is never used
+   --> src/lz77.rs:415:15
+    |
+415 | pub(crate) fn copy_within_buffer_ref(buf: &mut [u8], pos: usize, dist: usize, len: usize) {
+    |               ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:453:15
+    |
+453 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.07s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+Checking harness huffman::proofs::fast_decode_matches_slow_wide...
+CBMC 6.11.0 (cbmc-6.11.0)
+CBMC version 6.11.0 (cbmc-6.11.0) 64-bit x86_64 linux
+Reading GOTO program from file /home/runner/work/verified-deflate/verified-deflate/target/kani/x86_64-unknown-linux-gnu/debug/build/verified-deflate/62cc8f846cdae4ca/out/verified_deflate-62cc8f846cdae4ca__RNvNtNtCsk0OmT2SdITd_16verified_deflate7huffman6proofs29fast_decode_matches_slow_wide.out
+Generating GOTO Program
+Adding CPROVER library (x86_64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+Running with 16 object bits, 48 offset bits (user-specified)
+Starting Bounded Model Checking
+Unwinding loop _RINvNtCs8xvirJzNMvV_4core5array18try_from_fn_erasedINtNtNtB4_3ops9try_trait17NeverShortCircuithENCINvMBQ_BN_10wrap_mut_1jNCINvNtNtCsk0OmT2SdITd_16verified_deflate7huffman6proofs11any_lengthsKj5_E0E0EB24_.0 iteration 1 file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/array/mod.rs line 930 column 5 function std::array::try_from_fn_erased::<std::ops::try_trait::NeverShortCircuit<u8>, {closure@std::ops::try_trait::NeverShortCircuit<u8>::wrap_mut_1<usize, {closure@src/huffman.rs:673:30: 673:33}>::{closure#0}}> thread 0
+Unwinding loop _RINvNtCs8xvirJzNMvV_4core5array18try_from_fn_erasedINtNtNtB4_3ops9try_trait17NeverShortCircuithENCINvMBQ_BN_10wrap_mut_1jNCINvNtNtCsk0OmT2SdITd_16verified_deflate7huffman6proofs11any_lengthsKj5_E0E0EB24_.0 iteration 2 file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/array/mod.rs line 930 column 5 function std::array::try_from_fn_erased::<std::ops::try_trait::NeverShortCircuit<u8>, {closure@std::ops::try_trait::NeverShortCircuit<u8>::wrap_mut_1<usize, {closure@src/huffman.rs:673:30: 673:33}>::{closure#0}}> thread 0
+Unwinding loop _RINvNtCs8xvirJzNMvV_4core5array18try_from_fn_erasedINtNtNtB4_3ops9try_trait17NeverShortCircuithENCINvMBQ_BN_10wrap_mut_1jNCINvNtNtCsk0OmT2SdITd_16verified_deflate7huffman6proofs11any_lengthsKj5_E0E0EB24_.0 iteration 3 file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/array/mod.rs line 930 column 5 function std::array::try_from_fn_erased::<std::ops::try_trait::NeverShortCircuit<u8>, {closure@std::ops::try_trait::NeverShortCircuit<u8>::wrap_mut_1<usize, {closure@src/huffman.rs:673:30: 673:33}>::{closure#0}}> thread 0
+Unwinding loop _RINvNtCs8xvirJzNMvV_4core5array18try_from_fn_erasedINtNtNtB4_3ops9try_trait17NeverShortCircuithENCINvMBQ_BN_10wrap_mut_1jNCINvNtNtCsk0OmT2SdITd_16verified_deflate7huffman6proofs11any_lengthsKj5_E0E0EB24_.0 iteration 4 file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/array/mod.rs line 930 column 5 function std::array::try_from_fn_erased::<std::ops::try_trait::NeverShortCircuit<u8>, {closure@std::ops::try_trait::NeverShortCircuit<u8>::wrap_mut_1<usize, {closure@src/huffman.rs:673:30: 673:33}>::{closure#0}}> thread 0
+Unwinding loop _RINvNtCs8xvirJzNMvV_4core5array18try_from_fn_erasedINtNtNtB4_3ops9try_trait17NeverShortCircuithENCINvMBQ_BN_10wrap_mut_1jNCINvNtNtCsk0OmT2SdITd_16verified_deflate7huffman6proofs11any_lengthsKj5_E0E0EB24_.0 iteration 5 file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/array/mod.rs line 930 column 5 function std::array::try_from_fn_erased::<std::ops::try_trait::NeverShortCircuit<u8>, {closure@std::ops::try_trait::NeverShortCircuit<u8>::wrap_mut_1<usize, {closure@src/huffman.rs:673:30: 673:33}>::{closure#0}}> thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.0 iteration 1 file src/huffman.rs line 469 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.0 iteration 2 file src/huffman.rs line 469 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.0 iteration 3 file src/huffman.rs line 469 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.0 iteration 4 file src/huffman.rs line 469 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.0 iteration 5 file src/huffman.rs line 469 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.1 iteration 1 file src/huffman.rs line 481 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.1 iteration 2 file src/huffman.rs line 481 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.1 iteration 3 file src/huffman.rs line 481 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.1 iteration 4 file src/huffman.rs line 481 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.1 iteration 5 file src/huffman.rs line 481 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.1 iteration 6 file src/huffman.rs line 481 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.1 iteration 7 file src/huffman.rs line 481 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.1 iteration 8 file src/huffman.rs line 481 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.1 iteration 9 file src/huffman.rs line 481 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.1 iteration 10 file src/huffman.rs line 481 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.1 iteration 11 file src/huffman.rs line 481 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.1 iteration 12 file src/huffman.rs line 481 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.1 iteration 13 file src/huffman.rs line 481 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.1 iteration 14 file src/huffman.rs line 481 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.1 iteration 15 file src/huffman.rs line 481 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.2 iteration 1 file src/huffman.rs line 493 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.2 iteration 2 file src/huffman.rs line 493 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.2 iteration 3 file src/huffman.rs line 493 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.2 iteration 4 file src/huffman.rs line 493 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.2 iteration 5 file src/huffman.rs line 493 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.2 iteration 6 file src/huffman.rs line 493 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.2 iteration 7 file src/huffman.rs line 493 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.2 iteration 8 file src/huffman.rs line 493 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.2 iteration 9 file src/huffman.rs line 493 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.2 iteration 10 file src/huffman.rs line 493 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.2 iteration 11 file src/huffman.rs line 493 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.2 iteration 12 file src/huffman.rs line 493 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.2 iteration 13 file src/huffman.rs line 493 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.2 iteration 14 file src/huffman.rs line 493 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.2 iteration 15 file src/huffman.rs line 493 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.3 iteration 1 file src/huffman.rs line 498 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.3 iteration 2 file src/huffman.rs line 498 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.3 iteration 3 file src/huffman.rs line 498 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.3 iteration 4 file src/huffman.rs line 498 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.3 iteration 5 file src/huffman.rs line 498 column 9 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.4 iteration 1 file src/huffman.rs line 514 column 13 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.4 iteration 2 file src/huffman.rs line 514 column 13 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.4 iteration 3 file src/huffman.rs line 514 column 13 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.4 iteration 4 file src/huffman.rs line 514 column 13 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.4 iteration 5 file src/huffman.rs line 514 column 13 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.4 iteration 6 file src/huffman.rs line 514 column 13 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.4 iteration 7 file src/huffman.rs line 514 column 13 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.4 iteration 8 file src/huffman.rs line 514 column 13 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.4 iteration 9 file src/huffman.rs line 514 column 13 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.4 iteration 10 file src/huffman.rs line 514 column 13 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.4 iteration 11 file src/huffman.rs line 514 column 13 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.4 iteration 12 file src/huffman.rs line 514 column 13 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.4 iteration 13 file src/huffman.rs line 514 column 13 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.4 iteration 14 file src/huffman.rs line 514 column 13 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.4 iteration 15 file src/huffman.rs line 514 column 13 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 1 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 2 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 3 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 4 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 5 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 6 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 7 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 8 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 9 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 10 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 11 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 12 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 13 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 14 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 15 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 16 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Not unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 17 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.6 iteration 1 file src/huffman.rs line 520 column 13 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 1 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 2 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 3 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 4 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 5 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 6 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 7 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 8 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 9 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 10 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 11 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 12 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 13 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 14 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 15 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 16 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Not unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 17 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.6 iteration 2 file src/huffman.rs line 520 column 13 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 1 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 2 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 3 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 4 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 5 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 6 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 7 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 8 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 9 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 10 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 11 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 12 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 13 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 14 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 15 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 16 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Not unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 17 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.6 iteration 3 file src/huffman.rs line 520 column 13 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 1 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 2 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 3 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 4 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 5 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 6 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 7 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 8 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 9 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 10 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 11 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 12 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 13 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 14 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 15 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 16 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Not unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 17 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.6 iteration 4 file src/huffman.rs line 520 column 13 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 1 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 2 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 3 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 4 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 5 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 6 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 7 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 8 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 9 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 10 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 11 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 12 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 13 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 14 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 15 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 16 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Not unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.5 iteration 17 file src/huffman.rs line 527 column 25 function huffman::Decoder::rebuild_with_fast_bits thread 0
+Unwinding loop _RNvMNtCsk0OmT2SdITd_16verified_deflate7huffmanNtB2_7Decoder22rebuild_with_fast_bits.6 iteration 5 file src/huffman.rs line 520 column 13 function huffman::Decoder::rebuild_with_fast_bits thread 0
+aborting path on assume(false) at file src/huffman.rs line 427 column 15 function huffman::Decoder::with_fast_bits thread 0
+aborting path on assume(false) at file src/huffman.rs line 876 column 5 function huffman::proofs::fast_decode_matches_slow_wide thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 50 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2641 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 177 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 69 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2641 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 177 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 413 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file src/bitio.rs line 134 column 5 function bitio::BitReader::<'_>::refill thread 0
+Unwinding loop _RNvMs_NtCsk0OmT2SdITd_16verified_deflate5bitioNtB4_9BitReader6refillB6_.0 iteration 1 file src/bitio.rs line 154 column 13 function bitio::BitReader::<'_>::refill thread 0
+Unwinding loop _RNvMs_NtCsk0OmT2SdITd_16verified_deflate5bitioNtB4_9BitReader6refillB6_.0 iteration 2 file src/bitio.rs line 154 column 13 function bitio::BitReader::<'_>::refill thread 0
+Unwinding loop _RNvMs_NtCsk0OmT2SdITd_16verified_deflate5bitioNtB4_9BitReader6refillB6_.0 iteration 3 file src/bitio.rs line 154 column 13 function bitio::BitReader::<'_>::refill thread 0
+Unwinding loop _RNvMs_NtCsk0OmT2SdITd_16verified_deflate5bitioNtB4_9BitReader6refillB6_.0 iteration 4 file src/bitio.rs line 154 column 13 function bitio::BitReader::<'_>::refill thread 0
+Unwinding loop _RNvMs_NtCsk0OmT2SdITd_16verified_deflate5bitioNtB4_9BitReader6refillB6_.0 iteration 5 file src/bitio.rs line 154 column 13 function bitio::BitReader::<'_>::refill thread 0
+Unwinding loop _RNvMs_NtCsk0OmT2SdITd_16verified_deflate5bitioNtB4_9BitReader6refillB6_.0 iteration 6 file src/bitio.rs line 154 column 13 function bitio::BitReader::<'_>::refill thread 0
+Unwinding loop _RNvMs_NtCsk0OmT2SdITd_16verified_deflate5bitioNtB4_9BitReader6refillB6_.0 iteration 7 file src/bitio.rs line 154 column 13 function bitio::BitReader::<'_>::refill thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/lib.rs line 0 column 0 function huffman::Decoder::decode_slow thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs line 1334 column 15 function std::option::Option::<&u8>::ok_or::<error::InflateError> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<&u8, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/bitio.rs line 186 column 22 function bitio::BitReader::<'_>::read_bit thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2177 column 15 function <std::result::Result<u32, error::InflateError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file src/lib.rs line 0 column 0 function huffman::Decoder::decode_slow thread 0
+aborting path on assume(false) at file src/lib.rs line 0 column 0 function <std::result::Result<u16, error::InflateError> as std::cmp::PartialEq>::eq thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 594 column 5 function std::result::Result::<u16, error::InflateError>::is_ok thread 0
+Runtime Symex: 4.61667s
+size of program expression: 164425 steps
+simple slicing removed 3544 assignments
+Generated 6748 VCC(s), 2404 remaining after simplification
+Runtime Postprocess Equation: 0.0614009s
+Passing problem to propositional reduction
+converting SSA
+Runtime Convert SSA: 4.57518s
+Running propositional reduction
+Post-processing
+Runtime Post-process: 0.0233326s
+Solving with CaDiCaL 3.0.0
+3807833 variables, 16748521 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 35.3751s
+Runtime decision procedure: 40.0153s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+3807834 variables, 16748522 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 2.99585s
+Runtime decision procedure: 3.12225s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+3807835 variables, 16748523 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 1.75382s
+Runtime decision procedure: 1.83274s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+3807836 variables, 16748524 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 2.90721s
+Runtime decision procedure: 3.00521s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+3807837 variables, 16748525 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 6.28084s
+Runtime decision procedure: 6.34289s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+3807838 variables, 16748526 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 163.308s
+Runtime decision procedure: 163.43s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+3807839 variables, 16748527 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 2.39252s
+Runtime decision procedure: 2.5539s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+3807840 variables, 16748528 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 1.35306s
+Runtime decision procedure: 1.47703s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+3807841 variables, 16748529 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 8.86435s
+Runtime decision procedure: 8.98144s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+3807842 variables, 16748530 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 1.15833s
+Runtime decision procedure: 1.2758s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+3807843 variables, 16748531 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 2.42348s
+Runtime decision procedure: 2.53955s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+3807844 variables, 16748532 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 1.8098s
+Runtime decision procedure: 1.92927s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+3807845 variables, 16748533 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 4.10424s
+Runtime decision procedure: 4.21644s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+3807846 variables, 16748534 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 8.00486s
+Runtime decision procedure: 8.1197s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+3807847 variables, 16748535 clauses
+SAT checker: instance is UNSATISFIABLE
+Runtime Solver: 646.305s
+Runtime decision procedure: 646.36s
+Terminated
