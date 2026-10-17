@@ -19,30 +19,32 @@ reference zlib and Info-ZIP.
 
 ## Verification
 
-52 Kani harnesses sit next to the code they check. For every input up to
-the stated sizes, they prove these properties:
+47 Kani harnesses sit next to the code they check and run in CI on every
+push. For every input up to the stated sizes, they prove these
+properties:
 
 - Bit-level I/O round-trips, and reads fail cleanly at end of input.
-- CRC-32 (slicing-by-8) equals its bit-by-bit definition.
+- CRC-32's table step equals eight bitwise steps for every register and
+  byte, so the CRC is correct for inputs of any length.
 - The length and distance code tables are correct for **every** length
   (3–258) and distance (1–32768).
-- Canonical Huffman codes are prefix-free.
-- Generated code lengths always form a complete code within the length
-  limit.
-- Huffman encode-then-decode is the identity.
-- LZ77 tokens are always valid and replay to exactly the input, including
-  with tiny hash tables that force collisions.
-- The encoder's header run-length coding is undone by the decoder's own
-  routine.
-- Stored and fixed-Huffman streams round-trip end to end.
-- The decoder never panics on any input of the checked sizes, and respects
-  its output limit.
-- ZIP headers round-trip, the archive parser never panics, and name
-  validation blocks path traversal.
+- Canonical Huffman codes are prefix-free. Generated code lengths always
+  form a complete code within the length limit. Huffman encode-then-decode
+  is the identity, and decoding arbitrary bits never panics.
+- LZ77 tokens are always valid and describe exactly the input, for every
+  hash function. The overlapping match copy meets its specification.
+- The encoder's code-length run-length coding is undone by the decoder's
+  own routine.
+- Stored streams round-trip end to end, including inside a ZIP archive.
+- ZIP headers round-trip. Every slice the archive parser takes is in
+  bounds, for archives of any size. Name validation blocks path traversal.
 
-The proofs are bounded, and dynamic-Huffman blocks are covered
-compositionally rather than end to end. [VERIFICATION.md](VERIFICATION.md)
-lists every harness, its bounds, and what is **not** proven.
+Six larger harnesses are gated behind the `kani-extended` feature
+because they need more memory than a CI runner has: whole-stream decoder
+no-panic and fixed-Huffman round trips. Dynamic-Huffman blocks are covered
+compositionally rather than end to end.
+[VERIFICATION.md](VERIFICATION.md) lists every harness, its bounds, the
+modelling choices behind it, and what is **not** proven.
 
 Two further checks run on top of the proofs. The test suite compares the
 engine against real zlib in both directions: zlib decodes every stream
@@ -90,13 +92,14 @@ of generated text, against zlib 1.3 on the same machine:
 
 | level | ratio | compress | decompress | zlib ratio | zlib compress | zlib decompress |
 |---|---|---|---|---|---|---|
-| 1 | 20.7% | 81 MB/s | 134 MB/s | 21.7% | 93 MB/s | 228 MB/s |
-| 6 | 15.1% | 18 MB/s | 245 MB/s | 15.1% | 29 MB/s | 401 MB/s |
-| 9 | 13.7% | 2.4 MB/s | 367 MB/s | 13.7% | 3.8 MB/s | 369 MB/s |
+| 1 | 20.7% | 85 MB/s | 95 MB/s | 21.7% | 93 MB/s | 228 MB/s |
+| 6 | 15.1% | 19 MB/s | 180 MB/s | 15.1% | 29 MB/s | 401 MB/s |
+| 9 | 13.7% | 2.4 MB/s | 180 MB/s | 13.7% | 3.8 MB/s | 369 MB/s |
 
-Compression ratios match zlib. Speed was not the priority: the decoder
-reads Huffman codes bit by bit, like zlib's `puff.c`, because that keeps
-every index provably in bounds.
+Compression ratios match zlib. Speed was traded for checkability in a few
+places: Huffman codes are decoded bit by bit, like zlib's `puff.c`;
+matches are compared and copied byte by byte; and the CRC uses one table
+rather than eight. Each of these keeps the model-checking problems small.
 
 ## Limitations
 
@@ -120,6 +123,7 @@ every index provably in bounds.
 | `src/inflate.rs` | Decoder |
 | `src/zip.rs` | ZIP writer and reader |
 | `src/e2e.rs` | End-to-end Kani harnesses |
+| `.github/scripts/` | Per-harness Kani runner and report used by CI |
 | `src/bin/vzip.rs` | Command-line tool |
 | `tests/` | zlib, Info-ZIP and robustness tests |
 | `tools/kani-sample/` | Runs harnesses as randomised tests where Kani isn't installed |

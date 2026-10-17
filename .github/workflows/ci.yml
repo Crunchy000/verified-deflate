@@ -13,6 +13,11 @@ on:
         description: "Per-harness time limit in seconds"
         required: false
         default: "1800"
+      extended:
+        description: "Also run harnesses gated behind the kani-extended feature (they need more than 16 GiB)"
+        type: boolean
+        required: false
+        default: false
       publish_logs:
         description: "Push raw Kani logs to ci-logs/* branches as each harness finishes"
         type: boolean
@@ -126,6 +131,7 @@ jobs:
         env:
           KANI_HARNESS_TIMEOUT: ${{ github.event.inputs.harness_timeout || '1800' }}
           KANI_EXTRA_FLAGS: ${{ matrix.flags }}
+          KANI_EXTENDED: ${{ github.event.inputs.extended == 'true' && '1' || '0' }}
           GITHUB_TOKEN: ${{ github.token }}
           MODULE: ${{ matrix.module }}
         run: |

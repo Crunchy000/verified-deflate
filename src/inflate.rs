@@ -307,6 +307,7 @@ mod proofs {
     /// Two bytes reach every block type's header handling, a fixed-block
     /// literal and end-of-block, and every early-EOF path.
     #[kani::stub(Output::grow, grow_is_unreachable)]
+    #[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
     #[kani::proof]
     #[kani::unwind(5)]
     fn never_panics_2_bytes() {
@@ -322,6 +323,7 @@ mod proofs {
     /// Reading a dynamic block header from any 4 bytes never panics: this
     /// covers the header fields, the code-length code (built from as many
     /// 3-bit lengths as fit) and the start of the run-length-coded lengths.
+    #[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
     #[kani::proof]
     #[kani::unwind(20)]
     fn dynamic_header_never_panics() {
@@ -338,6 +340,7 @@ mod proofs {
     /// literal followed by a length-258 match code; the limit keeps copies
     /// short while every decoding path is still taken.
     #[kani::stub(Output::grow, grow_is_unreachable)]
+    #[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
     #[kani::proof]
     #[kani::unwind(9)]
     fn never_panics_fixed_5_bytes() {

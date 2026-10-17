@@ -26,15 +26,14 @@
 //! ## What is verified
 //!
 //! Each module carries `#[kani::proof]` harnesses (run with `cargo kani`).
-//! They check, for all inputs up to the stated sizes: bit I/O round trips;
+//! For all inputs up to the stated sizes, they check: bit I/O round trips;
 //! CRC-32 equals its bitwise definition; the length and distance tables
 //! are correct for every value; canonical Huffman codes are prefix-free;
 //! generated code lengths are complete and length-limited; Huffman encode
-//! then decode is the identity; LZ77 tokens are valid and replay to the
-//! input; stored and fixed-Huffman streams round-trip end to end; the
-//! decoder never panics and respects its output limit; ZIP headers round
-//! trip and the archive parser never panics. See `VERIFICATION.md` for the
-//! full list, bounds, and what is *not* proven.
+//! then decode is the identity; LZ77 tokens are valid and describe the
+//! input; stored streams round-trip end to end; ZIP headers round-trip and
+//! the archive parser's slices are always in bounds. See `VERIFICATION.md`
+//! for the full list, bounds, and what is *not* proven.
 //!
 //! [RFC 1951]: https://www.rfc-editor.org/rfc/rfc1951
 //! [Kani]: https://github.com/model-checking/kani

@@ -43,6 +43,7 @@ fn roundtrip_stored() {
 /// for every hash function.
 #[kani::stub(crate::lz77::Matcher::hash, crate::lz77::any_bucket)]
 #[kani::stub(crate::inflate::Output::grow, crate::inflate::grow_is_unreachable)]
+#[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
 #[kani::proof]
 #[kani::unwind(7)]
 fn roundtrip_fixed_lazy() {
@@ -53,6 +54,7 @@ fn roundtrip_fixed_lazy() {
 /// Fixed Huffman with the greedy level-1 matcher on any 3 bytes.
 #[kani::stub(crate::lz77::Matcher::hash, crate::lz77::any_bucket)]
 #[kani::stub(crate::inflate::Output::grow, crate::inflate::grow_is_unreachable)]
+#[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
 #[kani::proof]
 #[kani::unwind(6)]
 fn roundtrip_fixed_greedy() {
@@ -64,6 +66,7 @@ fn roundtrip_fixed_greedy() {
 /// with the level-9 matcher.
 #[kani::stub(crate::lz77::Matcher::hash, crate::lz77::any_bucket)]
 #[kani::stub(crate::inflate::Output::grow, crate::inflate::grow_is_unreachable)]
+#[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
 #[kani::proof]
 #[kani::unwind(8)]
 fn roundtrip_fixed_two_symbol_alphabet() {
