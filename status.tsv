@@ -1,0 +1,6 @@
+lz77::proofs::tokens_valid_and_replay_small_tables	0	24
+lz77::proofs::tokens_valid_and_replay_level9	0	24
+lz77::proofs::tokens_valid_and_replay_greedy	0	22
+lz77::proofs::runs_are_matched	0	38
+lz77::proofs::copy_within_buffer_meets_spec	0	3
+lz77::proofs::replay_arbitrary_tokens	0	30

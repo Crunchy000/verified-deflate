@@ -1,0 +1,291 @@
+Kani Rust Verifier 0.68.0 (cargo plugin)
+CBMC 6.11.0
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+warning: Found the following unsupported constructs:
+             - caller_location (1)
+             - foreign function (1)
+         
+         Verification will fail if one or more of these constructs is reachable.
+         See https://model-checking.github.io/kani/rust-feature-support.html for more details.
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.48s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+Checking harness lz77::proofs::copy_within_buffer_meets_spec...
+CBMC 6.11.0 (cbmc-6.11.0)
+CBMC version 6.11.0 (cbmc-6.11.0) 64-bit x86_64 linux
+Reading GOTO program from file /home/runner/work/verified-deflate/verified-deflate/target/kani/x86_64-unknown-linux-gnu/debug/build/verified-deflate/b3afa9cc61c9c95b/out/verified_deflate-b3afa9cc61c9c95b__RNvNtNtCsk0OmT2SdITd_16verified_deflate4lz776proofs29copy_within_buffer_meets_spec.out
+Generating GOTO Program
+Adding CPROVER library (x86_64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+Running with 16 object bits, 48 offset bits (user-specified)
+Starting Bounded Model Checking
+aborting path on assume(false) at file src/lz77.rs line 254 column 14 function lz77::copy_within_buffer thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate4lz7718copy_within_bufferB3_.0 iteration 1 file src/lz77.rs line 254 column 5 function lz77::copy_within_buffer thread 0
+aborting path on assume(false) at file src/lz77.rs line 254 column 14 function lz77::copy_within_buffer thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate4lz7718copy_within_bufferB3_.0 iteration 2 file src/lz77.rs line 254 column 5 function lz77::copy_within_buffer thread 0
+aborting path on assume(false) at file src/lz77.rs line 254 column 14 function lz77::copy_within_buffer thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate4lz7718copy_within_bufferB3_.0 iteration 3 file src/lz77.rs line 254 column 5 function lz77::copy_within_buffer thread 0
+aborting path on assume(false) at file src/lz77.rs line 254 column 14 function lz77::copy_within_buffer thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate4lz7718copy_within_bufferB3_.0 iteration 4 file src/lz77.rs line 254 column 5 function lz77::copy_within_buffer thread 0
+aborting path on assume(false) at file src/lz77.rs line 254 column 14 function lz77::copy_within_buffer thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate4lz7718copy_within_bufferB3_.0 iteration 5 file src/lz77.rs line 254 column 5 function lz77::copy_within_buffer thread 0
+aborting path on assume(false) at file src/lz77.rs line 254 column 14 function lz77::copy_within_buffer thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate4lz7718copy_within_bufferB3_.0 iteration 6 file src/lz77.rs line 254 column 5 function lz77::copy_within_buffer thread 0
+aborting path on assume(false) at file src/lz77.rs line 254 column 14 function lz77::copy_within_buffer thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate4lz7718copy_within_bufferB3_.0 iteration 7 file src/lz77.rs line 254 column 5 function lz77::copy_within_buffer thread 0
+aborting path on assume(false) at file src/lz77.rs line 254 column 14 function lz77::copy_within_buffer thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate4lz7718copy_within_bufferB3_.0 iteration 8 file src/lz77.rs line 254 column 5 function lz77::copy_within_buffer thread 0
+aborting path on assume(false) at file src/lz77.rs line 254 column 14 function lz77::copy_within_buffer thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate4lz7718copy_within_bufferB3_.0 iteration 9 file src/lz77.rs line 254 column 5 function lz77::copy_within_buffer thread 0
+aborting path on assume(false) at file src/lz77.rs line 254 column 14 function lz77::copy_within_buffer thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate4lz7718copy_within_bufferB3_.0 iteration 10 file src/lz77.rs line 254 column 5 function lz77::copy_within_buffer thread 0
+aborting path on assume(false) at file src/lz77.rs line 254 column 14 function lz77::copy_within_buffer thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate4lz7718copy_within_bufferB3_.0 iteration 11 file src/lz77.rs line 254 column 5 function lz77::copy_within_buffer thread 0
+aborting path on assume(false) at file src/lz77.rs line 254 column 14 function lz77::copy_within_buffer thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate4lz7718copy_within_bufferB3_.0 iteration 12 file src/lz77.rs line 254 column 5 function lz77::copy_within_buffer thread 0
+aborting path on assume(false) at file src/lz77.rs line 254 column 14 function lz77::copy_within_buffer thread 0
+Not unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate4lz7718copy_within_bufferB3_.0 iteration 13 file src/lz77.rs line 254 column 5 function lz77::copy_within_buffer thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate4lz776proofs29copy_within_buffer_meets_spec.0 iteration 1 file src/lz77.rs line 456 column 9 function lz77::proofs::copy_within_buffer_meets_spec thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate4lz776proofs29copy_within_buffer_meets_spec.0 iteration 2 file src/lz77.rs line 456 column 9 function lz77::proofs::copy_within_buffer_meets_spec thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate4lz776proofs29copy_within_buffer_meets_spec.0 iteration 3 file src/lz77.rs line 456 column 9 function lz77::proofs::copy_within_buffer_meets_spec thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate4lz776proofs29copy_within_buffer_meets_spec.0 iteration 4 file src/lz77.rs line 456 column 9 function lz77::proofs::copy_within_buffer_meets_spec thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate4lz776proofs29copy_within_buffer_meets_spec.0 iteration 5 file src/lz77.rs line 456 column 9 function lz77::proofs::copy_within_buffer_meets_spec thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate4lz776proofs29copy_within_buffer_meets_spec.0 iteration 6 file src/lz77.rs line 456 column 9 function lz77::proofs::copy_within_buffer_meets_spec thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate4lz776proofs29copy_within_buffer_meets_spec.0 iteration 7 file src/lz77.rs line 456 column 9 function lz77::proofs::copy_within_buffer_meets_spec thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate4lz776proofs29copy_within_buffer_meets_spec.0 iteration 8 file src/lz77.rs line 456 column 9 function lz77::proofs::copy_within_buffer_meets_spec thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate4lz776proofs29copy_within_buffer_meets_spec.0 iteration 9 file src/lz77.rs line 456 column 9 function lz77::proofs::copy_within_buffer_meets_spec thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate4lz776proofs29copy_within_buffer_meets_spec.0 iteration 10 file src/lz77.rs line 456 column 9 function lz77::proofs::copy_within_buffer_meets_spec thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate4lz776proofs29copy_within_buffer_meets_spec.0 iteration 11 file src/lz77.rs line 456 column 9 function lz77::proofs::copy_within_buffer_meets_spec thread 0
+Unwinding loop _RNvNtNtCsk0OmT2SdITd_16verified_deflate4lz776proofs29copy_within_buffer_meets_spec.0 iteration 12 file src/lz77.rs line 456 column 9 function lz77::proofs::copy_within_buffer_meets_spec thread 0
+Runtime Symex: 0.151993s
+size of program expression: 6771 steps
+simple slicing removed 92 assignments
+Generated 313 VCC(s), 265 remaining after simplification
+Runtime Postprocess Equation: 0.00063842s
+Passing problem to propositional reduction
+converting SSA
+Runtime Convert SSA: 0.0863977s
+Running propositional reduction
+Post-processing
+Runtime Post-process: 6.262e-06s
+Solving with CaDiCaL 3.0.0
+130633 variables, 211458 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.0187689s
+Runtime decision procedure: 0.107227s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+130634 variables, 211459 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.103714s
+Runtime decision procedure: 0.105071s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+130635 variables, 211460 clauses
+SAT checker: instance is UNSATISFIABLE
+Runtime Solver: 1.71095s
+Runtime decision procedure: 1.71196s
+
+RESULTS:
+Check 1: core::panicking::panic_nounwind_fmt::runtime.unsupported_construct.1
+	 - Status: SUCCESS
+	 - Description: "call to foreign "Rust" function `_RNvCskSgPeDzUGbv_7___rustc17rust_begin_unwind` is not currently supported by Kani. Please post your example at https://github.com/model-checking/kani/issues/new/choose"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panicking.rs:110:17 in function core::panicking::panic_nounwind_fmt::runtime
+
+Check 2: core::num::<impl usize>::unchecked_add.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to compute `unchecked_add` which would overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:1013:17 in function core::num::<impl usize>::unchecked_add
+
+Check 3: lz77::copy_within_buffer.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/lz77.rs:254:19 in function lz77::copy_within_buffer
+
+Check 4: lz77::copy_within_buffer.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: src/lz77.rs:254:14 in function lz77::copy_within_buffer
+
+Check 5: lz77::copy_within_buffer.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/lz77.rs:255:22 in function lz77::copy_within_buffer
+
+Check 6: lz77::copy_within_buffer.assertion.3
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/lz77.rs:255:18 in function lz77::copy_within_buffer
+
+Check 7: lz77::copy_within_buffer.assertion.4
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/lz77.rs:255:9 in function lz77::copy_within_buffer
+
+Check 8: lz77::proofs::copy_within_buffer_meets_spec.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: src/lz77.rs:456:18 in function lz77::proofs::copy_within_buffer_meets_spec
+
+Check 9: lz77::proofs::copy_within_buffer_meets_spec.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/lz77.rs:457:32 in function lz77::proofs::copy_within_buffer_meets_spec
+
+Check 10: lz77::proofs::copy_within_buffer_meets_spec.assertion.2
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/lz77.rs:458:28 in function lz77::proofs::copy_within_buffer_meets_spec
+
+Check 11: lz77::proofs::copy_within_buffer_meets_spec.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/lz77.rs:458:40 in function lz77::proofs::copy_within_buffer_meets_spec
+
+Check 12: lz77::proofs::copy_within_buffer_meets_spec.assertion.4
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/lz77.rs:458:36 in function lz77::proofs::copy_within_buffer_meets_spec
+
+Check 13: lz77::proofs::copy_within_buffer_meets_spec.assertion.5
+	 - Status: SUCCESS
+	 - Description: "assertion failed: buf[i] == buf[i - dist]"
+	 - Location: src/lz77.rs:458:17 in function lz77::proofs::copy_within_buffer_meets_spec
+
+Check 14: lz77::proofs::copy_within_buffer_meets_spec.assertion.6
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/lz77.rs:460:28 in function lz77::proofs::copy_within_buffer_meets_spec
+
+Check 15: lz77::proofs::copy_within_buffer_meets_spec.assertion.7
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/lz77.rs:460:36 in function lz77::proofs::copy_within_buffer_meets_spec
+
+Check 16: lz77::proofs::copy_within_buffer_meets_spec.assertion.8
+	 - Status: SUCCESS
+	 - Description: "assertion failed: buf[i] == before[i]"
+	 - Location: src/lz77.rs:460:17 in function lz77::proofs::copy_within_buffer_meets_spec
+
+Check 17: std::panic::Location::<'_>::caller.unsupported_construct.1
+	 - Status: SUCCESS
+	 - Description: "caller_location is not currently supported by Kani. Please post your example at https://github.com/model-checking/kani/issues/374"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic/location.rs:181:9 in function std::panic::Location::<'_>::caller
+
+Check 18: lz77::proofs::copy_within_buffer_meets_spec::{closure#1}.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: src/lz77.rs:452:60 in function lz77::proofs::copy_within_buffer_meets_spec::{closure#1}
+
+Check 19: std::fmt::Arguments::<'_>::from_str.assertion.1
+	 - Status: UNREACHABLE
+	 - Description: "attempt to shift left with overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/mod.rs:820:38 in function std::fmt::Arguments::<'_>::from_str
+
+Check 20: lz77::copy_within_buffer.unwind.0
+	 - Status: SUCCESS
+	 - Description: "unwinding assertion loop 0"
+	 - Location: src/lz77.rs:254:5 in function lz77::copy_within_buffer
+
+
+SUMMARY:
+ ** 0 of 20 failed (1 unreachable)
+
+VERIFICATION:- SUCCESSFUL
+Verification Time: 2.6125338s
+
+WARNING: Kani could not produce a concrete playback for `lz77::proofs::copy_within_buffer_meets_spec` because there were no failing panic checks or satisfiable cover statements.
+INFO: The concrete playback feature never generated unit tests because there were no failing harnesses.
+Manual Harness Summary:
+Complete - 1 successfully verified harnesses, 0 failures, 1 total.
+	Command being timed: "timeout 1200 cargo kani --harness lz77::proofs::copy_within_buffer_meets_spec --exact -Z concrete-playback --concrete-playback=print -Z stubbing --no-memory-safety-checks"
+	User time (seconds): 3.17
+	System time (seconds): 0.30
+	Percent of CPU this job got: 103%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:03.37
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 189240
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 87006
+	Voluntary context switches: 3730
+	Involuntary context switches: 33
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 3512
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
