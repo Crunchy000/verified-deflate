@@ -249,28 +249,32 @@ fn build_lengths_in<const N: usize, const M: usize>(
 
 /// Depth of each leaf in a Huffman tree over `weights[..m]` (`2 <= m <= N`).
 ///
-/// Nodes `0..m` are the leaves; each merge creates the next node id, larger
-/// than both children's, so the root is the last node and depths can be
-/// filled in by walking ids downwards.
+/// The two-queue method: leaves sorted by weight form one queue, merged
+/// nodes (created in non-decreasing weight order) form the other, and each
+/// step merges the two lightest fronts. O(m log m) for the sort, then
+/// linear. Nodes `0..m` are the leaves; each merge creates the next node
+/// id, larger than both children's, so the root is the last node and
+/// depths can be filled in by walking ids downwards.
 fn huffman_depths<const N: usize, const M: usize>(weights: &[u64; N], m: usize, depths: &mut [u32; N]) {
     debug_assert!((2..=N).contains(&m) && M >= 2 * N);
+    let mut order = [0u16; N];
+    for (i, o) in order.iter_mut().enumerate().take(m) {
+        *o = i as u16;
+    }
+    sort_by_weight(&mut order[..m], weights);
     let mut w = [0u64; M];
     let mut parent = [0u16; M];
-    let mut active = [0u16; N];
-    for i in 0..m {
-        w[i] = weights[i];
-        active[i] = i as u16;
-    }
-    let mut n_active = m;
+    w[..m].copy_from_slice(&weights[..m]);
+    // Leaf queue: order[leaf..m]. Merged queue: node ids merged..next.
+    let mut leaf = 0;
+    let mut merged = m;
     let mut next = m;
-    while n_active > 1 {
-        let a = take_min(&mut active, &mut n_active, &w);
-        let b = take_min(&mut active, &mut n_active, &w);
+    while (m - leaf) + (next - merged) > 1 {
+        let a = take_lightest(&order[..m], &mut leaf, &mut merged, next, &w);
+        let b = take_lightest(&order[..m], &mut leaf, &mut merged, next, &w);
         w[next] = w[a].saturating_add(w[b]);
         parent[a] = next as u16;
         parent[b] = next as u16;
-        active[n_active] = next as u16;
-        n_active += 1;
         next += 1;
     }
     let mut depth = [0u32; M];
@@ -287,18 +291,58 @@ fn huffman_depths<const N: usize, const M: usize>(weights: &[u64; N], m: usize, 
     }
 }
 
-/// Removes and returns the active node with the smallest weight.
-fn take_min(active: &mut [u16], n_active: &mut usize, w: &[u64]) -> usize {
-    let mut best = 0;
-    for i in 1..*n_active {
-        if w[active[i] as usize] < w[active[best] as usize] {
-            best = i;
+/// Takes the lighter of the two queue fronts (a leaf on ties).
+#[inline]
+fn take_lightest(order: &[u16], leaf: &mut usize, merged: &mut usize, next: usize, w: &[u64]) -> usize {
+    let leaf_ok = *leaf < order.len();
+    let merged_ok = *merged < next;
+    if leaf_ok && (!merged_ok || w[order[*leaf] as usize] <= w[*merged]) {
+        *leaf += 1;
+        order[*leaf - 1] as usize
+    } else {
+        *merged += 1;
+        *merged - 1
+    }
+}
+
+/// Sorts symbol indices by (weight, index) with heapsort: O(n log n), no
+/// allocation, and simple loops for the model checker.
+fn sort_by_weight(idx: &mut [u16], w: &[u64]) {
+    let n = idx.len();
+    let mut start = n / 2;
+    while start > 0 {
+        start -= 1;
+        sift_down(idx, start, n, w);
+    }
+    let mut end = n;
+    while end > 1 {
+        end -= 1;
+        idx.swap(0, end);
+        sift_down(idx, 0, end, w);
+    }
+}
+
+#[inline]
+fn heavier(a: u16, b: u16, w: &[u64]) -> bool {
+    (w[a as usize], a) > (w[b as usize], b)
+}
+
+fn sift_down(idx: &mut [u16], mut root: usize, end: usize, w: &[u64]) {
+    loop {
+        let mut child = 2 * root + 1;
+        if child >= end {
+            return;
+        }
+        if child + 1 < end && heavier(idx[child + 1], idx[child], w) {
+            child += 1;
+        }
+        if heavier(idx[child], idx[root], w) {
+            idx.swap(root, child);
+            root = child;
+        } else {
+            return;
         }
     }
-    let id = active[best];
-    *n_active -= 1;
-    active[best] = active[*n_active];
-    id as usize
 }
 
 /// Bits looked up at once by [`Decoder::decode`]'s table. Codes up to

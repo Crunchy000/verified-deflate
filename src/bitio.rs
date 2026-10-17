@@ -98,51 +98,71 @@ impl<'a> BitReader<'a> {
         Self { data, pos: 0, acc: 0, nbits: 0 }
     }
 
-    /// Tops up the accumulator: to at least 57 bits when 8 or more input
-    /// bytes remain (one unaligned 8-byte load), otherwise with whatever
-    /// whole bytes are left. Bits above `nbits` stay zero.
+    /// Loads the whole bytes needed to have at least `n` (≤ 32) bits
+    /// buffered (fewer are). On failure nothing is consumed.
+    ///
+    /// Loading only what is needed keeps the bits of bytes not yet reached
+    /// out of the accumulator, so header fields that are concrete in a
+    /// proof stay concrete for the model checker.
+    #[inline(never)]
+    fn fill(&mut self, n: u32) -> Result<(), InflateError> {
+        // 1..=4 bytes; the loop below has a constant bound so that Kani
+        // unrolls it exactly four times.
+        let need = (n - self.nbits).div_ceil(8) as usize;
+        let end = self.pos + need;
+        if end > self.data.len() {
+            return Err(InflateError::UnexpectedEof);
+        }
+        let mut j = 0;
+        while j < 4 {
+            if j < need {
+                self.acc |= u64::from(self.data[self.pos + j]) << self.nbits;
+                self.nbits += 8;
+            }
+            j += 1;
+        }
+        self.pos = end;
+        Ok(())
+    }
+
+    /// Tops up the accumulator for [`peek`](Self::peek): to at least 57
+    /// bits with one unaligned 8-byte load when 8 or more input bytes
+    /// remain, otherwise with all whole bytes left that fit. Bits above
+    /// `nbits` stay zero.
     #[inline]
     fn refill(&mut self) {
         if self.nbits > 56 {
             return;
         }
+        // Whole bytes that fit: 1..=8.
+        let room = ((64 - self.nbits) / 8) as usize;
         if let Some(c) = self.data.get(self.pos..self.pos + 8) {
             let w = u64::from_le_bytes([c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7]]);
-            // Whole bytes that fit (1..=8); keep only those.
-            let take = (64 - self.nbits) / 8;
-            let w = if take == 8 { w } else { w & ((1u64 << (take * 8)) - 1) };
+            let w = if room == 8 { w } else { w & ((1u64 << (room * 8)) - 1) };
             self.acc |= w << self.nbits;
-            self.pos += take as usize;
-            self.nbits += take * 8;
+            self.pos += room;
+            self.nbits += 8 * room as u32;
         } else {
-            // Fewer than 8 bytes left. The loop has a constant trip count,
-            // which keeps it cheap for the model checker.
-            let mut j = 0;
-            while j < 8 {
-                if self.nbits <= 56 && self.pos < self.data.len() {
-                    self.acc |= u64::from(self.data[self.pos]) << self.nbits;
-                    self.pos += 1;
-                    self.nbits += 8;
-                }
-                j += 1;
-            }
+            // Fewer than 8 bytes left: load them zero-padded (no loop, which
+            // keeps this cheap for the model checker).
+            let rest = &self.data[self.pos..];
+            let k = if rest.len() < room { rest.len() } else { room };
+            let mut b = [0u8; 8];
+            b[..k].copy_from_slice(&rest[..k]);
+            self.acc |= u64::from_le_bytes(b) << self.nbits;
+            self.pos += k;
+            self.nbits += 8 * k as u32;
         }
     }
 
     /// Reads `n` bits (at most 32) as an unsigned integer, first bit in bit 0.
-    /// On failure the reader's position is unspecified.
-    #[inline]
+    /// On failure nothing is consumed.
+    #[inline(always)]
     pub fn read_bits(&mut self, n: u32) -> Result<u32, InflateError> {
         debug_assert!(n <= 32, "read_bits: n = {n} exceeds 32");
         let n = if n > 32 { 32 } else { n };
-        if n == 0 {
-            return Ok(0);
-        }
         if self.nbits < n {
-            self.refill();
-            if self.nbits < n {
-                return Err(InflateError::UnexpectedEof);
-            }
+            self.fill(n)?;
         }
         let v = (self.acc & ((1u64 << n) - 1)) as u32;
         self.acc >>= n;
@@ -154,10 +174,11 @@ impl<'a> BitReader<'a> {
     #[inline]
     pub fn read_bit(&mut self) -> Result<u32, InflateError> {
         if self.nbits == 0 {
-            self.refill();
-            if self.nbits == 0 {
-                return Err(InflateError::UnexpectedEof);
-            }
+            // The accumulator is empty, so load exactly one byte.
+            let b = *self.data.get(self.pos).ok_or(InflateError::UnexpectedEof)?;
+            self.acc = u64::from(b);
+            self.pos += 1;
+            self.nbits = 8;
         }
         let v = (self.acc & 1) as u32;
         self.acc >>= 1;

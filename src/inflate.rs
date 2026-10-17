@@ -311,6 +311,7 @@ mod proofs {
     /// Two bytes reach every block type's header handling, a fixed-block
     /// literal and end-of-block, and every early-EOF path.
     #[kani::stub(Output::grow, grow_is_unreachable)]
+    #[kani::stub(crate::lz77::copy_within_buffer, crate::lz77::copy_within_buffer_ref)]
     #[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
     #[kani::proof]
     #[kani::unwind(5)]
@@ -344,6 +345,7 @@ mod proofs {
     /// literal followed by a length-258 match code; the limit keeps copies
     /// short while every decoding path is still taken.
     #[kani::stub(Output::grow, grow_is_unreachable)]
+    #[kani::stub(crate::lz77::copy_within_buffer, crate::lz77::copy_within_buffer_ref)]
     #[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
     #[kani::proof]
     #[kani::unwind(9)]
