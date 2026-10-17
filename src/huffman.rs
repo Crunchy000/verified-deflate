@@ -258,13 +258,16 @@ fn build_lengths_in<const N: usize, const M: usize>(
 fn huffman_depths<const N: usize, const M: usize>(weights: &[u64; N], m: usize, depths: &mut [u32; N]) {
     debug_assert!((2..=N).contains(&m) && M >= 2 * N);
     let mut order = [0u16; N];
-    for (i, o) in order.iter_mut().enumerate().take(m) {
-        *o = i as u16;
-    }
-    sort_by_weight(&mut order[..m], weights);
     let mut w = [0u64; M];
     let mut parent = [0u16; M];
-    w[..m].copy_from_slice(&weights[..m]);
+    // Explicit loops rather than `copy_from_slice`: a copy of symbolic
+    // length is far more expensive for the model checker.
+    #[allow(clippy::manual_memcpy)]
+    for i in 0..m {
+        order[i] = i as u16;
+        w[i] = weights[i];
+    }
+    sort_by_weight(&mut order[..m], weights);
     // Leaf queue: order[leaf..m]. Merged queue: node ids merged..next.
     let mut leaf = 0;
     let mut merged = m;
@@ -305,8 +308,9 @@ fn take_lightest(order: &[u16], leaf: &mut usize, merged: &mut usize, next: usiz
     }
 }
 
-/// Sorts symbol indices by (weight, index) with heapsort: O(n log n), no
-/// allocation, and simple loops for the model checker.
+/// Sorts symbol indices by (weight, index) with heapsort: O(n log n) and
+/// no allocation. `sort_by_weight_sorts` proves it; the length-builder
+/// proofs use [`sort_by_weight_spec`] in its place.
 fn sort_by_weight(idx: &mut [u16], w: &[u64]) {
     let n = idx.len();
     let mut start = n / 2;
@@ -319,6 +323,34 @@ fn sort_by_weight(idx: &mut [u16], w: &[u64]) {
         end -= 1;
         idx.swap(0, end);
         sift_down(idx, 0, end, w);
+    }
+}
+
+/// The specification of [`sort_by_weight`] for distinct indices (as
+/// `huffman_depths` passes): the permutation of `idx` sorted by
+/// (weight, index). Keys are distinct, so that permutation exists and is
+/// unique; choosing it nondeterministically under that assumption is
+/// exactly the function's behaviour, without its loops.
+#[cfg(kani)]
+#[cfg_attr(kani_sample, allow(dead_code))] // stubs are not applied when sampling
+fn sort_by_weight_spec(idx: &mut [u16], w: &[u64]) {
+    let n = idx.len();
+    assert!(n <= 8, "sort_by_weight_spec models at most 8 entries");
+    let mut orig = [0u16; 8];
+    let mut taken = [false; 8];
+    #[allow(clippy::manual_memcpy)] // a symbolic-length copy costs the model checker more
+    for i in 0..n {
+        orig[i] = idx[i];
+    }
+    for i in 0..n {
+        let p: usize = kani::any_where(|&p: &usize| p < n);
+        kani::assume(!taken[p]);
+        taken[p] = true;
+        idx[i] = orig[p];
+    }
+    for i in 1..n {
+        let (a, b) = (idx[i - 1], idx[i]);
+        kani::assume((w[a as usize], a) < (w[b as usize], b));
     }
 }
 
@@ -681,6 +713,7 @@ mod proofs {
     /// path. (`build_lengths` runs this same generic function with larger
     /// scratch arrays.)
     #[kani::proof]
+    #[kani::stub(sort_by_weight, sort_by_weight_spec)]
     #[kani::unwind(11)]
     fn build_lengths_complete_and_limited() {
         let f: [u8; 5] = kani::any();
@@ -694,6 +727,7 @@ mod proofs {
 
     /// The same over the full `u32` frequency range, for three symbols.
     #[kani::proof]
+    #[kani::stub(sort_by_weight, sort_by_weight_spec)]
     #[kani::unwind(8)]
     fn build_lengths_full_range_frequencies() {
         let freqs: [u32; 3] = kani::any();
@@ -707,6 +741,7 @@ mod proofs {
     /// The tightest feasible case: four symbols in two bits, where every
     /// skewed distribution needs repair.
     #[kani::proof]
+    #[kani::stub(sort_by_weight, sort_by_weight_spec)]
     #[kani::unwind(11)]
     fn build_lengths_tight_limit() {
         let f: [u8; 4] = kani::any();
@@ -719,6 +754,7 @@ mod proofs {
     /// Requests that cannot be met are refused rather than producing a bad
     /// code: five used symbols cannot fit in two bits.
     #[kani::proof]
+    #[kani::stub(sort_by_weight, sort_by_weight_spec)]
     #[kani::unwind(11)]
     fn build_lengths_rejects_impossible_limit() {
         let f: [u8; 5] = kani::any();
@@ -728,6 +764,29 @@ mod proofs {
         }
         let mut lengths = [0u8; 5];
         assert_eq!(build_lengths_in::<5, 10>(&freqs, 2, &mut lengths), Err(HuffmanError::LimitTooSmall));
+    }
+
+    /// The heapsort behind the length builder sorts: for any weights and
+    /// any 0-5 distinct indices, the result is a permutation of them
+    /// sorted by (weight, index), which is what `sort_by_weight_spec`
+    /// (used by the builder proofs) assumes.
+    #[kani::proof]
+    #[kani::unwind(7)]
+    fn sort_by_weight_sorts() {
+        let w: [u64; 5] = kani::any();
+        let n: usize = kani::any_where(|&n: &usize| n <= 5);
+        let mut idx = [0u16, 1, 2, 3, 4];
+        sort_by_weight(&mut idx[..n], &w);
+        for i in 0..n {
+            assert!((idx[i] as usize) < n);
+            for j in 0..i {
+                assert_ne!(idx[i], idx[j]);
+            }
+            if i > 0 {
+                let (a, b) = (idx[i - 1], idx[i]);
+                assert!((w[a as usize], a) < (w[b as usize], b));
+            }
+        }
     }
 
     /// The decoder builder never panics, and accepts exactly the lengths
@@ -759,7 +818,9 @@ mod proofs {
         let lengths: [u8; N] = any_lengths(MAX_CODE_LEN as u8);
         let mut codes = [0u16; N];
         kani::assume(canonical_codes(&lengths, &mut codes).is_ok());
-        let dec = Decoder::with_fast_bits(&lengths, 4).unwrap();
+        // No lookup table: `decode` is then the reference bit-by-bit walk,
+        // which `fast_decode_matches_slow` shows the table path agrees with.
+        let dec = Decoder::with_fast_bits(&lengths, 0).unwrap();
         let s: usize = kani::any_where(|&s: &usize| s < N);
         kani::assume(lengths[s] != 0);
         // Pack the code as `BitWriter::write_bits` does (proven in `bitio`),
@@ -779,7 +840,8 @@ mod proofs {
     #[kani::unwind(17)]
     fn decode_arbitrary_bits() {
         let lengths: [u8; N] = any_lengths(MAX_CODE_LEN as u8);
-        let Ok(dec) = Decoder::with_fast_bits(&lengths, 4) else { return };
+        // No lookup table, as in `encode_then_decode_symbol`.
+        let Ok(dec) = Decoder::with_fast_bits(&lengths, 0) else { return };
         let data: [u8; 2] = kani::any();
         let mut r = BitReader::new(&data);
         if let Ok(s) = dec.decode(&mut r) {
@@ -789,19 +851,19 @@ mod proofs {
     }
 
     /// The table-driven decoder is the bit-by-bit reference decoder: for
-    /// any valid lengths, any table width 1-5 bits, and any 0-3 bytes of
+    /// any valid lengths, any table width 1-5 bits, and any 0-2 bytes of
     /// input, `decode` and `decode_slow` return the same result and, on
     /// success, consume the same number of bits. Codes shorter than, equal
-    /// to and longer than the table, and input running out mid-code, are
-    /// all covered.
+    /// to and longer than the table (up to 15 bits), and input running out
+    /// mid-code, are all covered.
     #[kani::proof]
     #[kani::unwind(17)]
     fn fast_decode_matches_slow() {
         let lengths: [u8; N] = any_lengths(MAX_CODE_LEN as u8);
         let fast_bits: u32 = kani::any_where(|&b: &u32| (1..=5).contains(&b));
         let Ok(dec) = Decoder::with_fast_bits(&lengths, fast_bits) else { return };
-        let data: [u8; 3] = kani::any();
-        let len: usize = kani::any_where(|&l: &usize| l <= 3);
+        let data: [u8; 2] = kani::any();
+        let len: usize = kani::any_where(|&l: &usize| l <= 2);
         let mut fast = BitReader::new(&data[..len]);
         let mut slow = BitReader::new(&data[..len]);
         let a = dec.decode(&mut fast);
