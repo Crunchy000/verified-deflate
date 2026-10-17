@@ -1,0 +1,4 @@
+crc32::proofs::table_matches_definition	0	1
+crc32::proofs::table_step_equals_bitwise_step	0	1
+crc32::proofs::update_matches_reference	0	10
+crc32::proofs::streaming_is_concatenation	0	172

@@ -1,0 +1,214 @@
+Kani Rust Verifier 0.68.0 (cargo plugin)
+CBMC 6.11.0
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.43s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+   Compilingwarning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+ verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+Checking harness crc32::proofs::table_matches_definition...
+CBMC 6.11.0 (cbmc-6.11.0)
+CBMC version 6.11.0 (cbmc-6.11.0) 64-bit x86_64 linux
+Reading GOTO program from file /home/runner/work/verified-deflate/verified-deflate/target/kani/x86_64-unknown-linux-gnu/debug/build/verified-deflate/d9a5da58ad12aa0a/out/verified_deflate-d9a5da58ad12aa0a__RNvNtNtCsk0OmT2SdITd_16verified_deflate5crc326proofs24table_matches_definition.out
+Generating GOTO Program
+Adding CPROVER library (x86_64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+Running with 16 object bits, 48 offset bits (user-specified)
+Starting Bounded Model Checking
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 1 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 2 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 3 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 4 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 5 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 6 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 7 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 8 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Runtime Symex: 0.0105486s
+size of program expression: 557 steps
+simple slicing removed 4 assignments
+Generated 59 VCC(s), 29 remaining after simplification
+Runtime Postprocess Equation: 3.8442e-05s
+Passing problem to propositional reduction
+converting SSA
+Runtime Convert SSA: 0.00705242s
+Running propositional reduction
+Post-processing
+Runtime Post-process: 6.234e-06s
+Solving with CaDiCaL 3.0.0
+5036 variables, 17392 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.000422376s
+Runtime decision procedure: 0.00761146s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+5037 variables, 17393 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.000185564s
+Runtime decision procedure: 0.000254279s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+5038 variables, 17394 clauses
+SAT checker: instance is UNSATISFIABLE
+Runtime Solver: 0.0167281s
+Runtime decision procedure: 0.0167663s
+
+RESULTS:
+Check 1: crc32::proofs::table_matches_definition.assertion.1
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/crc32.rs:123:20 in function crc32::proofs::table_matches_definition
+
+Check 2: crc32::proofs::table_matches_definition.assertion.2
+	 - Status: SUCCESS
+	 - Description: "assertion failed: TABLE[b as usize] == byte_bitwise(0, b)"
+	 - Location: src/crc32.rs:123:9 in function crc32::proofs::table_matches_definition
+
+Check 3: crc32::byte_bitwise.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: src/crc32.rs:19:29 in function crc32::byte_bitwise
+
+Check 4: crc32::byte_bitwise.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: src/crc32.rs:19:54 in function crc32::byte_bitwise
+
+Check 5: crc32::byte_bitwise.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/crc32.rs:20:9 in function crc32::byte_bitwise
+
+Check 6: crc32::proofs::table_matches_definition.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/crc32.rs:123:20 in function crc32::proofs::table_matches_definition
+
+Check 7: crc32::proofs::table_matches_definition.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/crc32.rs:123:20 in function crc32::proofs::table_matches_definition
+
+Check 8: crc32::proofs::table_matches_definition.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/crc32.rs:123:20 in function crc32::proofs::table_matches_definition
+
+Check 9: crc32::proofs::table_matches_definition.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/crc32.rs:123:20 in function crc32::proofs::table_matches_definition
+
+Check 10: crc32::proofs::table_matches_definition.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/crc32.rs:123:20 in function crc32::proofs::table_matches_definition
+
+Check 11: crc32::proofs::table_matches_definition.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/crc32.rs:123:20 in function crc32::proofs::table_matches_definition
+
+Check 12: crc32::proofs::table_matches_definition.array_bounds.1
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/crc32.rs:123:20 in function crc32::proofs::table_matches_definition
+
+
+SUMMARY:
+ ** 0 of 12 failed
+
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.09010738s
+
+WARNING: Kani could not produce a concrete playback for `crc32::proofs::table_matches_definition` because there were no failing panic checks or satisfiable cover statements.
+INFO: The concrete playback feature never generated unit tests because there were no failing harnesses.
+Manual Harness Summary:
+Complete - 1 successfully verified harnesses, 0 failures, 1 total.
+	Command being timed: "timeout 1200 cargo kani --harness crc32::proofs::table_matches_definition --exact -Z concrete-playback --concrete-playback=print"
+	User time (seconds): 0.64
+	System time (seconds): 0.15
+	Percent of CPU this job got: 72%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.10
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 185724
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 100
+	Minor (reclaiming a frame) page faults: 55259
+	Voluntary context switches: 759
+	Involuntary context switches: 19
+	Swaps: 0
+	File system inputs: 24528
+	File system outputs: 2672
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

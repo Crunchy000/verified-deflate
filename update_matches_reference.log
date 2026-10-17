@@ -1,0 +1,804 @@
+Kani Rust Verifier 0.68.0 (cargo plugin)
+CBMC 6.11.0
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+warning: Found the following unsupported constructs:
+             - caller_location (1)
+             - foreign function (1)
+         
+         Verification will fail if one or more of these constructs is reachable.
+         See https://model-checking.github.io/kani/rust-feature-support.html for more details.
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.67s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+warning: trailing semicolon in macro used in expression position
+   --> src/huffman.rs:611:23
+    |
+611 |             Err(_) => assert!(res.is_err()),
+    |                       ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #79813 <https://github.com/rust-lang/rust/issues/79813>
+    = note: `#[warn(semicolon_in_expressions_from_non_local_macros)]` (part of `#[warn(future_incompatible)]`) on by default
+    = note: this warning originates in the macro `assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: function `any_bucket` is never used
+   --> src/lz77.rs:291:15
+    |
+291 | pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
+    |               ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+   Compiling verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+warning: use of an unstable feature
+ --> <crate attribute>:1:12
+  |
+1 | #![feature(register_tool)]
+  |            ^^^^^^^^^^^^^
+  |
+  = note: requested on the command line with `--force-warn unstable-features`
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+Checking harness crc32::proofs::update_matches_reference...
+CBMC 6.11.0 (cbmc-6.11.0)
+CBMC version 6.11.0 (cbmc-6.11.0) 64-bit x86_64 linux
+Reading GOTO program from file /home/runner/work/verified-deflate/verified-deflate/target/kani/x86_64-unknown-linux-gnu/debug/build/verified-deflate/d4ec7b20a00aec8c/out/verified_deflate-d4ec7b20a00aec8c__RNvNtNtCsk0OmT2SdITd_16verified_deflate5crc326proofs24update_matches_reference.out
+Generating GOTO Program
+Adding CPROVER library (x86_64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+Running with 16 object bits, 48 offset bits (user-specified)
+Starting Bounded Model Checking
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 50 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2641 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 177 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 69 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2641 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 177 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 413 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file library/kani_core/src/models.rs line 203 column 17 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file library/kani/src/lib.rs line 57 column 1 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file library/kani/src/lib.rs line 57 column 1 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file src/crc32.rs line 48 column 15 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}> thread 0
+Unwinding loop _RINvNtCsk0OmT2SdITd_16verified_deflate5crc324foldNvB2_10byte_tableEB4_.0 iteration 1 file src/crc32.rs line 48 column 5 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}> thread 0
+aborting path on assume(false) at file library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file src/crc32.rs line 48 column 15 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}> thread 0
+Unwinding loop _RINvNtCsk0OmT2SdITd_16verified_deflate5crc324foldNvB2_10byte_tableEB4_.0 iteration 2 file src/crc32.rs line 48 column 5 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}> thread 0
+aborting path on assume(false) at file library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file src/crc32.rs line 48 column 15 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}> thread 0
+Unwinding loop _RINvNtCsk0OmT2SdITd_16verified_deflate5crc324foldNvB2_10byte_tableEB4_.0 iteration 3 file src/crc32.rs line 48 column 5 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}> thread 0
+aborting path on assume(false) at file library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file src/crc32.rs line 48 column 15 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}> thread 0
+Unwinding loop _RINvNtCsk0OmT2SdITd_16verified_deflate5crc324foldNvB2_10byte_tableEB4_.0 iteration 4 file src/crc32.rs line 48 column 5 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}> thread 0
+aborting path on assume(false) at file library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file src/crc32.rs line 48 column 15 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}> thread 0
+Unwinding loop _RINvNtCsk0OmT2SdITd_16verified_deflate5crc324foldNvB2_10byte_tableEB4_.0 iteration 5 file src/crc32.rs line 48 column 5 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}> thread 0
+aborting path on assume(false) at file library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file src/crc32.rs line 48 column 15 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}> thread 0
+Unwinding loop _RINvNtCsk0OmT2SdITd_16verified_deflate5crc324foldNvB2_10byte_tableEB4_.0 iteration 6 file src/crc32.rs line 48 column 5 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}> thread 0
+aborting path on assume(false) at file library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file src/crc32.rs line 48 column 15 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}> thread 0
+Unwinding loop _RINvNtCsk0OmT2SdITd_16verified_deflate5crc324foldNvB2_10byte_tableEB4_.0 iteration 7 file src/crc32.rs line 48 column 5 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}> thread 0
+aborting path on assume(false) at file library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file src/crc32.rs line 48 column 15 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}> thread 0
+Unwinding loop _RINvNtCsk0OmT2SdITd_16verified_deflate5crc324foldNvB2_10byte_tableEB4_.0 iteration 8 file src/crc32.rs line 48 column 5 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}> thread 0
+aborting path on assume(false) at file library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file src/crc32.rs line 48 column 15 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}> thread 0
+Not unwinding loop _RINvNtCsk0OmT2SdITd_16verified_deflate5crc324foldNvB2_10byte_tableEB4_.0 iteration 9 file src/crc32.rs line 48 column 5 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 50 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2641 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 177 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 69 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2641 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 177 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 413 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file library/kani_core/src/models.rs line 203 column 17 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file library/kani/src/lib.rs line 57 column 1 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file library/kani/src/lib.rs line 57 column 1 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file src/crc32.rs line 48 column 15 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}> thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 1 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 2 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 3 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 4 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 5 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 6 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 7 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 8 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RINvNtCsk0OmT2SdITd_16verified_deflate5crc324foldNvB2_12byte_bitwiseEB4_.0 iteration 1 file src/crc32.rs line 48 column 5 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}> thread 0
+aborting path on assume(false) at file library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file src/crc32.rs line 48 column 15 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}> thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 1 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 2 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 3 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 4 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 5 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 6 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 7 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 8 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RINvNtCsk0OmT2SdITd_16verified_deflate5crc324foldNvB2_12byte_bitwiseEB4_.0 iteration 2 file src/crc32.rs line 48 column 5 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}> thread 0
+aborting path on assume(false) at file library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file src/crc32.rs line 48 column 15 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}> thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 1 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 2 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 3 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 4 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 5 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 6 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 7 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 8 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RINvNtCsk0OmT2SdITd_16verified_deflate5crc324foldNvB2_12byte_bitwiseEB4_.0 iteration 3 file src/crc32.rs line 48 column 5 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}> thread 0
+aborting path on assume(false) at file library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file src/crc32.rs line 48 column 15 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}> thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 1 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 2 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 3 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 4 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 5 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 6 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 7 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 8 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RINvNtCsk0OmT2SdITd_16verified_deflate5crc324foldNvB2_12byte_bitwiseEB4_.0 iteration 4 file src/crc32.rs line 48 column 5 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}> thread 0
+aborting path on assume(false) at file library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file src/crc32.rs line 48 column 15 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}> thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 1 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 2 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 3 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 4 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 5 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 6 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 7 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 8 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RINvNtCsk0OmT2SdITd_16verified_deflate5crc324foldNvB2_12byte_bitwiseEB4_.0 iteration 5 file src/crc32.rs line 48 column 5 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}> thread 0
+aborting path on assume(false) at file library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file src/crc32.rs line 48 column 15 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}> thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 1 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 2 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 3 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 4 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 5 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 6 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 7 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 8 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RINvNtCsk0OmT2SdITd_16verified_deflate5crc324foldNvB2_12byte_bitwiseEB4_.0 iteration 6 file src/crc32.rs line 48 column 5 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}> thread 0
+aborting path on assume(false) at file library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file src/crc32.rs line 48 column 15 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}> thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 1 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 2 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 3 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 4 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 5 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 6 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 7 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 8 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RINvNtCsk0OmT2SdITd_16verified_deflate5crc324foldNvB2_12byte_bitwiseEB4_.0 iteration 7 file src/crc32.rs line 48 column 5 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}> thread 0
+aborting path on assume(false) at file library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file src/crc32.rs line 48 column 15 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}> thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 1 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 2 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 3 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 4 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 5 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 6 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 7 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 8 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RINvNtCsk0OmT2SdITd_16verified_deflate5crc324foldNvB2_12byte_bitwiseEB4_.0 iteration 8 file src/crc32.rs line 48 column 5 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}> thread 0
+aborting path on assume(false) at file library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file src/crc32.rs line 48 column 15 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}> thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 1 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 2 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 3 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 4 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 5 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 6 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 7 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Unwinding loop _RNvNtCsk0OmT2SdITd_16verified_deflate5crc3212byte_bitwise.0 iteration 8 file src/crc32.rs line 18 column 5 function crc32::byte_bitwise thread 0
+Not unwinding loop _RINvNtCsk0OmT2SdITd_16verified_deflate5crc324foldNvB2_12byte_bitwiseEB4_.0 iteration 9 file src/crc32.rs line 48 column 5 function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}> thread 0
+Runtime Symex: 0.540192s
+size of program expression: 22107 steps
+simple slicing removed 8 assignments
+Generated 1474 VCC(s), 426 remaining after simplification
+Runtime Postprocess Equation: 0.00423442s
+Passing problem to propositional reduction
+converting SSA
+Runtime Convert SSA: 0.245628s
+Running propositional reduction
+Post-processing
+Runtime Post-process: 0.026016s
+Solving with CaDiCaL 3.0.0
+389950 variables, 463306 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.0542379s
+Runtime decision procedure: 0.305009s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+389951 variables, 463307 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.39634s
+Runtime decision procedure: 0.399254s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+389952 variables, 463308 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.20257s
+Runtime decision procedure: 0.205606s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+389953 variables, 463309 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.0492986s
+Runtime decision procedure: 0.0556541s
+Running propositional reduction
+Solving with CaDiCaL 3.0.0
+389954 variables, 463310 clauses
+SAT checker: instance is UNSATISFIABLE
+Runtime Solver: 5.93876s
+Runtime decision procedure: 5.94077s
+
+RESULTS:
+Check 1: std::panic::Location::<'_>::caller.unsupported_construct.1
+	 - Status: SUCCESS
+	 - Description: "caller_location is not currently supported by Kani. Please post your example at https://github.com/model-checking/kani/issues/374"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic/location.rs:181:9 in function std::panic::Location::<'_>::caller
+
+Check 2: crc32::byte_table.assertion.1
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/crc32.rs:41:5 in function crc32::byte_table
+
+Check 3: crc32::byte_table.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: src/crc32.rs:41:56 in function crc32::byte_table
+
+Check 4: kani::mem::cbmc::same_allocation.unsupported_construct.1
+	 - Status: SUCCESS
+	 - Description: "Kani does not support reasoning about pointer to unallocated memory"
+	 - Location: library/kani/src/lib.rs:57:1 in function kani::mem::cbmc::same_allocation
+
+Check 5: core::panicking::panic_nounwind_fmt::runtime.unsupported_construct.1
+	 - Status: SUCCESS
+	 - Description: "call to foreign "Rust" function `_RNvCskSgPeDzUGbv_7___rustc17rust_begin_unwind` is not currently supported by Kani. Please post your example at https://github.com/model-checking/kani/issues/new/choose"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panicking.rs:110:17 in function core::panicking::panic_nounwind_fmt::runtime
+
+Check 6: crc32::proofs::update_matches_reference.assertion.1
+	 - Status: SUCCESS
+	 - Description: "assertion failed: update(init, &data[..len]) == update_bitwise(init, &data[..len])"
+	 - Location: src/crc32.rs:147:9 in function crc32::proofs::update_matches_reference
+
+Check 7: core::slice::index::slice_index_fail::do_panic::runtime.assertion.3
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:69:5 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 8: core::num::<impl usize>::unchecked_sub.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to compute `unchecked_sub` which would overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:1192:17 in function core::num::<impl usize>::unchecked_sub
+
+Check 9: crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}>.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: src/crc32.rs:48:15 in function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}>
+
+Check 10: std::fmt::Arguments::<'_>::from_str.assertion.1
+	 - Status: UNREACHABLE
+	 - Description: "attempt to shift left with overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/mod.rs:820:38 in function std::fmt::Arguments::<'_>::from_str
+
+Check 11: core::num::<impl usize>::checked_sub.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to compute `unchecked_sub` which would overflow"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:1096:31 in function core::num::<impl usize>::checked_sub
+
+Check 12: core::slice::index::slice_index_fail::do_panic::runtime.assertion.2
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:59:9 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 13: <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:405:5 in function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 14: <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "misaligned pointer to reference cast: address must be a multiple of its type's alignment"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:411:22 in function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 15: <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index.safety_check.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:411:22 in function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 16: std::ptr::NonNull::<u8>::as_ref::<'_>.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "misaligned pointer to reference cast: address must be a multiple of its type's alignment"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:454:18 in function std::ptr::NonNull::<u8>::as_ref::<'_>
+
+Check 17: std::ptr::NonNull::<u8>::as_ref::<'_>.safety_check.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:454:18 in function std::ptr::NonNull::<u8>::as_ref::<'_>
+
+Check 18: kani::rustc_intrinsics::offset::<u8, *const u8, usize>.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "Offset in bytes overflows isize"
+	 - Location: library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::offset::<u8, *const u8, usize>
+
+Check 19: kani::rustc_intrinsics::offset::<u8, *const u8, usize>.safety_check.2
+	 - Status: SUCCESS
+	 - Description: "Offset result address must equal original pointer address plus offset"
+	 - Location: library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::offset::<u8, *const u8, usize>
+
+Check 20: kani::rustc_intrinsics::offset::<u8, *const u8, usize>.safety_check.3
+	 - Status: SUCCESS
+	 - Description: "Offset result and original pointer must point to the same allocation"
+	 - Location: library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::offset::<u8, *const u8, usize>
+
+Check 21: crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}>.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: src/crc32.rs:48:15 in function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}>
+
+Check 22: crc32::byte_bitwise.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: src/crc32.rs:19:29 in function crc32::byte_bitwise
+
+Check 23: crc32::byte_bitwise.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: src/crc32.rs:19:54 in function crc32::byte_bitwise
+
+Check 24: crc32::byte_bitwise.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: src/crc32.rs:20:9 in function crc32::byte_bitwise
+
+Check 25: <usize as kani::rustc_intrinsics::ToISize>::to_isize.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: library/kani_core/src/models.rs:203:17 in function <usize as kani::rustc_intrinsics::ToISize>::to_isize
+
+Check 26: <usize as kani::rustc_intrinsics::ToISize>::to_isize.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "Offset value overflows isize"
+	 - Location: library/kani/src/lib.rs:57:1 in function <usize as kani::rustc_intrinsics::ToISize>::to_isize
+
+Check 27: <usize as kani::rustc_intrinsics::ToISize>::to_isize.assertion.1
+	 - Status: SUCCESS
+	 - Description: "internal error: entered unreachable code"
+	 - Location: library/kani/src/lib.rs:57:1 in function <usize as kani::rustc_intrinsics::ToISize>::to_isize
+
+Check 28: core::slice::index::slice_index_fail::do_panic::runtime.assertion.4
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:50:9 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 29: core::slice::index::slice_index_fail::do_panic::runtime.assertion.1
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:41:9 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 30: kani::rustc_intrinsics::offset::<u8, *mut u8, usize>.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "Offset in bytes overflows isize"
+	 - Location: library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::offset::<u8, *mut u8, usize>
+
+Check 31: kani::rustc_intrinsics::offset::<u8, *mut u8, usize>.safety_check.2
+	 - Status: SUCCESS
+	 - Description: "Offset result address must equal original pointer address plus offset"
+	 - Location: library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::offset::<u8, *mut u8, usize>
+
+Check 32: kani::rustc_intrinsics::offset::<u8, *mut u8, usize>.safety_check.3
+	 - Status: SUCCESS
+	 - Description: "Offset result and original pointer must point to the same allocation"
+	 - Location: library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::offset::<u8, *mut u8, usize>
+
+Check 33: crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}>.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/crc32.rs:48:15 in function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}>
+
+Check 34: crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}>.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/crc32.rs:48:10 in function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}>
+
+Check 35: crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}>.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/crc32.rs:48:10 in function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}>
+
+Check 36: crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}>.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/crc32.rs:48:10 in function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}>
+
+Check 37: crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}>.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/crc32.rs:48:10 in function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}>
+
+Check 38: crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}>.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/crc32.rs:48:10 in function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}>
+
+Check 39: crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}>.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/crc32.rs:48:10 in function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}>
+
+Check 40: crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}>.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/crc32.rs:48:15 in function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}>
+
+Check 41: crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}>.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/crc32.rs:48:10 in function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}>
+
+Check 42: crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}>.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/crc32.rs:48:10 in function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}>
+
+Check 43: crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}>.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/crc32.rs:48:10 in function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}>
+
+Check 44: crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}>.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/crc32.rs:48:10 in function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}>
+
+Check 45: crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}>.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/crc32.rs:48:10 in function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}>
+
+Check 46: crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}>.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/crc32.rs:48:10 in function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}>
+
+Check 47: std::ptr::NonNull::<u8>::as_ref::<'_>.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:454:20 in function std::ptr::NonNull::<u8>::as_ref::<'_>
+
+Check 48: std::ptr::NonNull::<u8>::as_ref::<'_>.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:454:20 in function std::ptr::NonNull::<u8>::as_ref::<'_>
+
+Check 49: std::ptr::NonNull::<u8>::as_ref::<'_>.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:454:20 in function std::ptr::NonNull::<u8>::as_ref::<'_>
+
+Check 50: std::ptr::NonNull::<u8>::as_ref::<'_>.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:454:20 in function std::ptr::NonNull::<u8>::as_ref::<'_>
+
+Check 51: std::ptr::NonNull::<u8>::as_ref::<'_>.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:454:20 in function std::ptr::NonNull::<u8>::as_ref::<'_>
+
+Check 52: std::ptr::NonNull::<u8>::as_ref::<'_>.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:454:20 in function std::ptr::NonNull::<u8>::as_ref::<'_>
+
+Check 53: crc32::byte_table.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: src/crc32.rs:41:5 in function crc32::byte_table
+
+Check 54: crc32::byte_table.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: src/crc32.rs:41:5 in function crc32::byte_table
+
+Check 55: crc32::byte_table.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: src/crc32.rs:41:5 in function crc32::byte_table
+
+Check 56: crc32::byte_table.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: src/crc32.rs:41:5 in function crc32::byte_table
+
+Check 57: crc32::byte_table.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: src/crc32.rs:41:5 in function crc32::byte_table
+
+Check 58: crc32::byte_table.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: src/crc32.rs:41:5 in function crc32::byte_table
+
+Check 59: crc32::byte_table.array_bounds.1
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: src/crc32.rs:41:5 in function crc32::byte_table
+
+Check 60: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:161:27 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 61: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:161:27 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 62: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:161:27 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 63: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:161:27 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 64: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:161:27 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 65: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:161:27 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 66: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:162:34 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 67: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:162:34 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 68: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:162:34 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 69: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:162:34 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 70: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:162:34 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 71: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:162:34 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 72: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:169:36 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 73: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:175:25 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 74: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:175:25 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 75: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:175:25 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 76: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:175:25 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 77: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:175:25 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 78: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.19
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:175:25 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 79: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.20
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:181:36 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 80: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.21
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:185:25 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 81: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.22
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:185:25 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 82: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.23
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:185:25 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 83: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.24
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:185:25 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 84: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.25
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:185:25 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 85: <std::slice::Iter<'_, u8> as std::iter::Iterator>::next.pointer_dereference.26
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:185:25 in function <std::slice::Iter<'_, u8> as std::iter::Iterator>::next
+
+Check 86: <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:1663:9 in function <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq
+
+Check 87: <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:1663:9 in function <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq
+
+Check 88: <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:1663:9 in function <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq
+
+Check 89: <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:1663:9 in function <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq
+
+Check 90: <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:1663:9 in function <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq
+
+Check 91: <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:1663:9 in function <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq
+
+Check 92: <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:1663:26 in function <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq
+
+Check 93: <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:1663:26 in function <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq
+
+Check 94: <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:1663:26 in function <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq
+
+Check 95: <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:1663:26 in function <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq
+
+Check 96: <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:1663:26 in function <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq
+
+Check 97: <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../.rustup/toolchains/nightly-2026-08-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:1663:26 in function <std::ptr::NonNull<u8> as std::cmp::PartialEq>::eq
+
+Check 98: crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}>.unwind.0
+	 - Status: SUCCESS
+	 - Description: "unwinding assertion loop 0"
+	 - Location: src/crc32.rs:48:5 in function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_table}>
+
+Check 99: crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}>.unwind.0
+	 - Status: SUCCESS
+	 - Description: "unwinding assertion loop 0"
+	 - Location: src/crc32.rs:48:5 in function crc32::fold::<fn(u32, u8) -> u32 {crc32::byte_bitwise}>
+
+
+SUMMARY:
+ ** 0 of 99 failed (1 unreachable)
+
+VERIFICATION:- SUCCESSFUL
+Verification Time: 8.742969s
+
+WARNING: Kani could not produce a concrete playback for `crc32::proofs::update_matches_reference` because there were no failing panic checks or satisfiable cover statements.
+INFO: The concrete playback feature never generated unit tests because there were no failing harnesses.
+Manual Harness Summary:
+Complete - 1 successfully verified harnesses, 0 failures, 1 total.
+	Command being timed: "timeout 1200 cargo kani --harness crc32::proofs::update_matches_reference --exact -Z concrete-playback --concrete-playback=print"
+	User time (seconds): 10.20
+	System time (seconds): 0.41
+	Percent of CPU this job got: 102%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:10.38
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 299148
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 3
+	Minor (reclaiming a frame) page faults: 190623
+	Voluntary context switches: 8283
+	Involuntary context switches: 100
+	Swaps: 0
+	File system inputs: 600
+	File system outputs: 19640
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
