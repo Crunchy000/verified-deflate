@@ -166,13 +166,15 @@ impl Matcher {
         }
     }
 
-    /// Tokenizes `data[start..]`, appending at most `max_tokens` tokens to
-    /// `out` (at least one if `start < data.len()` and `max_tokens > 0`).
-    /// Returns the position just after the last byte covered.
+    /// Tokenizes `data[start..]` into `out`, writing at most `out.len()`
+    /// tokens (at least one if `start < data.len()` and `out` is not empty).
+    /// Returns the position just after the last byte covered and the number
+    /// of tokens written.
     ///
     /// Matches may refer back to bytes before `start` (from earlier calls
     /// on the same buffer), but never past `data.len()`.
-    pub fn tokenize(&mut self, data: &[u8], start: usize, max_tokens: usize, out: &mut Vec<Token>) -> usize {
+    pub fn tokenize(&mut self, data: &[u8], start: usize, out: &mut [Token]) -> (usize, usize) {
+        let max_tokens = out.len();
         let n = data.len();
         // First position not yet covered by an emitted token.
         let mut next = start;
@@ -190,7 +192,7 @@ impl Matcher {
                 continue;
             }
             if emitted == max_tokens {
-                return pos;
+                return (pos, emitted);
             }
             let found = match pending.take() {
                 Some(m) => Some(m),
@@ -198,7 +200,7 @@ impl Matcher {
             };
             self.insert(data, pos);
             let Some((len, dist)) = found else {
-                out.push(Token::Literal(data[pos]));
+                out[emitted] = Token::Literal(data[pos]);
                 emitted += 1;
                 next = pos + 1;
                 continue;
@@ -207,18 +209,18 @@ impl Matcher {
                 let chain = if len >= self.cfg.good_len { self.cfg.max_chain / 4 + 1 } else { self.cfg.max_chain };
                 if let Some(m) = self.longest_match(data, pos + 1, len, chain) {
                     // Better match one byte later: emit a literal instead.
-                    out.push(Token::Literal(data[pos]));
+                    out[emitted] = Token::Literal(data[pos]);
                     emitted += 1;
                     next = pos + 1;
                     pending = Some(m);
                     continue;
                 }
             }
-            out.push(Token::Match { len: len as u16, dist: dist as u16 });
+            out[emitted] = Token::Match { len: len as u16, dist: dist as u16 };
             emitted += 1;
             next = pos + len;
         }
-        next
+        (next, emitted)
     }
 }
 
@@ -286,9 +288,10 @@ mod tests {
 
     fn tokens_for(data: &[u8], level: u8) -> Vec<Token> {
         let mut m = Matcher::new(MatchConfig::for_level(level));
-        let mut out = Vec::new();
-        let end = m.tokenize(data, 0, usize::MAX, &mut out);
+        let mut out = vec![Token::Literal(0); data.len()];
+        let (end, n) = m.tokenize(data, 0, &mut out);
         assert_eq!(end, data.len());
+        out.truncate(n);
         out
     }
 
@@ -346,22 +349,22 @@ mod proofs {
         kani::any::<usize>() & (m.head.len() - 1)
     }
 
-    fn check_tokens(data: &[u8], cfg: MatchConfig) {
+    fn check_tokens<const N: usize>(data: &[u8; N], cfg: MatchConfig) {
         let mut m = Matcher::new(cfg);
-        let mut toks = Vec::with_capacity(data.len());
-        let end = m.tokenize(data, 0, usize::MAX, &mut toks);
-        assert_eq!(end, data.len());
+        let mut toks = [Token::Literal(0); N];
+        let (end, count) = m.tokenize(data, 0, &mut toks);
+        assert_eq!(end, N);
         let mut produced = 0usize;
-        for t in toks.iter() {
+        for t in toks.iter().take(count) {
             if let Token::Match { len, dist } = *t {
                 assert!(match_is_valid(len as usize, dist as usize, produced));
             }
             produced += t.output_len();
         }
-        assert_eq!(produced, data.len());
-        let mut out = Vec::with_capacity(data.len());
-        assert!(replay(&toks, &mut out).is_ok());
-        assert_eq!(out.as_slice(), data);
+        assert_eq!(produced, N);
+        let mut out = Vec::with_capacity(N);
+        assert!(replay(&toks[..count], &mut out).is_ok());
+        assert_eq!(out.as_slice(), &data[..]);
     }
 
     /// Small tables (8-byte window, 4 hash buckets) with the given level's
@@ -417,9 +420,9 @@ mod proofs {
         let b: u8 = kani::any();
         let data = [b; 6];
         let mut m = Matcher::new(small(6));
-        let mut toks = Vec::with_capacity(6);
-        m.tokenize(&data, 0, usize::MAX, &mut toks);
-        assert_eq!(toks.len(), 2);
+        let mut toks = [Token::Literal(0); 6];
+        let (_, count) = m.tokenize(&data, 0, &mut toks);
+        assert_eq!(count, 2);
         assert_eq!(toks[0], Token::Literal(b));
         assert_eq!(toks[1], Token::Match { len: 5, dist: 1 });
     }

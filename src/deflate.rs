@@ -85,13 +85,12 @@ fn encode(data: &[u8], opts: &CompressOptions) -> Vec<u8> {
         return w.finish();
     }
     let mut matcher = Matcher::new(MatchConfig::for_level(opts.level));
-    let mut tokens = Vec::with_capacity(BLOCK_TOKENS.min(data.len() + 1));
+    let mut tokens = vec![Token::Literal(0); BLOCK_TOKENS.min(data.len() + 1)];
     let mut pos = 0;
     loop {
-        tokens.clear();
-        let end = matcher.tokenize(data, pos, BLOCK_TOKENS, &mut tokens);
+        let (end, count) = matcher.tokenize(data, pos, &mut tokens);
         let last = end >= data.len();
-        write_block(&mut w, &tokens, &data[pos..end], last, strategy);
+        write_block(&mut w, &tokens[..count], &data[pos..end], last, strategy);
         pos = end;
         if last {
             break;
@@ -271,11 +270,14 @@ pub(crate) struct ClToken {
 }
 
 /// Run-length encodes a code-length sequence with symbols 16 (repeat the
-/// previous length 3-6 times), 17 (3-10 zeros) and 18 (11-138 zeros).
+/// previous length 3-6 times), 17 (3-10 zeros) and 18 (11-138 zeros),
+/// writing tokens to `out` and returning how many were written. Every token
+/// covers at least one length, so `out.len() >= lengths.len()` suffices.
 ///
 /// Runs are found in a single pass over the input; each completed run is
 /// then emitted by [`emit_run`].
-pub(crate) fn rle_code_lengths(lengths: &[u8], out: &mut Vec<ClToken>) {
+pub(crate) fn rle_code_lengths(lengths: &[u8], out: &mut [ClToken]) -> usize {
+    let mut n = 0;
     let mut value = 0u8;
     let mut run = 0usize;
     for &v in lengths {
@@ -284,43 +286,49 @@ pub(crate) fn rle_code_lengths(lengths: &[u8], out: &mut Vec<ClToken>) {
             continue;
         }
         if run > 0 {
-            emit_run(value, run, out);
+            emit_run(value, run, out, &mut n);
         }
         value = v;
         run = 1;
     }
     if run > 0 {
-        emit_run(value, run, out);
+        emit_run(value, run, out, &mut n);
     }
+    n
 }
 
-/// Emits a run of `run` (at least one) copies of the code length `v`.
-fn emit_run(v: u8, run: usize, out: &mut Vec<ClToken>) {
+/// Emits a run of `run` (at least one) copies of the code length `v` at
+/// `out[*n..]`, advancing `*n`.
+fn emit_run(v: u8, run: usize, out: &mut [ClToken], n: &mut usize) {
+    let mut put = |sym: u8, extra: u8| {
+        out[*n] = ClToken { sym, extra };
+        *n += 1;
+    };
     if v == 0 {
         let mut r = run;
         while r >= 11 {
             let k = if r < 138 { r } else { 138 };
-            out.push(ClToken { sym: 18, extra: (k - 11) as u8 });
+            put(18, (k - 11) as u8);
             r -= k;
         }
         if r >= 3 {
-            out.push(ClToken { sym: 17, extra: (r - 3) as u8 });
+            put(17, (r - 3) as u8);
             r = 0;
         }
         while r > 0 {
-            out.push(ClToken { sym: 0, extra: 0 });
+            put(0, 0);
             r -= 1;
         }
     } else {
-        out.push(ClToken { sym: v, extra: 0 });
+        put(v, 0);
         let mut r = run - 1;
         while r >= 3 {
             let k = if r < 6 { r } else { 6 };
-            out.push(ClToken { sym: 16, extra: (k - 3) as u8 });
+            put(16, (k - 3) as u8);
             r -= k;
         }
         while r > 0 {
-            out.push(ClToken { sym: v, extra: 0 });
+            put(v, 0);
             r -= 1;
         }
     }
@@ -334,7 +342,8 @@ struct DynamicPlan {
     hlit: usize,
     hdist: usize,
     hclen: usize,
-    cl_tokens: Vec<ClToken>,
+    cl_tokens: [ClToken; NUM_LITLEN + NUM_DIST],
+    cl_count: usize,
     bits: u64,
 }
 
@@ -352,17 +361,19 @@ fn plan_dynamic(stats: &BlockStats) -> Option<DynamicPlan> {
     let mut all = [0u8; NUM_LITLEN + NUM_DIST];
     all[..hlit].copy_from_slice(&lit_len[..hlit]);
     all[hlit..hlit + hdist].copy_from_slice(&dist_len[..hdist]);
-    let mut cl_tokens = Vec::new();
-    rle_code_lengths(&all[..hlit + hdist], &mut cl_tokens);
+    let mut cl_tokens = [ClToken { sym: 0, extra: 0 }; NUM_LITLEN + NUM_DIST];
+    let cl_count = rle_code_lengths(&all[..hlit + hdist], &mut cl_tokens);
     let mut cl_freq = [0u32; NUM_CODELEN];
-    for t in &cl_tokens {
+    for t in &cl_tokens[..cl_count] {
         cl_freq[t.sym as usize] += 1;
     }
     let mut cl_len = [0u8; NUM_CODELEN];
     build_lengths(&cl_freq, MAX_CODELEN_LEN, &mut cl_len).ok()?;
     let hclen = CODELEN_ORDER.iter().rposition(|&s| cl_len[s] != 0).map_or(0, |i| i + 1).max(4);
-    let cl_bits: u64 =
-        cl_tokens.iter().map(|t| u64::from(cl_len[t.sym as usize]) + u64::from(codelen_extra_bits(t.sym))).sum();
+    let cl_bits: u64 = cl_tokens[..cl_count]
+        .iter()
+        .map(|t| u64::from(cl_len[t.sym as usize]) + u64::from(codelen_extra_bits(t.sym)))
+        .sum();
     let bits = 3 + 5 + 5 + 4 + 3 * hclen as u64 + cl_bits + stats.body_bits(&lit_len, &dist_len);
     Some(DynamicPlan {
         lit: CodeTable::from_lengths(lit_len).ok()?,
@@ -372,6 +383,7 @@ fn plan_dynamic(stats: &BlockStats) -> Option<DynamicPlan> {
         hdist,
         hclen,
         cl_tokens,
+        cl_count,
         bits,
     })
 }
@@ -384,7 +396,7 @@ fn write_dynamic(w: &mut BitWriter, tokens: &[Token], p: &DynamicPlan, last: boo
     for &sym in &CODELEN_ORDER[..p.hclen] {
         w.write_bits(u32::from(p.codelen.len[sym]), 3);
     }
-    for t in &p.cl_tokens {
+    for t in &p.cl_tokens[..p.cl_count] {
         p.codelen.put(w, t.sym as usize);
         w.write_bits(u32::from(t.extra), codelen_extra_bits(t.sym));
     }
@@ -414,8 +426,9 @@ mod tests {
     fn cost_model_is_exact() {
         let data = sample_data();
         let mut m = Matcher::new(MatchConfig::for_level(6));
-        let mut toks = Vec::new();
-        m.tokenize(&data, 0, BLOCK_TOKENS, &mut toks);
+        let mut toks = vec![Token::Literal(0); BLOCK_TOKENS];
+        let (_, n) = m.tokenize(&data, 0, &mut toks);
+        toks.truncate(n);
         let stats = BlockStats::new(&toks);
         for start_bits in 0..8u32 {
             let mut w = BitWriter::new();
@@ -462,11 +475,11 @@ mod tests {
         let mut lengths = vec![0u8; 300];
         lengths[5] = 8;
         lengths[6..40].fill(9);
-        let mut toks = Vec::new();
-        rle_code_lengths(&lengths, &mut toks);
+        let mut toks = [ClToken { sym: 0, extra: 0 }; 300];
+        let n = rle_code_lengths(&lengths, &mut toks);
         let mut out = vec![0u8; 300];
         let mut idx = 0;
-        for t in toks {
+        for &t in &toks[..n] {
             crate::inflate::expand_code_length(t.sym, u32::from(t.extra), &mut out, &mut idx).unwrap();
         }
         assert_eq!(idx, 300);
@@ -479,19 +492,18 @@ mod proofs {
     use super::*;
     use crate::inflate::expand_code_length;
 
-    fn check_rle(lengths: &[u8]) {
-        // Every token covers at least one length, so this never reallocates.
-        let mut toks = Vec::with_capacity(lengths.len());
-        rle_code_lengths(lengths, &mut toks);
-        let mut out = vec![0u8; lengths.len()];
+    fn check_rle<const N: usize>(lengths: &[u8; N]) {
+        let mut toks = [ClToken { sym: 0, extra: 0 }; N];
+        let count = rle_code_lengths(lengths, &mut toks);
+        let mut out = [0u8; N];
         let mut idx = 0;
-        for t in toks.iter() {
+        for t in toks.iter().take(count) {
             assert!(t.sym <= 18);
             assert!(u32::from(t.extra) < (1u32 << codelen_extra_bits(t.sym)));
             assert!(expand_code_length(t.sym, u32::from(t.extra), &mut out, &mut idx).is_ok());
         }
-        assert_eq!(idx, lengths.len());
-        assert_eq!(out.as_slice(), lengths);
+        assert_eq!(idx, N);
+        assert_eq!(&out, lengths);
     }
 
     /// RLE of arbitrary code lengths decodes, through the decoder's own
