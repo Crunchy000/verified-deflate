@@ -208,10 +208,13 @@ fn build_lengths_in<const N: usize, const M: usize>(
         let mut pick = None;
         for k in 0..m {
             if depth[k] < limit32 {
-                pick = match pick {
-                    Some(p) if (depth[p], u64::MAX - weight[p]) >= (depth[k], u64::MAX - weight[k]) => Some(p),
-                    _ => Some(k),
+                let better = match pick {
+                    None => true,
+                    Some(p) => depth[k] > depth[p] || (depth[k] == depth[p] && weight[k] < weight[p]),
                 };
+                if better {
+                    pick = Some(k);
+                }
             }
         }
         let Some(p) = pick else { return Err(HuffmanError::LimitTooSmall) };
@@ -225,10 +228,13 @@ fn build_lengths_in<const N: usize, const M: usize>(
         let mut pick = None;
         for k in 0..m {
             if depth[k] > 1 {
-                pick = match pick {
-                    Some(p) if (depth[p], weight[p]) >= (depth[k], weight[k]) => Some(p),
-                    _ => Some(k),
+                let better = match pick {
+                    None => true,
+                    Some(p) => depth[k] > depth[p] || (depth[k] == depth[p] && weight[k] > weight[p]),
                 };
+                if better {
+                    pick = Some(k);
+                }
             }
         }
         let Some(p) = pick else { return Err(HuffmanError::LimitTooSmall) };
@@ -486,20 +492,9 @@ mod proofs {
         }
     }
 
-    /// The length builder always yields a complete code within the limit
-    /// that codes every used symbol. A limit of 3 on five symbols forces
-    /// the clamp-and-repair path. (`build_lengths` runs this same generic
-    /// function with larger scratch arrays.)
-    #[kani::proof]
-    #[kani::unwind(11)]
-    fn build_lengths_complete_and_limited() {
-        let freqs: [u32; 5] = kani::any();
-        let limit: usize = kani::any();
-        kani::assume(limit >= 3 && limit <= MAX_CODE_LEN);
-        let mut lengths = [0u8; 5];
-        assert!(build_lengths_in::<5, 10>(&freqs, limit, &mut lengths).is_ok());
-        assert!(is_complete(&lengths));
-        for i in 0..5 {
+    fn check_lengths(freqs: &[u32], lengths: &[u8], limit: usize) {
+        assert!(is_complete(lengths));
+        for i in 0..freqs.len() {
             assert!(lengths[i] as usize <= limit);
             if freqs[i] != 0 {
                 assert!(lengths[i] != 0);
@@ -507,21 +502,45 @@ mod proofs {
         }
     }
 
+    /// The length builder always yields a complete code within the limit
+    /// that codes every used symbol, for five symbols with frequencies
+    /// 0-255 and any limit 3-15. A limit of 3 forces the clamp-and-repair
+    /// path. (`build_lengths` runs this same generic function with larger
+    /// scratch arrays.)
+    #[kani::proof]
+    #[kani::unwind(11)]
+    fn build_lengths_complete_and_limited() {
+        let f: [u8; 5] = kani::any();
+        let freqs = f.map(u32::from);
+        let limit: usize = kani::any();
+        kani::assume(limit >= 3 && limit <= MAX_CODE_LEN);
+        let mut lengths = [0u8; 5];
+        assert!(build_lengths_in::<5, 10>(&freqs, limit, &mut lengths).is_ok());
+        check_lengths(&freqs, &lengths, limit);
+    }
+
+    /// The same over the full `u32` frequency range, for three symbols.
+    #[kani::proof]
+    #[kani::unwind(8)]
+    fn build_lengths_full_range_frequencies() {
+        let freqs: [u32; 3] = kani::any();
+        let limit: usize = kani::any();
+        kani::assume(limit >= 2 && limit <= MAX_CODE_LEN);
+        let mut lengths = [0u8; 3];
+        assert!(build_lengths_in::<3, 6>(&freqs, limit, &mut lengths).is_ok());
+        check_lengths(&freqs, &lengths, limit);
+    }
+
     /// The tightest feasible case: four symbols in two bits, where every
     /// skewed distribution needs repair.
     #[kani::proof]
     #[kani::unwind(11)]
     fn build_lengths_tight_limit() {
-        let freqs: [u32; 4] = kani::any();
+        let f: [u8; 4] = kani::any();
+        let freqs = f.map(u32::from);
         let mut lengths = [0u8; 4];
         assert!(build_lengths_in::<4, 8>(&freqs, 2, &mut lengths).is_ok());
-        assert!(is_complete(&lengths));
-        for i in 0..4 {
-            assert!(lengths[i] <= 2);
-            if freqs[i] != 0 {
-                assert!(lengths[i] != 0);
-            }
-        }
+        check_lengths(&freqs, &lengths, 2);
     }
 
     /// Requests that cannot be met are refused rather than producing a bad
@@ -529,9 +548,10 @@ mod proofs {
     #[kani::proof]
     #[kani::unwind(11)]
     fn build_lengths_rejects_impossible_limit() {
-        let freqs: [u32; 5] = kani::any();
-        for &f in freqs.iter() {
-            kani::assume(f != 0);
+        let f: [u8; 5] = kani::any();
+        let freqs = f.map(u32::from);
+        for &x in freqs.iter() {
+            kani::assume(x != 0);
         }
         let mut lengths = [0u8; 5];
         assert_eq!(build_lengths_in::<5, 10>(&freqs, 2, &mut lengths), Err(HuffmanError::LimitTooSmall));

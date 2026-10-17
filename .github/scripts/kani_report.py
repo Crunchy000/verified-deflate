@@ -35,7 +35,7 @@ def main(logdir: str) -> int:
             status = "FAILED"
         elif code == "124":
             status = "TIMEOUT"
-        elif code == "137" or re.search(r"bad_alloc|out of memory|Out of memory|memory allocation", log):
+        elif code in ("137", "143") or re.search(r"bad_alloc|out of memory|Out of memory|memory allocation", log):
             status = "OUT-OF-MEMORY"
         elif "No proof harnesses" in log or "no harnesses" in log.lower():
             status = "NOT-FOUND"
@@ -43,7 +43,9 @@ def main(logdir: str) -> int:
             status = f"ERROR({code})"
         t = re.search(r"Verification Time: ([0-9.]+)s", log)
         vt = f"{float(t.group(1)):.1f}s" if t else "-"
-        rows.append(f"{status:14} {vt:>9} {secs:>6}s wall  {harness}")
+        rss = re.search(r"Maximum resident set size \(kbytes\): (\d+)", log)
+        mem = f"{int(rss.group(1)) / 1048576:.1f}G" if rss else "-"
+        rows.append(f"{status:14} {vt:>9} {secs:>6}s wall {mem:>6}  {harness}")
         if status != "OK":
             lines = [l for l in log.splitlines() if l.strip()]
             picked = []

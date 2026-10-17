@@ -38,10 +38,9 @@ pub fn decompress(input: &[u8]) -> Result<Vec<u8>, InflateError> {
 /// [`InflateError::OutputLimitExceeded`] rather than producing more than
 /// `max_output` bytes.
 pub fn decompress_with_limit(input: &[u8], max_output: usize) -> Result<Decompressed, InflateError> {
-    // Capacity is a guess; it does not depend on the limit, which keeps the
-    // allocation size independent of caller-controlled values.
-    let guess = input.len().saturating_mul(4).min(1 << 26);
-    let mut st = State { br: BitReader::new(input), out: Vec::with_capacity(guess), limit: max_output };
+    // A fixed initial capacity: the output grows as needed, and a constant
+    // allocation size keeps the model checker's memory model simple.
+    let mut st = State { br: BitReader::new(input), out: Vec::with_capacity(INITIAL_CAPACITY), limit: max_output };
     loop {
         let header = st.br.read_bits(3)?;
         match header >> 1 {
@@ -59,6 +58,9 @@ pub fn decompress_with_limit(input: &[u8], max_output: usize) -> Result<Decompre
     }
     Ok(Decompressed { consumed: st.br.bytes_consumed(), data: st.out })
 }
+
+/// Initial output buffer size.
+const INITIAL_CAPACITY: usize = 4096;
 
 const FIXED_LIT: Decoder = match Decoder::new(&fixed_litlen_lengths()) {
     Ok(d) => d,

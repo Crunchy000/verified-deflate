@@ -344,9 +344,9 @@ mod proofs {
         assert_eq!(out.as_slice(), data);
     }
 
-    /// Small tables (4-entry hash, 8-byte window) make collisions, chain
-    /// reuse and window eviction all reachable; with lazy matching on,
-    /// every token is valid and the tokens replay to the input.
+    /// For any 6 bytes, with small tables (4-entry hash, 8-byte window)
+    /// that make collisions and chain reuse reachable and with lazy
+    /// matching on, every token is valid and the tokens replay to the input.
     #[kani::proof]
     #[kani::unwind(7)]
     fn tokens_valid_and_replay_small_tables() {
@@ -365,7 +365,7 @@ mod proofs {
         check_tokens(&data[..len], cfg);
     }
 
-    /// Same property with the production configuration of level 9.
+    /// Same property for any 5 bytes with the production level-9 configuration.
     #[kani::proof]
     #[kani::unwind(6)]
     fn tokens_valid_and_replay_level9() {
@@ -373,7 +373,7 @@ mod proofs {
         check_tokens(&data, MatchConfig::for_level(9));
     }
 
-    /// Same property without lazy matching (levels 1-3).
+    /// Same property for any 5 bytes without lazy matching (level 1).
     #[kani::proof]
     #[kani::unwind(6)]
     fn tokens_valid_and_replay_greedy() {

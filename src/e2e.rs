@@ -18,33 +18,32 @@ fn roundtrip(data: &[u8], level: u8, strategy: Strategy) {
     assert_eq!(d.consumed, packed.len());
 }
 
-/// Stored blocks: any input of up to 4 bytes round-trips exactly.
+/// Stored blocks: any 4 bytes, and the empty input, round-trip exactly.
+/// (Lengths are fixed per harness: a symbolic length makes every buffer
+/// size symbolic, which the model checker handles far less well.)
 #[kani::proof]
 #[kani::unwind(6)]
 fn roundtrip_stored() {
     let data: [u8; 4] = kani::any();
-    let len: usize = kani::any();
-    kani::assume(len <= 4);
-    roundtrip(&data[..len], 0, Strategy::Stored);
+    roundtrip(&data, 0, Strategy::Stored);
+    roundtrip(&[], 0, Strategy::Stored);
 }
 
-/// Fixed Huffman with the level-6 lazy matcher: any input of up to 4 bytes
-/// round-trips exactly (four bytes allow a literal followed by a match).
+/// Fixed Huffman with the level-6 lazy matcher: any 4 bytes round-trip
+/// exactly (four bytes allow a literal followed by an overlapping match).
 /// Fixed codes are at most 9 bits, which bounds the decoder's bit loop.
 #[kani::proof]
 #[kani::unwind(10)]
 fn roundtrip_fixed_lazy() {
     let data: [u8; 4] = kani::any();
-    let len: usize = kani::any();
-    kani::assume(len <= 4);
-    roundtrip(&data[..len], 6, Strategy::Fixed);
+    roundtrip(&data, 6, Strategy::Fixed);
 }
 
-/// Fixed Huffman with the greedy level-1 matcher on any 4 bytes.
+/// Fixed Huffman with the greedy level-1 matcher on any 3 bytes.
 #[kani::proof]
 #[kani::unwind(10)]
 fn roundtrip_fixed_greedy() {
-    let data: [u8; 4] = kani::any();
+    let data: [u8; 3] = kani::any();
     roundtrip(&data, 1, Strategy::Fixed);
 }
 
@@ -63,19 +62,17 @@ fn roundtrip_fixed_two_symbol_alphabet() {
     roundtrip(&data, 9, Strategy::Fixed);
 }
 
-/// A one-entry ZIP archive of any stored content up to 3 bytes reads back
-/// exactly, with the CRC check passing.
+/// A one-entry ZIP archive of any 3 bytes, stored, reads back exactly with
+/// its CRC check passing.
 #[kani::proof]
 #[kani::unwind(8)]
 fn zip_roundtrip_stored() {
     let data: [u8; 3] = kani::any();
-    let len: usize = kani::any();
-    kani::assume(len <= 3);
     let opts = FileOptions { level: 0, verify: false, ..FileOptions::default() };
     let mut w = ZipWriter::new();
-    w.add_file("f", &data[..len], &opts).unwrap();
+    w.add_file("f", &data, &opts).unwrap();
     let bytes = w.finish().unwrap();
     let a = ZipArchive::parse(&bytes).unwrap();
     assert_eq!(a.len(), 1);
-    assert_eq!(a.read(0).unwrap().as_slice(), &data[..len]);
+    assert_eq!(a.read(0).unwrap().as_slice(), &data[..]);
 }

@@ -9,7 +9,7 @@ set -uo pipefail
 prefix="$1"
 file="$2"
 timeout_s="${KANI_HARNESS_TIMEOUT:-1800}"
-mem_kb="${KANI_MEMORY_KB:-13631488}"  # 13 GiB (public runners have 16 GiB)
+mem_gb="${KANI_MEMORY_GB:-14}"   # public runners have 16 GiB
 
 mkdir -p kani-logs
 : > kani-logs/status.tsv
@@ -43,14 +43,27 @@ publish() {
   rm -rf "$tmp"
 }
 
+# Runs a command under a memory cap. A cgroup limit (systemd-run) caps
+# resident memory, so the verifier is stopped cleanly instead of the whole
+# runner being OOM-killed; `ulimit -v` is the fallback.
+run_capped() {
+  if command -v systemd-run >/dev/null && sudo -n true 2>/dev/null; then
+    sudo -E systemd-run --quiet --scope -p MemoryMax="${mem_gb}G" -p MemorySwapMax=0 \
+      --uid="$(id -u)" --gid="$(id -g)" \
+      env PATH="$PATH" HOME="$HOME" "$@"
+  else
+    ( ulimit -v $((mem_gb * 1024 * 1024)); exec "$@" )
+  fi
+}
+
 for n in $names; do
   h="${prefix}${n}"
   echo "::group::$h"
   start=$SECONDS
   # Regular output names failed checks; concrete playback prints a unit
   # test reproducing any counterexample.
-  ( ulimit -v "$mem_kb"; exec timeout "$timeout_s" cargo kani --harness "$h" --exact \
-      -Z concrete-playback --concrete-playback=print ) \
+  run_capped /usr/bin/time -v timeout "$timeout_s" cargo kani --harness "$h" --exact \
+      -Z concrete-playback --concrete-playback=print \
     > "kani-logs/$n.log" 2>&1
   status=$?
   secs=$((SECONDS - start))
