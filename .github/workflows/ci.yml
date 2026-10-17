@@ -84,7 +84,7 @@ jobs:
           - { module: "bitio::proofs::", file: src/bitio.rs }
           - { module: "crc32::proofs::", file: src/crc32.rs }
           - { module: "tables::proofs::", file: src/tables.rs }
-          - { module: "huffman::proofs::", file: src/huffman.rs }
+          - { module: "huffman::proofs::", file: src/huffman.rs, flags: "-Z stubbing" }
           - { module: "lz77::proofs::", file: src/lz77.rs, flags: "-Z stubbing --no-memory-safety-checks" }
           - { module: "deflate::proofs::", file: src/deflate.rs, flags: "-Z stubbing --no-memory-safety-checks" }
           - { module: "inflate::proofs::", file: src/inflate.rs, flags: "-Z stubbing --no-memory-safety-checks" }
