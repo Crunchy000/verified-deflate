@@ -83,6 +83,7 @@ fn roundtrip_fixed_two_symbol_alphabet() {
 /// A one-entry ZIP archive of any 3 bytes, stored, reads back exactly with
 /// its CRC check passing.
 #[kani::stub(crate::inflate::Output::grow, crate::inflate::grow_is_unreachable)]
+#[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
 #[kani::proof]
 #[kani::unwind(8)]
 fn zip_roundtrip_stored() {

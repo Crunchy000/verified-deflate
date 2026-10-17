@@ -19,7 +19,7 @@ reference zlib and Info-ZIP.
 
 ## Verification
 
-47 Kani harnesses sit next to the code they check and run in CI on every
+46 Kani harnesses sit next to the code they check and run in CI on every
 push. For every input up to the stated sizes, they prove these
 properties:
 
@@ -35,13 +35,14 @@ properties:
   hash function. The overlapping match copy meets its specification.
 - The encoder's code-length run-length coding is undone by the decoder's
   own routine.
-- Stored streams round-trip end to end, including inside a ZIP archive.
+- Stored streams round-trip end to end.
 - ZIP headers round-trip. Every slice the archive parser takes is in
   bounds, for archives of any size. Name validation blocks path traversal.
 
-Six larger harnesses are gated behind the `kani-extended` feature
-because they need more memory than a CI runner has: whole-stream decoder
-no-panic and fixed-Huffman round trips. Dynamic-Huffman blocks are covered
+Seven larger harnesses are gated behind the `kani-extended` feature
+because they need more memory or time than a CI runner has: whole-stream
+decoder no-panic, fixed-Huffman round trips, and a whole-archive round
+trip. Dynamic-Huffman blocks are covered
 compositionally rather than end to end.
 [VERIFICATION.md](VERIFICATION.md) lists every harness, its bounds, the
 modelling choices behind it, and what is **not** proven.

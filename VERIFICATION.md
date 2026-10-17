@@ -5,7 +5,7 @@ weakest:
 
 1. **Kani proofs**: bounded model checking of the real code, for *every*
    input up to the stated size. Each harness is a `#[kani::proof]` function
-   next to the code it checks. 47 harnesses run in CI on every push; 6
+   next to the code it checks. 46 harnesses run in CI on every push; 7
    more are too large for CI runners and are gated behind the
    `kani-extended` feature (see below).
 2. **Safe Rust**: `#![forbid(unsafe_code)]`, so memory safety comes from
@@ -36,7 +36,11 @@ cargo kani -Z stubbing --features kani-extended    # include the large ones
 
 CI (`.github/workflows/ci.yml`) runs each module as its own job, and each
 harness as its own process. A harness gets 16 GiB of memory and 30
-minutes, and the job summary reports per-harness results.
+minutes, and the job summary reports per-harness results. On GitHub's
+standard runners the whole CI suite verifies in about 45 minutes of wall
+time across parallel jobs. Most harnesses take seconds; the slowest, the
+Huffman length builder and encode/decode round trip, take about 8 minutes
+and peak at about 12 GiB.
 
 Without Kani, the harnesses can still be compiled and *sampled* with
 random inputs. This is a smoke test, not a proof; see `tools/kani-sample`.
@@ -174,12 +178,11 @@ the zlib interop tests confirm the output is unchanged.
 | Harness | Property |
 |---|---|
 | `roundtrip_stored` | For any 4 bytes, and for the empty input, the stored encoder followed by the decoder gives back the input exactly and consumes the whole stream. |
-| `zip_roundtrip_stored` | A one-entry archive of any 3 bytes, stored, reads back exactly and passes its CRC check. |
 
 ## Extended harnesses (`--features kani-extended`)
 
-These exist and run under the sampling shim, but each needs more than the
-16 GiB a CI runner has. They are the natural next targets for a larger
+These exist and run under the sampling shim, but each needs more memory
+or time than a CI runner allows (16 GiB, 30 minutes). They are the natural next targets for a larger
 machine or further restructuring of the decoder.
 
 | Harness | Property |
@@ -190,6 +193,7 @@ machine or further restructuring of the decoder.
 | `e2e::roundtrip_fixed_lazy` | Any 4 bytes round-trip through fixed Huffman with the level-6 lazy matcher. |
 | `e2e::roundtrip_fixed_greedy` | Any 3 bytes round-trip through fixed Huffman with the greedy matcher. |
 | `e2e::roundtrip_fixed_two_symbol_alphabet` | Any 6 bytes over a two-symbol alphabet round-trip with level 9. |
+| `e2e::zip_roundtrip_stored` | A one-entry archive of any 3 bytes, stored, reads back exactly and passes its CRC check. |
 
 ## What is not proven
 
@@ -207,7 +211,8 @@ The gaps, stated precisely:
   are in the extended set. On top of the pieces, about 140,000 corrupted
   and random streams are fuzzed in the test suite.
 - **Compressor-to-decompressor round trips are proven in CI for stored
-  blocks.** Fixed-Huffman round trips are in the extended set. In CI they
+  blocks.** Fixed-Huffman and whole-archive round trips are in the
+  extended set. In CI they
   are covered compositionally: tokenizer validity, code tables, Huffman
   encode and decode, bit I/O. Dynamic-Huffman blocks need more unrolling
   than a model checker handles at DEFLATE's alphabet sizes. They are covered
