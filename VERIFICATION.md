@@ -40,7 +40,10 @@ minutes, and the job summary reports per-harness results. On GitHub's
 standard runners the whole CI suite verifies in about 45 minutes of wall
 time across parallel jobs. Most harnesses take seconds; the slowest, the
 Huffman length builder and encode/decode round trip, take about 8 minutes
-and peak at about 12 GiB.
+and peak at about 12 GiB. A manual run of the workflow can select modules
+and harnesses (by name pattern), change the time limit, include the
+extended set, and publish each harness's log to a `ci-logs/*` branch as
+soon as it finishes.
 
 Without Kani, the harnesses can still be compiled and *sampled* with
 random inputs. This is a smoke test, not a proof; see `tools/kani-sample`.

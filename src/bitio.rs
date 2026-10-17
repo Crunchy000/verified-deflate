@@ -144,12 +144,19 @@ impl<'a> BitReader<'a> {
             self.pos += room;
             self.nbits += 8 * room as u32;
         } else {
-            // Fewer than 8 bytes left: load them zero-padded (no loop, which
-            // keeps this cheap for the model checker).
+            // Fewer than 8 bytes left: load them zero-padded. The loop has a
+            // constant bound and constant indices, which keeps it cheap for
+            // the model checker (a copy of symbolic length is not).
             let rest = &self.data[self.pos..];
             let k = if rest.len() < room { rest.len() } else { room };
             let mut b = [0u8; 8];
-            b[..k].copy_from_slice(&rest[..k]);
+            let mut i = 0;
+            while i < 7 {
+                if i < k {
+                    b[i] = rest[i];
+                }
+                i += 1;
+            }
             self.acc |= u64::from_le_bytes(b) << self.nbits;
             self.pos += k;
             self.nbits += 8 * k as u32;

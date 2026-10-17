@@ -821,8 +821,8 @@ mod proofs {
         let lengths: [u8; N] = any_lengths(MAX_CODE_LEN as u8);
         let mut codes = [0u16; N];
         kani::assume(canonical_codes(&lengths, &mut codes).is_ok());
-        // No lookup table: `decode` is then the reference bit-by-bit walk,
-        // which `fast_decode_matches_slow` shows the table path agrees with.
+        // The reference bit-by-bit decoder (no lookup table is built);
+        // `fast_decode_matches_slow` shows the table path agrees with it.
         let dec = Decoder::with_fast_bits(&lengths, 0).unwrap();
         let s: usize = kani::any_where(|&s: &usize| s < N);
         kani::assume(lengths[s] != 0);
@@ -833,7 +833,7 @@ mod proofs {
         let word = u32::from(reverse_bits(codes[s], len)) | (u32::from(trailing) << len);
         let bytes = word.to_le_bytes();
         let mut r = BitReader::new(&bytes);
-        assert_eq!(dec.decode(&mut r), Ok(s as u16));
+        assert_eq!(dec.decode_slow(&mut r), Ok(s as u16));
         assert_eq!(r.read_bits(16), Ok(u32::from(trailing)));
     }
 
@@ -843,32 +843,48 @@ mod proofs {
     #[kani::unwind(17)]
     fn decode_arbitrary_bits() {
         let lengths: [u8; N] = any_lengths(MAX_CODE_LEN as u8);
-        // No lookup table, as in `encode_then_decode_symbol`.
+        // The reference decoder, as in `encode_then_decode_symbol`.
         let Ok(dec) = Decoder::with_fast_bits(&lengths, 0) else { return };
         let data: [u8; 2] = kani::any();
         let mut r = BitReader::new(&data);
-        if let Ok(s) = dec.decode(&mut r) {
+        if let Ok(s) = dec.decode_slow(&mut r) {
             assert!((s as usize) < N);
             assert!(lengths[s as usize] != 0);
         }
     }
 
     /// The table-driven decoder is the bit-by-bit reference decoder: for
-    /// any valid lengths, any table width 1-5 bits, and any 0-2 bytes of
-    /// input, `decode` and `decode_slow` return the same result and, on
-    /// success, consume the same number of bits. Codes shorter than, equal
-    /// to and longer than the table (up to 15 bits), and input running out
-    /// mid-code, are all covered.
+    /// any valid lengths over 4 symbols (up to 6 bits), any table width of
+    /// 1-4 bits, and any 0-1 bytes of input, `decode` and `decode_slow`
+    /// return the same result and, on success, consume the same number of
+    /// bits. Codes shorter than, as long as and longer than the table, and
+    /// input ending mid-code, are all covered.
     #[kani::proof]
     #[kani::unwind(17)]
     fn fast_decode_matches_slow() {
-        let lengths: [u8; N] = any_lengths(MAX_CODE_LEN as u8);
-        let fast_bits: u32 = kani::any_where(|&b: &u32| (1..=5).contains(&b));
+        let lengths: [u8; 4] = any_lengths(6);
+        let fast_bits: u32 = kani::any_where(|&b: &u32| (1..=4).contains(&b));
+        let Ok(dec) = Decoder::with_fast_bits(&lengths, fast_bits) else { return };
+        let data: [u8; 1] = kani::any();
+        let len: usize = kani::any_where(|&l: &usize| l <= 1);
+        check_fast_matches_slow(&dec, &data[..len]);
+    }
+
+    /// The same for 5 symbols of up to 9 bits and 0-2 bytes of input.
+    #[kani::proof]
+    #[kani::unwind(17)]
+    fn fast_decode_matches_slow_wide() {
+        let lengths: [u8; 5] = any_lengths(9);
+        let fast_bits: u32 = kani::any_where(|&b: &u32| (1..=4).contains(&b));
         let Ok(dec) = Decoder::with_fast_bits(&lengths, fast_bits) else { return };
         let data: [u8; 2] = kani::any();
         let len: usize = kani::any_where(|&l: &usize| l <= 2);
-        let mut fast = BitReader::new(&data[..len]);
-        let mut slow = BitReader::new(&data[..len]);
+        check_fast_matches_slow(&dec, &data[..len]);
+    }
+
+    fn check_fast_matches_slow(dec: &Decoder, data: &[u8]) {
+        let mut fast = BitReader::new(data);
+        let mut slow = BitReader::new(data);
         let a = dec.decode(&mut fast);
         let b = dec.decode_slow(&mut slow);
         assert_eq!(a, b);
