@@ -44,14 +44,7 @@ impl BitWriter {
         // are ready here. Flushing them without a loop keeps proofs small.
         if self.nbits >= 8 {
             let k = self.nbits / 8;
-            let bytes = self.acc.to_le_bytes();
-            self.out.reserve(4);
-            // Constant trip count: cheap for the model checker.
-            for (j, &b) in bytes.iter().take(4).enumerate() {
-                if (j as u32) < k {
-                    self.out.push(b);
-                }
-            }
+            self.out.extend_from_slice(&self.acc.to_le_bytes()[..k as usize]);
             self.acc >>= 8 * k;
             self.nbits -= 8 * k;
         }

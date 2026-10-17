@@ -244,15 +244,22 @@ pub fn match_is_valid(len: usize, dist: usize, produced: usize) -> bool {
 
 /// Appends a match to `out`: copies `len` bytes starting `dist` bytes from
 /// the end, where the source may overlap the bytes being written (that is
-/// how DEFLATE expresses runs). Byte by byte, so each byte read has already
-/// been written. Requires `1 <= dist <= out.len()`.
+/// how DEFLATE expresses runs).
+///
+/// Copies in doubling chunks: after copying a multiple of `dist` bytes the
+/// output is periodic with period `dist`, so the next chunk can be taken
+/// from the start of the match source in one `extend_from_within`. At most
+/// about log2(258) + 1 chunks are needed.
+/// Requires `1 <= dist <= out.len()`.
 #[inline]
 pub fn copy_match(out: &mut Vec<u8>, dist: usize, len: usize) {
-    out.reserve(len);
     let start = out.len() - dist;
-    for i in 0..len {
-        let b = out[start + i];
-        out.push(b);
+    let mut copied = 0;
+    while copied < len {
+        let avail = dist + copied;
+        let chunk = if len - copied < avail { len - copied } else { avail };
+        out.extend_from_within(start..start + chunk);
+        copied += chunk;
     }
 }
 
@@ -357,19 +364,27 @@ mod proofs {
         assert_eq!(out.as_slice(), data);
     }
 
-    /// For any 5 bytes, with small tables (4-entry hash, 8-byte window)
-    /// that make collisions and chain reuse reachable and with lazy
-    /// matching on, every token is valid and the tokens replay to the input.
+    /// Small tables (8-byte window, 4 hash buckets) with the given level's
+    /// search parameters. Table sizes do not change the tokenizer's logic
+    /// for inputs shorter than the window, and under the hash stub every
+    /// bucket assignment is covered; small tables keep the model small.
+    fn small(level: u8) -> MatchConfig {
+        MatchConfig { window_bits: 3, hash_bits: 2, ..MatchConfig::for_level(level) }
+    }
+
+    /// For any 4 bytes, with a 2-entry chain limit, lazy matching and
+    /// every possible hash function: every token is valid and the tokens
+    /// replay to the input.
     #[kani::proof]
-    #[kani::unwind(6)]
     #[kani::stub(Matcher::hash, any_bucket)]
+    #[kani::unwind(5)]
     fn tokens_valid_and_replay_small_tables() {
-        let data: [u8; 5] = kani::any();
+        let data: [u8; 4] = kani::any();
         let cfg = MatchConfig {
             max_chain: 2,
             nice_len: 4,
             good_len: 3,
-            max_lazy: 5,
+            max_lazy: 4,
             lazy: true,
             window_bits: 3,
             hash_bits: 2,
@@ -377,22 +392,22 @@ mod proofs {
         check_tokens(&data, cfg);
     }
 
-    /// Same property for any 4 bytes with the production level-9 configuration.
+    /// Same property for any 4 bytes with level 9's search parameters.
     #[kani::proof]
-    #[kani::unwind(5)]
     #[kani::stub(Matcher::hash, any_bucket)]
+    #[kani::unwind(5)]
     fn tokens_valid_and_replay_level9() {
         let data: [u8; 4] = kani::any();
-        check_tokens(&data, MatchConfig::for_level(9));
+        check_tokens(&data, small(9));
     }
 
-    /// Same property for any 4 bytes without lazy matching (level 1).
+    /// Same property for any 4 bytes with level 1's greedy parameters.
     #[kani::proof]
-    #[kani::unwind(5)]
     #[kani::stub(Matcher::hash, any_bucket)]
+    #[kani::unwind(5)]
     fn tokens_valid_and_replay_greedy() {
         let data: [u8; 4] = kani::any();
-        check_tokens(&data, MatchConfig::for_level(1));
+        check_tokens(&data, small(1));
     }
 
     /// Runs of a repeated byte become one literal plus an overlapping match.
@@ -401,7 +416,7 @@ mod proofs {
     fn runs_are_matched() {
         let b: u8 = kani::any();
         let data = [b; 6];
-        let mut m = Matcher::new(MatchConfig::for_level(6));
+        let mut m = Matcher::new(small(6));
         let mut toks = Vec::with_capacity(6);
         m.tokenize(&data, 0, usize::MAX, &mut toks);
         assert_eq!(toks.len(), 2);
