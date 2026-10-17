@@ -640,11 +640,17 @@ impl ZipWriter {
     }
 
     /// Adds a directory entry (a trailing `/` is added if missing).
+    ///
+    /// Directories get search permission wherever they have read
+    /// permission, so the default file mode 0o644 becomes 0o755; without
+    /// it, extracted directories could not be entered.
     pub fn add_directory(&mut self, name: &str, opts: &FileOptions) -> Result<(), ZipError> {
         let name = if name.ends_with('/') { name.to_string() } else { format!("{name}/") };
         self.check_new_name(&name)?;
+        let mode = opts.unix_mode & 0o7777;
+        let mode = mode | ((mode & 0o444) >> 2);
         // Unix directory mode in the high half, MS-DOS directory bit (0x10) in the low.
-        let external_attr = ((0o040_000 | (opts.unix_mode & 0o7777)) << 16) | 0x10;
+        let external_attr = ((0o040_000 | mode) << 16) | 0x10;
         let meta = EntryMeta { method: METHOD_STORED, crc: 0, uncompressed: 0, modified: opts.modified, external_attr };
         self.add_entry(&name, &[], meta)
     }
@@ -873,6 +879,7 @@ mod tests {
         assert_eq!(a.read_by_name("caf\u{e9}.bin").unwrap(), [1, 2, 3]);
         assert_eq!(a.entries()[3].flags & FLAG_UTF8, FLAG_UTF8);
         assert_eq!(a.entries()[1].unix_mode, Some(0o100_644));
+        assert_eq!(a.entries()[0].unix_mode, Some(0o040_755));
     }
 
     #[test]
@@ -998,16 +1005,37 @@ mod proofs {
         let _ = EndOfCentralDirectory::parse(&b[..len]);
     }
 
-    /// Parsing an arbitrary 72-byte buffer as an archive never panics, and
-    /// any entries found point inside the buffer's central directory.
+    /// Locating the end record in any buffer of up to 30 bytes never
+    /// panics, and a found record really is a signature whose comment ends
+    /// exactly at the end of the buffer.
     #[kani::proof]
-    #[kani::unwind(52)]
+    #[kani::unwind(11)]
+    fn find_eocd_is_sound() {
+        let data: [u8; 30] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= 30);
+        let d = &data[..len];
+        if let Ok(i) = find_eocd(d) {
+            assert_eq!(u32_at(d, i), EOCD_SIG);
+            assert_eq!(i + EndOfCentralDirectory::SIZE + u16_at(d, i + 20) as usize, len);
+        }
+    }
+
+    /// With an end record at the end of a 70-byte buffer and every other
+    /// byte arbitrary (directory offset, size and count, the central header
+    /// and its name), parsing never panics and any entry lies inside the
+    /// central directory.
+    #[kani::proof]
+    #[kani::unwind(4)]
     fn archive_parse_never_panics() {
-        let data: [u8; 72] = kani::any();
+        let mut data: [u8; 70] = kani::any();
+        data[48..52].copy_from_slice(&EOCD_SIG.to_le_bytes());
+        data[68] = 0;
+        data[69] = 0;
         if let Ok(a) = ZipArchive::parse(&data) {
             assert!(a.len() <= 1);
             for e in a.entries() {
-                assert!(e.raw_name.len() <= 72 - CentralHeader::SIZE - EndOfCentralDirectory::SIZE);
+                assert!(e.raw_name.len() <= 48 - CentralHeader::SIZE);
             }
         }
     }

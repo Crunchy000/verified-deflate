@@ -5,6 +5,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   CARGO_TERM_COLOR: never
   KANI_VERSION: "0.68.0"
@@ -55,16 +59,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        module:
-          - "bitio::proofs::"
-          - "crc32::proofs::"
-          - "tables::proofs::"
-          - "huffman::proofs::"
-          - "lz77::proofs::"
-          - "deflate::proofs::"
-          - "inflate::proofs::"
-          - "zip::proofs::"
-          - "e2e::"
+        include:
+          - { module: "bitio::proofs::", file: src/bitio.rs }
+          - { module: "crc32::proofs::", file: src/crc32.rs }
+          - { module: "tables::proofs::", file: src/tables.rs }
+          - { module: "huffman::proofs::", file: src/huffman.rs }
+          - { module: "lz77::proofs::", file: src/lz77.rs }
+          - { module: "deflate::proofs::", file: src/deflate.rs }
+          - { module: "inflate::proofs::", file: src/inflate.rs }
+          - { module: "zip::proofs::", file: src/zip.rs }
+          - { module: "e2e::", file: src/e2e.rs }
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
@@ -83,10 +87,8 @@ jobs:
             cargo install --locked kani-verifier --version "$KANI_VERSION"
           fi
           cargo kani setup
-      - name: Verify
-        run: |
-          set -o pipefail
-          cargo kani --harness "${{ matrix.module }}" --output-format=terse 2>&1 | tee kani.log
+      - name: Verify (one process per harness)
+        run: .github/scripts/kani_module.sh "${{ matrix.module }}" "${{ matrix.file }}"
       - name: Report
         if: always()
-        run: python3 .github/scripts/kani_report.py kani.log
+        run: python3 .github/scripts/kani_report.py kani-logs
