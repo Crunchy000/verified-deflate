@@ -22,7 +22,11 @@ import subprocess
 import sys
 import time
 
-MAX_HARNESSES = 3
+MAX_HARNESSES = int(os.environ.get("RECHECK_MAX_HARNESSES", "3"))
+# A previous round's recheck.json: if set, only that round's survivors are
+# checked again, against the harnesses it did not try, and `summarize`
+# merges the two rounds.
+PREVIOUS = os.environ.get("RECHECK_PREVIOUS", "")
 MEM_GB = 14
 
 # Kani flags per module, as in the CI matrix.
@@ -91,9 +95,26 @@ def verify(harness, timeout):
     return f"ERROR({p.returncode})", secs, out.splitlines()[-3:]
 
 
+def previous_results():
+    if not PREVIOUS:
+        return {}
+    return {r["name"]: r for r in json.load(open(PREVIOUS))}
+
+
 def run(adir, shard, shards, out_path):
     cands = json.load(open(os.path.join(adir, "kani_candidates.json")))
     times = harness_times(adir)
+    prev = previous_results()
+    if prev:
+        rest = []
+        for c in cands:
+            p = prev.get(c["name"])
+            if p and p["verdict"] == "survives":
+                tried = {h["harness"] for h in p["harnesses"]}
+                left = [h for h in c["harnesses"] if h not in tried]
+                if left:
+                    rest.append(dict(c, harnesses=left))
+        cands = rest
     mine = [c for i, c in enumerate(cands) if i % shards == shard]
     print(f"{len(mine)} of {len(cands)} candidates in shard {shard}/{shards}", flush=True)
     with open(out_path, "w") as out:
@@ -130,13 +151,18 @@ def run(adir, shard, shards, out_path):
 def summarize(adir, rdir, outdir):
     os.makedirs(outdir, exist_ok=True)
     cands = {c["name"]: c for c in json.load(open(os.path.join(adir, "kani_candidates.json")))}
-    results = {}
+    results = previous_results()
     for dirpath, _, files in os.walk(rdir):
         for f in files:
             if f.endswith(".jsonl"):
                 for line in open(os.path.join(dirpath, f)):
                     if line.strip():
                         r = json.loads(line)
+                        p = results.get(r["name"])
+                        if p and r["verdict"] in ("survives", "no-harness") and p["verdict"] != "no-harness":
+                            r = dict(r, verdict=p["verdict"])
+                        if p:
+                            r = dict(r, harnesses=p["harnesses"] + r["harnesses"])
                         results[r["name"]] = r
     counts = {}
     for r in results.values():

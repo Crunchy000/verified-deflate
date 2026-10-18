@@ -44,6 +44,11 @@ on:
         description: "Assurance mode: ids of earlier runs (comma-separated, highest precedence first) whose coverage and mutation results fill in whatever this run does not produce (waits for them to finish)"
         required: false
         default: ""
+      recheck_rest:
+        description: "With recheck: only re-verify the survivors of the previous re-check (ci-logs/assurance-recheck) against every harness that reaches them and that it did not try"
+        type: boolean
+        required: false
+        default: false
       recheck:
         description: "After an assurance run: verify with real Kani the mutants that proofs reach but sampling missed (from ci-logs/assurance); publishes to ci-logs/assurance-recheck. Set modules to 'none' to skip the normal proofs."
         type: boolean
@@ -348,7 +353,15 @@ jobs:
             cargo install --locked kani-verifier --version "$KANI_VERSION"
           fi
           cargo kani setup
+      - name: Fetch the previous re-check
+        if: github.event.inputs.recheck_rest == 'true'
+        run: |
+          git fetch -q --depth 1 origin ci-logs/assurance-recheck
+          mkdir -p previous && git archive FETCH_HEAD | tar -x -C previous
       - name: Verify each mutant
+        env:
+          RECHECK_PREVIOUS: ${{ github.event.inputs.recheck_rest == 'true' && 'previous/recheck.json' || '' }}
+          RECHECK_MAX_HARNESSES: ${{ github.event.inputs.recheck_rest == 'true' && '99' || '3' }}
         run: python3 .github/scripts/kani_recheck.py run assurance-dir ${{ matrix.shard }} 16 recheck-${{ matrix.shard }}.jsonl
       - name: Keep results
         if: always()
@@ -375,7 +388,14 @@ jobs:
         with:
           pattern: recheck-*
           path: recheck-in
+      - name: Fetch the previous re-check
+        if: github.event.inputs.recheck_rest == 'true'
+        run: |
+          git fetch -q --depth 1 origin ci-logs/assurance-recheck
+          mkdir -p previous && git archive FETCH_HEAD | tar -x -C previous
       - name: Merge
+        env:
+          RECHECK_PREVIOUS: ${{ github.event.inputs.recheck_rest == 'true' && 'previous/recheck.json' || '' }}
         run: python3 .github/scripts/kani_recheck.py summarize assurance-dir recheck-in recheck-out
       - name: Publish to ci-logs/assurance-recheck
         if: always()
