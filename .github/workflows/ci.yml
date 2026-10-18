@@ -27,6 +27,11 @@ on:
         type: boolean
         required: false
         default: false
+      assurance:
+        description: "Assurance mode: record which code each proof reaches (Kani coverage), run mutation testing against the proofs and the tests, and publish a report to ci-logs/assurance"
+        type: boolean
+        required: false
+        default: false
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -82,7 +87,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    timeout-minutes: 240
+    # Coverage instrumentation makes proofs slower, so assurance runs get
+    # the longest time a hosted runner allows.
+    timeout-minutes: ${{ github.event.inputs.assurance == 'true' && 355 || 240 }}
     strategy:
       fail-fast: false
       matrix:
@@ -148,6 +155,7 @@ jobs:
           KANI_SHARD_SKIP: ${{ matrix.skip }}
           KANI_EXTRA_FLAGS: ${{ matrix.flags }}
           KANI_EXTENDED: ${{ github.event.inputs.extended == 'true' && '1' || '0' }}
+          KANI_COVERAGE: ${{ github.event.inputs.assurance == 'true' && '1' || '0' }}
           GITHUB_TOKEN: ${{ github.token }}
           MODULE: ${{ matrix.module }}
           PART: ${{ matrix.part }}
@@ -159,3 +167,92 @@ jobs:
       - name: Report
         if: always() && steps.sel.outputs.run == 'true'
         run: python3 .github/scripts/kani_report.py kani-logs
+      - name: Keep coverage for the assurance report
+        if: always() && steps.sel.outputs.run == 'true' && github.event.inputs.assurance == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: kanicov-${{ strategy.job-index }}
+          path: kani-logs
+          if-no-files-found: warn
+
+  # Assurance mode only. Each mutant is a small deliberate bug (an operator
+  # swapped, a condition negated, a function body replaced by a constant).
+  # A mutant that no check notices marks code whose behaviour nothing pins
+  # down. Two passes:
+  #   proofs: the Kani harnesses run as randomised tests (kani-sample). A
+  #           mutant caught here is caught by the real proof too, because
+  #           sampling only finds genuine counterexamples. One missed here
+  #           may still be caught by the real proof, which checks every
+  #           input; the report lists those that the proofs reach.
+  #   tests:  the whole test suite, including the zlib and Info-ZIP interop.
+  mutants:
+    name: Mutants ${{ matrix.pass }} ${{ matrix.shard }}/16
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.assurance == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        pass: [proofs, tests]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-mutants@27.1.0
+      - name: Install zip/unzip for interop tests
+        if: matrix.pass == 'tests'
+        run: sudo apt-get install -y zip unzip
+      - name: Mutate and test
+        env:
+          PASS: ${{ matrix.pass }}
+          SHARD: ${{ matrix.shard }}
+          SHARDS: "16"
+          KANI_SAMPLE_ITERS: "300000"
+        run: .github/scripts/run-and-report.sh "mutants-${{ matrix.pass }}-${{ matrix.shard }}" .github/scripts/mutants_shard.sh
+      - name: Keep outcomes for the assurance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutants-${{ matrix.pass }}-${{ matrix.shard }}
+          path: |
+            mutants-${{ matrix.pass }}-${{ matrix.shard }}/mutants.out/outcomes.json
+            mutants-${{ matrix.pass }}-${{ matrix.shard }}/mutants.out/*.txt
+          if-no-files-found: warn
+
+  assurance:
+    name: Assurance report
+    needs: [kani, mutants]
+    if: always() && github.event_name == 'workflow_dispatch' && github.event.inputs.assurance == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: kanicov-*
+          path: assurance-in/coverage
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: mutants-*
+          path: assurance-in/mutants
+      - name: Join coverage and mutants
+        run: python3 .github/scripts/assurance_report.py assurance-in assurance-out
+      - name: Publish to ci-logs/assurance
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          cat assurance-out/summary.md >> "$GITHUB_STEP_SUMMARY" || true
+          tmp=$(mktemp -d)
+          cp -r assurance-out/. "$tmp"/
+          mkdir -p "$tmp/inputs"
+          # Raw inputs too (outcomes and coverage, without the bulky logs),
+          # so the report can be recomputed offline.
+          (cd assurance-in && find . \( -name 'outcomes.json' -o -name '*.txt' -o -name '*_kaniraw.json' -o -name 'status.tsv' \) -print0 \
+            | xargs -0 -I{} cp --parents {} "$tmp/inputs/")
+          cd "$tmp" && git init -q && git checkout -q -b logs && git add . \
+            && git -c user.name=ci -c user.email=ci@localhost commit -qm "Assurance report, run ${GITHUB_RUN_ID}" \
+            && git push -qf "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}" "logs:refs/heads/ci-logs/assurance"

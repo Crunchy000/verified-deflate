@@ -331,6 +331,7 @@ fn sort_by_weight(idx: &mut [u16], w: &[u64]) {
 /// (weight, index). Keys are distinct, so that permutation exists and is
 /// unique; choosing it nondeterministically under that assumption is
 /// exactly the function's behaviour, without its loops.
+#[cfg_attr(mutants, mutants::skip)] // proof code: the checker, not code under test
 #[cfg(kani)]
 #[cfg_attr(kani_sample, allow(dead_code))] // stubs are not applied when sampling
 fn sort_by_weight_spec(idx: &mut [u16], w: &[u64]) {
@@ -704,6 +705,7 @@ mod tests {
     }
 }
 
+#[cfg_attr(mutants, mutants::skip)] // proof code: the checker, not code under test
 #[cfg(kani)]
 mod proofs {
     use super::*;

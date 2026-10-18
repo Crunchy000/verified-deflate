@@ -1,0 +1,7 @@
+# cargo-mutants settings, for the mutation runs of the CI assurance mode
+# (.github/workflows/ci.yml). Proof code inside source files is marked with
+# `#[cfg_attr(mutants, mutants::skip)]`; whole files to leave alone are here.
+exclude_globs = ["src/e2e.rs", "examples/**", "tools/**"]
+profile = "mutants"
+# Lint errors in a mutated tree are not test failures.
+cap_lints = true

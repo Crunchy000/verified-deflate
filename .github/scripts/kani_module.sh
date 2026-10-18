@@ -45,6 +45,12 @@ fi
 if [ "${KANI_EXTENDED:-0}" = "1" ]; then
   KANI_EXTRA_FLAGS="${KANI_EXTRA_FLAGS:-} --features kani-extended"
 fi
+# Optionally record which source regions each proof reaches (Kani's source
+# coverage); the raw results are kept under kani-logs/coverage/<harness>/.
+if [ "${KANI_COVERAGE:-0}" = "1" ]; then
+  KANI_EXTRA_FLAGS="${KANI_EXTRA_FLAGS:-} --coverage -Z source-coverage"
+  mkdir -p kani-logs/coverage
+fi
 echo "harnesses in $file:"; echo "$names"
 
 # Compile once without the memory cap; later runs reuse the build.
@@ -93,6 +99,12 @@ for n in $names; do
     > "kani-logs/$n.log" 2>&1
   status=$?
   secs=$((SECONDS - start))
+  if [ "${KANI_COVERAGE:-0}" = "1" ]; then
+    mkdir -p "kani-logs/coverage/$n"
+    for d in target/kani/*/kanicov_*; do
+      [ -d "$d" ] && mv "$d"/* "kani-logs/coverage/$n/" && rmdir "$d"
+    done
+  fi
   grep -E "VERIFICATION|Failed Checks|^ File:|Verification Time" "kani-logs/$n.log" | tail -n 30
   echo "::endgroup::"
   printf '%s\t%s\t%s\n' "$h" "$status" "$secs" >> kani-logs/status.tsv
