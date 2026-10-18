@@ -56,6 +56,10 @@ pub struct MatchConfig {
     pub window_bits: u32,
     /// log2 of the hash-head table size (1..=16).
     pub hash_bits: u32,
+    /// Run-length mode: only look for matches one byte back (runs of a
+    /// repeated byte), without hash chains; the other search settings are
+    /// ignored.
+    pub rle: bool,
 }
 
 impl MatchConfig {
@@ -74,7 +78,7 @@ impl MatchConfig {
             8 => (1024, MAX_MATCH, 32, 128, true),
             _ => (4096, MAX_MATCH, 32, MAX_MATCH, true),
         };
-        Self { max_chain, nice_len, good_len, max_lazy, lazy, window_bits: 15, hash_bits: 15 }
+        Self { max_chain, nice_len, good_len, max_lazy, lazy, window_bits: 15, hash_bits: 15, rle: false }
     }
 }
 
@@ -102,6 +106,25 @@ impl Matcher {
             prev: vec![0; window],
             window,
             hash_shift: 32 - hash_bits,
+        }
+    }
+
+    /// Forgets every recorded position, as if newly created.
+    pub fn reset(&mut self) {
+        self.head.fill(0);
+        self.prev.fill(0);
+    }
+
+    /// Records positions `0..end` of `data` in the hash chains without
+    /// tokenizing them, so that a following [`tokenize`](Self::tokenize)
+    /// from `end` can match against them (a preset history).
+    pub fn prime(&mut self, data: &[u8], end: usize) {
+        if self.cfg.rle {
+            return;
+        }
+        let end = if end < data.len() { end } else { data.len() };
+        for pos in 0..end {
+            self.insert_at(pos, self.bucket(data, pos));
         }
     }
 
@@ -245,6 +268,18 @@ impl Matcher {
     /// Matches may refer back to bytes before `start` (from earlier calls
     /// on the same buffer), but never past `data.len()`.
     pub fn tokenize(&mut self, data: &[u8], start: usize, out: &mut [Token]) -> (usize, usize) {
+        if self.cfg.rle {
+            return tokenize_runs(data, start, out);
+        }
+        if self.cfg.max_chain == 0 {
+            // No chain entries may be examined, so no match can be found:
+            // every byte is a literal, and the chains need no upkeep.
+            let n = (data.len() - start.min(data.len())).min(out.len());
+            for i in 0..n {
+                out[i] = Token::Literal(data[start + i]);
+            }
+            return (start + n, n);
+        }
         let max_tokens = out.len();
         let n = data.len();
         // First position not yet covered by an emitted token.
@@ -299,6 +334,41 @@ impl Matcher {
         }
         (next, emitted)
     }
+}
+
+/// The run-length tokenizer behind [`MatchConfig::rle`], with the same
+/// contract as [`Matcher::tokenize`]: a match is emitted wherever the next
+/// three or more bytes repeat the byte before them (distance 1).
+fn tokenize_runs(data: &[u8], start: usize, out: &mut [Token]) -> (usize, usize) {
+    let max_tokens = out.len();
+    let n = data.len();
+    let mut next = start;
+    let mut emitted = 0;
+    // One step per position, as in `Matcher::tokenize`.
+    for pos in start..n {
+        if pos < next {
+            continue;
+        }
+        if emitted == max_tokens {
+            return (pos, emitted);
+        }
+        let mut len = 0;
+        // A run needs at least the next byte to repeat the previous one.
+        if pos > 0 && data[pos] == data[pos - 1] {
+            let max_len = if n - pos < MAX_MATCH { n - pos } else { MAX_MATCH };
+            // Bytes equal to the one before them: a distance-1 match.
+            len = common_prefix(&data[pos - 1..pos - 1 + max_len], &data[pos..pos + max_len]);
+        }
+        if len >= MIN_MATCH {
+            out[emitted] = Token::Match { len: len as u16, dist: 1 };
+            next = pos + len;
+        } else {
+            out[emitted] = Token::Literal(data[pos]);
+            next = pos + 1;
+        }
+        emitted += 1;
+    }
+    (next, emitted)
 }
 
 /// Length of the common prefix of `x` and `y` (at most the shorter length).
@@ -597,6 +667,7 @@ mod proofs {
             lazy: true,
             window_bits: 3,
             hash_bits: 2,
+            rle: false,
         };
         check_tokens(&data, cfg);
     }
@@ -634,6 +705,46 @@ mod proofs {
         assert_eq!(count, 2);
         assert_eq!(toks[0], Token::Literal(b));
         assert_eq!(toks[1], Token::Match { len: 5, dist: 1 });
+    }
+
+    /// Run-length mode: for any 6 bytes, every token is a literal or a
+    /// distance-1 match of length 3-258, and the tokens describe the input
+    /// exactly.
+    #[kani::proof]
+    #[kani::stub(common_prefix, common_prefix_ref)]
+    #[kani::unwind(8)]
+    fn rle_tokens_valid_and_replay() {
+        let data: [u8; 6] = kani::any();
+        let cfg = MatchConfig { rle: true, ..small(1) };
+        check_tokens(&data, cfg);
+        let mut m = Matcher::new(cfg);
+        let mut toks = [Token::Literal(0); 6];
+        let (_, count) = m.tokenize(&data, 0, &mut toks);
+        for t in toks.iter().take(count) {
+            if let Token::Match { dist, .. } = *t {
+                assert_eq!(dist, 1);
+            }
+        }
+    }
+
+    /// With no chain entries to examine (Huffman-only mode), every token
+    /// is a literal, for any start position and output capacity, and the
+    /// tokenizer's contract holds (as many tokens as fit, each covering one
+    /// byte).
+    #[kani::proof]
+    #[kani::unwind(6)]
+    fn no_chain_means_literals_only() {
+        let data: [u8; 4] = kani::any();
+        let start: usize = kani::any_where(|&s: &usize| s <= 4);
+        let cap: usize = kani::any_where(|&k: &usize| k <= 4);
+        let mut m = Matcher::new(MatchConfig { max_chain: 0, ..small(6) });
+        let mut toks = [Token::Match { len: 3, dist: 1 }; 4];
+        let (end, count) = m.tokenize(&data, start, &mut toks[..cap]);
+        let n = if 4 - start < cap { 4 - start } else { cap };
+        assert_eq!((end, count), (start + n, n));
+        for i in 0..n {
+            assert_eq!(toks[i], Token::Literal(data[start + i]));
+        }
     }
 
     /// The word-at-a-time prefix comparison equals the byte loop for any
