@@ -27,6 +27,9 @@ path = "src/bin/vzip.rs"
 kani = { path = "tools/kani-sample", package = "kani-sample" }
 
 [features]
+# Accepted for compatibility with the `deflate` crate, whose gzip support
+# is behind this feature; here gzip support is always present.
+gzip = []
 # Enables Kani harnesses too large for the CI runners (16 GiB, 20 minutes
 # per harness). Has no effect on the library itself.
 kani-extended = []

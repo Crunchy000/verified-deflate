@@ -10,6 +10,10 @@ reference zlib and Info-ZIP.
   of the three encodings is smallest, computed exactly.
 - **Strict, panic-free decoder** that rejects malformed streams the way
   zlib does, with an output limit to stop decompression bombs.
+- **zlib and gzip** encoding (RFC 1950, RFC 1952), one-shot or through
+  streaming `io::Write` encoders.
+- **A drop-in replacement for the [`deflate`] crate**: its whole API, checked
+  by running `deflate`'s own test suite against this crate.
 - **ZIP archives**: writer and reader for stored and deflated entries,
   UTF-8 names, Unix permissions, timestamps and data descriptors. Every
   entry is checked against its CRC-32.
@@ -19,11 +23,13 @@ reference zlib and Info-ZIP.
 
 ## Verification
 
-54 Kani harnesses sit next to the code they check and run in CI on every
+58 Kani harnesses sit next to the code they check and run in CI on every
 push. For every input up to the stated sizes, they prove these
 properties:
 
 - Bit-level I/O round-trips, and reads fail cleanly at end of input.
+- Adler-32 (zlib's checksum) equals its byte-by-byte definition, and its
+  deferred reduction cannot overflow.
 - CRC-32 is correct for inputs of any length: its eight-byte
   (slicing-by-8) step equals eight table steps, and the table step equals
   eight bitwise steps, for every register value and input.
@@ -34,7 +40,7 @@ properties:
   is the identity, decoding arbitrary bits never panics, and the
   table-driven decoder returns exactly what the bit-by-bit decoder does.
 - LZ77 tokens are always valid and describe exactly the input, for every
-  hash function. The word-at-a-time match comparison equals a byte loop,
+  hash function, and in the run-length and Huffman-only modes. The word-at-a-time match comparison equals a byte loop,
   and the match copy meets its specification.
 - The encoder's code-length run-length coding is undone by the decoder's
   own routine.
@@ -91,6 +97,73 @@ vzip test out.zip
 vzip extract -d /tmp/out out.zip
 ```
 
+## Replacing the `deflate` crate
+
+This crate provides the whole API of [`deflate`] 1.0 at its root:
+`deflate_bytes`, `deflate_bytes_conf`, their zlib and gzip variants,
+`Compression`, `CompressionOptions` (with `fast`, `high`, `rle` and
+`huffman_only`), `MatchingType`, `SpecialOptions`, and the streaming
+encoders `write::{DeflateEncoder, ZlibEncoder, GzEncoder}`. To switch,
+rename the dependency; code written for `deflate` then compiles unchanged:
+
+```toml
+[dependencies]
+deflate = { package = "verified-deflate", git = "https://github.com/Crunchy000/verified-deflate", features = ["gzip"] }
+```
+
+The one source change is for gzip headers. `deflate`'s gzip functions take
+a `GzBuilder` from the separate `gzip-header` crate; here the same builder
+is `deflate::gzip_header::GzBuilder`, so `use gzip_header::GzBuilder;`
+becomes `use deflate::gzip_header::GzBuilder;`. It builds headers byte for
+byte as `gzip-header` does.
+
+```rust
+use std::io::Write;
+use verified_deflate::write::ZlibEncoder;
+use verified_deflate::{deflate_bytes_zlib, Compression};
+
+let data = b"This is some test data";
+let once = deflate_bytes_zlib(data);
+
+let mut encoder = ZlibEncoder::new(Vec::new(), Compression::Default);
+encoder.write_all(data).unwrap();
+let streamed = encoder.finish().unwrap();
+```
+
+CI runs `deflate` 1.0.0's own test suite (30 tests, fetched from its
+repository) against this crate imported as `deflate`; see
+`tools/deflate-upstream`. Python's zlib and gzip modules also decode
+every option preset in every format, including streams cut at each sync
+flush.
+
+Differences from `deflate`:
+
+- The compressed bytes differ, as they do between any two encoders. They
+  are the same format and decode to the same data. On the benchmark inputs
+  they are at most 0.3% larger than `deflate`'s, and up to 5% smaller.
+- `SpecialOptions::_ForceFixed` and `_ForceStored`, which `deflate` left
+  unimplemented, force fixed-Huffman and stored blocks.
+- A gzip extra field longer than 65535 bytes panics, where `gzip-header`
+  writes a corrupt header.
+
+As in `deflate`, `flush` is a zlib sync flush, and dropping an encoder
+finishes the stream. Writers compress in 256 KiB chunks, each matching
+up to 32 KiB into earlier input, so memory stays bounded.
+
+Against `deflate` 1.0.0 itself (MB/s, 4 MB of each input, same machine):
+
+| preset | text | `deflate` | records | `deflate` | random | `deflate` |
+|---|---|---|---|---|---|---|
+| `fast` | 140 | 141 | 159 | 149 | 64 | 82 |
+| `default` | 14.2 | 16.1 | 35.4 | 25.7 | 46 | 43 |
+| `high` | 3.3 | 4.1 | 7.3 | 6.6 | 45 | 38 |
+| `rle` | 190 | 197 | 147 | 182 | 257 | 368 |
+| `huffman_only` | 247 | 111 | 181 | 106 | 337 | 143 |
+
+The native `compress` levels are faster than these presets at similar
+ratios (level 6 compresses the text at about 17.5 MB/s), because the presets
+follow `deflate`'s search limits exactly.
+
 ## Performance
 
 Throughput in MB/s from `cargo run --release --example bench` (best of
@@ -137,13 +210,16 @@ corrupted chain to produce an invalid match.
   65,535 entries. Larger archives are rejected, never misread.
 - No encryption or multi-disk archives. Only methods 0 (stored) and 8
   (deflate) are supported.
-- Whole buffers in memory; there is no streaming API yet.
-- Raw DEFLATE only; no zlib or gzip wrappers.
+- Decompression works on whole buffers; streaming is for compression only.
+- zlib and gzip are written, not read: the decoder takes raw DEFLATE
+  (strip the 2-byte zlib or the gzip header first). zlib preset
+  dictionaries are not supported.
 
 ## Layout
 
 | Path | Contents |
 |---|---|
+| `src/adler32.rs` | Adler-32 |
 | `src/bitio.rs` | LSB-first bit reader and writer |
 | `src/crc32.rs` | CRC-32 |
 | `src/tables.rs` | RFC 1951 constant tables |
@@ -152,10 +228,12 @@ corrupted chain to produce an invalid match.
 | `src/deflate.rs` | Encoder |
 | `src/inflate.rs` | Decoder |
 | `src/zip.rs` | ZIP writer and reader |
+| `src/compat.rs`, `src/write.rs`, `src/gzip_header.rs` | The `deflate` crate's API: one-shot functions, streaming encoders, gzip headers |
 | `src/e2e.rs` | End-to-end Kani harnesses |
 | `.github/scripts/` | Per-harness Kani runner and report used by CI |
 | `src/bin/vzip.rs` | Command-line tool |
 | `tests/` | zlib, Info-ZIP and robustness tests |
+| `tools/deflate-upstream/` | Runs the `deflate` crate's own tests against this crate |
 | `tools/kani-sample/` | Runs harnesses as randomised tests where Kani isn't installed |
 
 ## License
@@ -164,3 +242,4 @@ MIT
 
 [RFC 1951]: https://www.rfc-editor.org/rfc/rfc1951
 [Kani]: https://github.com/model-checking/kani
+[`deflate`]: https://docs.rs/deflate/1.0.0
