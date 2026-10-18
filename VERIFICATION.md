@@ -236,6 +236,47 @@ machine or further restructuring of the decoder.
 | `crc32::proofs::eight_byte_step_equals_table_steps` | The eight-byte CRC step lemma as a single query. CI proves it by linearity instead (see above). |
 | `crc32::proofs::four_byte_lanes_equal_table_steps` | Its four-byte half as a single query. |
 
+## Checking the proofs: coverage and mutation
+
+A proof only covers the code it executes, and only checks what its
+assertions say. Two measurements check both, in a manual run of the CI
+workflow with `assurance` set:
+
+- **Coverage.** Every harness runs with Kani's source coverage
+  (`--coverage -Z source-coverage`), which records, for each code region,
+  whether *some* input within the harness's bounds reaches it. The union
+  over all harnesses shows the functions no proof enters and the branches
+  no proof takes. An unreached region inside a proved function means the
+  bounds, the stubs or an assumption exclude it.
+- **Mutation.** cargo-mutants makes small deliberate bugs (swaps an
+  operator, negates a condition, replaces a function body with a constant)
+  and checks that something fails. It runs twice: against the harnesses
+  run as randomised tests (`kani-sample`) and against the whole test
+  suite. A mutant that the sampled harnesses catch also fails the real
+  proof, since sampling only finds genuine counterexamples.
+
+`.github/scripts/assurance_report.py` joins the two and classifies every
+mutant:
+
+| class | meaning |
+|---|---|
+| proved | the sampled proofs catch it |
+| proof-reach | a proof executes the code, but sampling did not catch the mutant |
+| tests-only | no proof executes the code; the tests catch the mutant |
+| unchecked | nothing catches it |
+
+A follow-up run with `recheck` set verifies every proof-reach mutant with
+real Kani, which checks all inputs where sampling tries some. A mutant
+that survives the real proofs marks a property that does not pin the
+behaviour down, or a change that has no observable effect (an equivalent
+mutant, such as a match-finder heuristic that only affects the
+compression ratio). The reports are published to the `ci-logs/assurance`
+and `ci-logs/assurance-recheck` branches.
+
+Proof code and the reference specifications the proofs compare against
+are marked `#[cfg_attr(mutants, mutants::skip)]`: they are the checker,
+not the code under test.
+
 ## What is not proven
 
 The gaps, stated precisely:
