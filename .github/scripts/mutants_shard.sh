@@ -17,6 +17,14 @@ if [ "$PASS" = "proofs" ]; then
   # dev-dependency, so only the library's test build has it.
   args=(--cargo-arg=--lib -- -- proofs e2e)
 fi
+# Some mutants make a loop run forever while it allocates or writes (a
+# decoder that never stops producing output, for example). Without limits
+# they exhaust the runner's memory or disk before the test timeout and
+# take the whole job down. With them, the test process fails instead, and
+# cargo-mutants counts the mutant as caught.
+ulimit -v $((6 * 1024 * 1024))   # address space per process: 6 GiB
+ulimit -f $((1024 * 1024))       # file size: 1 GiB
+export MALLOC_ARENA_MAX=4        # fewer malloc arenas, less address space
 # Round-robin sharding spreads each module's mutants over all shards, so
 # no shard gets all the slow ones.
 cargo mutants --shard "$SHARD/$shards" --sharding round-robin -j 2 --timeout-multiplier 4 \
