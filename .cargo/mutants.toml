@@ -3,5 +3,8 @@
 # `#[cfg_attr(mutants, mutants::skip)]`; whole files to leave alone are here.
 exclude_globs = ["src/e2e.rs", "examples/**", "tools/**"]
 profile = "mutants"
-# Lint errors in a mutated tree are not test failures.
-cap_lints = true
+# Several tables are computed at compile time. A mutant that breaks one of
+# those loops would make rustc evaluate forever; rustc's
+# long_running_const_eval lint (an error by default, so lints must not be
+# capped) stops it, and the build timeout catches anything else.
+build_timeout_multiplier = 5.0

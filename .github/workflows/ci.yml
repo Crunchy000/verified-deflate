@@ -290,7 +290,7 @@ jobs:
             find "old-$run" \( -name status.tsv -o -name coverage-fallback.tsv \) | while read -r f; do
               dst="assurance-in/${f#old-$run/}"
               if [ -f "$dst" ]; then
-                awk -F'\t' 'NR==FNR { seen[$1] = 1; next } !seen[$1]' "$dst" "$f" > "$f.new"
+                awk -F'\t' 'FILENAME == ARGV[1] { seen[$1] = 1; next } !seen[$1]' "$dst" "$f" > "$f.new"
                 cat "$f.new" >> "$dst"
               fi
             done
