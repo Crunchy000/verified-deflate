@@ -36,8 +36,12 @@ on:
         description: "Assurance mode: which mutation passes to run (comma-separated: proofs, tests)"
         required: false
         default: "proofs,tests"
+      mutants_shards:
+        description: "Assurance mode: only these mutation shards (comma-separated, 0-15); empty = all"
+        required: false
+        default: ""
       reuse_run:
-        description: "Assurance mode: id of an earlier run whose coverage and mutation results fill in whatever this run does not produce (waits for it to finish)"
+        description: "Assurance mode: ids of earlier runs (comma-separated, highest precedence first) whose coverage and mutation results fill in whatever this run does not produce (waits for them to finish)"
         required: false
         default: ""
       recheck:
@@ -213,10 +217,13 @@ jobs:
         id: sel
         env:
           PASSES: ${{ github.event.inputs.mutants_passes || 'proofs,tests' }}
+          SHARDS: ${{ github.event.inputs.mutants_shards }}
           PASS: ${{ matrix.pass }}
+          SHARD: ${{ matrix.shard }}
         run: |
           run=false
           for p in ${PASSES//,/ }; do [ "$p" = "$PASS" ] && run=true; done
+          if [ -n "$SHARDS" ] && ! [[ ",${SHARDS// /}," == *",$SHARD,"* ]]; then run=false; fi
           echo "run=$run" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v6
         if: steps.sel.outputs.run == 'true'
@@ -257,29 +264,6 @@ jobs:
       actions: read
     steps:
       - uses: actions/checkout@v6
-      - name: Wait for the earlier run
-        if: github.event.inputs.reuse_run != ''
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RUN: ${{ github.event.inputs.reuse_run }}
-        run: |
-          until [ "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN" --jq .status)" = completed ]; do sleep 60; done
-      - uses: actions/download-artifact@v4
-        if: github.event.inputs.reuse_run != ''
-        continue-on-error: true
-        with:
-          pattern: kanicov-*
-          path: assurance-old/coverage
-          run-id: ${{ github.event.inputs.reuse_run }}
-          github-token: ${{ github.token }}
-      - uses: actions/download-artifact@v4
-        if: github.event.inputs.reuse_run != ''
-        continue-on-error: true
-        with:
-          pattern: mutants-*
-          path: assurance-old/mutants
-          run-id: ${{ github.event.inputs.reuse_run }}
-          github-token: ${{ github.token }}
       - uses: actions/download-artifact@v4
         continue-on-error: true
         with:
@@ -290,11 +274,19 @@ jobs:
         with:
           pattern: mutants-*
           path: assurance-in/mutants
-      - name: Fill in from the earlier run (this run's results take precedence)
+      - name: Fill in from earlier runs (this run's results take precedence, then the runs in the order given)
         if: github.event.inputs.reuse_run != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUNS: ${{ github.event.inputs.reuse_run }}
         run: |
           mkdir -p assurance-in
-          if [ -d assurance-old ]; then cp -rn assurance-old/. assurance-in/; fi
+          for run in ${RUNS//,/ }; do
+            until [ "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run" --jq .status)" = completed ]; do sleep 60; done
+            gh run download "$run" -R "$GITHUB_REPOSITORY" -p 'kanicov-*' -D "old-$run/coverage" || true
+            gh run download "$run" -R "$GITHUB_REPOSITORY" -p 'mutants-*' -D "old-$run/mutants" || true
+            cp -rn "old-$run/." assurance-in/
+          done
       - name: Join coverage and mutants
         run: python3 .github/scripts/assurance_report.py assurance-in assurance-out
       - name: Publish to ci-logs/assurance
