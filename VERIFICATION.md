@@ -5,7 +5,7 @@ weakest:
 
 1. **Kani proofs**: bounded model checking of the real code, for *every*
    input up to the stated size. Each harness is a `#[kani::proof]` function
-   next to the code it checks. 54 harnesses run in CI on every push; 10
+   next to the code it checks. 58 harnesses run in CI on every push; 10
    more are too large for CI runners and are gated behind the
    `kani-extended` feature (see below).
 2. **Safe Rust**: `#![forbid(unsafe_code)]`, so memory safety comes from
@@ -123,6 +123,13 @@ the zlib interop tests confirm the output is unchanged.
 | `aligned_bytes_roundtrip` | Bits, padding, a byte-aligned payload, then more bits: all round-trip; `bytes_consumed` is exact; over-long reads are errors. |
 | `reverse_bits_is_reversal` | For every code of 1–15 bits, `reverse_bits` reverses exactly those bits and is an involution. |
 
+### Adler-32 (`adler32`)
+
+| Harness | Property |
+|---|---|
+| `update_matches_bytewise` | From any valid state and for any 0–6 bytes, the update that reduces once per span equals reducing after every byte. A compile-time check shows the sums cannot overflow within a span of 5552 bytes (zlib's bound), so spans of any length are safe. |
+| `from_checksum_resumes` | Resuming from a finished checksum continues the same computation, for every state. |
+
 ### CRC-32 (`crc32`)
 
 | Harness | Property |
@@ -169,6 +176,8 @@ the zlib interop tests confirm the output is unchanged.
 | `runs_are_matched` | Six equal bytes become one literal and one overlapping match. |
 | `common_prefix_matches_reference` | The word-at-a-time match comparison equals the byte-by-byte loop, for any two inputs of up to 20 bytes. The tokenizer harnesses above use the byte loop. |
 | `copy_within_buffer_meets_spec` | For every position, distance and length that fit a 12-byte buffer, each written byte equals the byte `dist` earlier and nothing else changes. This includes heavily overlapping copies. |
+| `rle_tokens_valid_and_replay` | Run-length mode (`CompressionOptions::rle()`): for any 6 bytes, every match has distance 1 and length 3–258, and the tokens describe the input exactly. |
+| `no_chain_means_literals_only` | Huffman-only mode (`CompressionOptions::huffman_only()`): every token is the literal input byte, for any start position and output capacity, and the tokenizer's contract holds. |
 | `short_copy_meets_spec` | The same for the inline path for short copies whose source lies wholly before the destination, on a 32-byte buffer that reaches every case of it (up to 16 bytes). |
 | `replay_arbitrary_tokens` | Replaying arbitrary tokens never panics; invalid matches are errors. |
 

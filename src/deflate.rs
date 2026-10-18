@@ -115,6 +115,117 @@ pub(crate) fn encode_with_matcher(data: &[u8], opts: &CompressOptions, cfg: Matc
     w.finish()
 }
 
+/// Bytes of earlier input a streaming encoder keeps for matches (the
+/// DEFLATE window).
+const WINDOW: usize = 32 * 1024;
+
+/// Input a streaming encoder buffers before compressing it.
+pub(crate) const STREAM_CHUNK: usize = 256 * 1024;
+
+/// Incremental raw-DEFLATE encoder, the core of the `write` encoders.
+///
+/// Input is buffered and compressed a chunk at a time with the same block
+/// writer as [`compress`]; each chunk can match up to 32 KiB back into
+/// earlier input. Bits accumulate in a [`BitWriter`] across chunks, and
+/// [`take_output`](Self::take_output) hands out the whole bytes produced
+/// so far.
+#[derive(Debug, Clone)]
+pub(crate) struct StreamEncoder {
+    strategy: Strategy,
+    matcher: Matcher,
+    /// Already-compressed history (`buf[..hist]`, at most the window)
+    /// followed by input not yet compressed.
+    buf: Vec<u8>,
+    hist: usize,
+    bits: BitWriter,
+    tokens: Vec<Token>,
+}
+
+impl StreamEncoder {
+    pub(crate) fn new(cfg: MatchConfig, strategy: Strategy) -> Self {
+        Self {
+            strategy,
+            matcher: Matcher::new(cfg),
+            buf: Vec::new(),
+            hist: 0,
+            bits: BitWriter::new(),
+            tokens: vec![Token::Literal(0); BLOCK_TOKENS],
+        }
+    }
+
+    /// Starts a new, independent stream with the same settings.
+    pub(crate) fn reset(&mut self) {
+        self.buf.clear();
+        self.hist = 0;
+        self.bits = BitWriter::new();
+    }
+
+    /// Buffers as much of `data` as fits in the current chunk, compressing
+    /// the chunk once it is full. Returns how many bytes were taken (at
+    /// least one if `data` is not empty).
+    pub(crate) fn push(&mut self, data: &[u8]) -> usize {
+        let room = STREAM_CHUNK - (self.buf.len() - self.hist);
+        let n = data.len().min(room);
+        self.buf.extend_from_slice(&data[..n]);
+        if self.buf.len() - self.hist == STREAM_CHUNK {
+            self.compress_pending(false);
+        }
+        n
+    }
+
+    /// Compresses everything buffered. With `last`, the final block is
+    /// written (an empty one if nothing is buffered) and the stream is
+    /// padded to a byte boundary.
+    fn compress_pending(&mut self, last: bool) {
+        let len = self.buf.len();
+        if self.hist == len && !last {
+            return;
+        }
+        if self.strategy == Strategy::Stored {
+            write_stored(&mut self.bits, &self.buf[self.hist..], last);
+        } else {
+            self.matcher.reset();
+            self.matcher.prime(&self.buf, self.hist);
+            let mut pos = self.hist;
+            loop {
+                let (end, count) = self.matcher.tokenize(&self.buf, pos, &mut self.tokens);
+                let done = end >= len;
+                write_block(&mut self.bits, &self.tokens[..count], &self.buf[pos..end], last && done, self.strategy);
+                pos = end;
+                if done {
+                    break;
+                }
+            }
+        }
+        if last {
+            self.bits.pad_to_byte();
+        }
+        // Keep the last window of input as history.
+        if len > WINDOW {
+            self.buf.drain(..len - WINDOW);
+        }
+        self.hist = self.buf.len();
+    }
+
+    /// zlib's sync flush: compresses everything buffered and ends with an
+    /// empty stored block, so the output so far is byte-aligned and
+    /// decodes to all the input so far.
+    pub(crate) fn sync_flush(&mut self) {
+        self.compress_pending(false);
+        write_stored(&mut self.bits, &[], false);
+    }
+
+    /// Compresses everything buffered and ends the stream.
+    pub(crate) fn finish(&mut self) {
+        self.compress_pending(true);
+    }
+
+    /// The whole bytes of output produced so far.
+    pub(crate) fn take_output(&mut self) -> Vec<u8> {
+        self.bits.take_bytes()
+    }
+}
+
 /// A Huffman code ready for writing: codes are stored bit-reversed so they
 /// can be emitted LSB-first with [`BitWriter::write_bits`].
 #[derive(Debug, Clone)]
