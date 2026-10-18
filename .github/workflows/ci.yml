@@ -285,6 +285,15 @@ jobs:
             until [ "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run" --jq .status)" = completed ]; do sleep 60; done
             gh run download "$run" -R "$GITHUB_REPOSITORY" -p 'kanicov-*' -D "old-$run/coverage" || true
             gh run download "$run" -R "$GITHUB_REPOSITORY" -p 'mutants-*' -D "old-$run/mutants" || true
+            # Harness tables are merged line by line (earlier lines win);
+            # every other file is taken only where none exists yet.
+            find "old-$run" \( -name status.tsv -o -name coverage-fallback.tsv \) | while read -r f; do
+              dst="assurance-in/${f#old-$run/}"
+              if [ -f "$dst" ]; then
+                awk -F'\t' 'NR==FNR { seen[$1] = 1; next } !seen[$1]' "$dst" "$f" > "$f.new"
+                cat "$f.new" >> "$dst"
+              fi
+            done
             cp -rn "old-$run/." assurance-in/
           done
       - name: Join coverage and mutants
@@ -300,7 +309,7 @@ jobs:
           mkdir -p "$tmp/inputs"
           # Raw inputs too (outcomes and coverage, without the bulky logs),
           # so the report can be recomputed offline.
-          (cd assurance-in && find . \( -name 'outcomes.json' -o -name '*.txt' -o -name '*_kaniraw.json' -o -name 'status.tsv' \) -print0 \
+          (cd assurance-in && find . \( -name 'outcomes.json' -o -name '*.txt' -o -name '*_kaniraw.json' -o -name '*.tsv' \) -print0 \
             | xargs -0 -I{} cp --parents {} "$tmp/inputs/")
           cd "$tmp" && git init -q && git checkout -q -b logs && git add . \
             && git -c user.name=ci -c user.email=ci@localhost commit -qm "Assurance report, run ${GITHUB_RUN_ID}" \

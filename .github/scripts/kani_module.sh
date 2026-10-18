@@ -104,6 +104,22 @@ for n in $names; do
     for d in target/kani/*/kanicov_*; do
       [ -d "$d" ] && mv "$d"/* "kani-logs/coverage/$n/" && rmdir "$d"
     done
+    # Coverage instrumentation can push the largest harnesses over the
+    # memory cap. Which code a harness reaches does not depend on Kani's
+    # default checks (overflow, memory safety, unwinding), so record the
+    # coverage again without them. The verification result above stands.
+    if [ "$status" -ne 0 ] && ! ls "kani-logs/coverage/$n"/*_kaniraw.json >/dev/null 2>&1; then
+      cstart=$SECONDS
+      # shellcheck disable=SC2086
+      run_capped timeout "$timeout_s" cargo kani --harness "$h" --exact --no-default-checks \
+          ${KANI_EXTRA_FLAGS:-} > "kani-logs/$n.coverage-only.log" 2>&1
+      cstatus=$?
+      for d in target/kani/*/kanicov_*; do
+        [ -d "$d" ] && mv "$d"/* "kani-logs/coverage/$n/" && rmdir "$d"
+      done
+      printf '%s\t%s\t%s\n' "$h" "$cstatus" "$((SECONDS - cstart))" >> kani-logs/coverage-fallback.tsv
+      echo "$h: coverage-only run (no default checks) exit $cstatus"
+    fi
   fi
   grep -E "VERIFICATION|Failed Checks|^ File:|Verification Time" "kani-logs/$n.log" | tail -n 30
   echo "::endgroup::"

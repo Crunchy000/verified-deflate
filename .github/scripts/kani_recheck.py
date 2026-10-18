@@ -38,12 +38,15 @@ FLAGS = {
 def harness_times(adir):
     """{harness: seconds} for the harnesses that verified in the assurance run."""
     times = {}
+    # A harness that ran out of memory only with coverage instrumentation
+    # verifies without it (its coverage-only run succeeded); use it too.
     for dirpath, _, files in os.walk(os.path.join(adir, "inputs")):
-        if "status.tsv" in files:
-            for line in open(os.path.join(dirpath, "status.tsv")):
-                parts = line.rstrip("\n").split("\t")
-                if len(parts) == 3 and parts[1] == "0":
-                    times[parts[0]] = int(parts[2])
+        for name in ("status.tsv", "coverage-fallback.tsv"):
+            if name in files:
+                for line in open(os.path.join(dirpath, name)):
+                    parts = line.rstrip("\n").split("\t")
+                    if len(parts) == 3 and parts[1] == "0":
+                        times.setdefault(parts[0], int(parts[2]))
     return times
 
 

@@ -109,6 +109,16 @@ def load_coverage(cov_root, root):
                 parts = line.rstrip("\n").split("\t")
                 if len(parts) == 3:
                     full[parts[0].rsplit("::", 1)[-1]] = parts[0]
+        # Harnesses whose coverage was recorded in a second run without
+        # Kani's default checks (the instrumented run ran out of memory).
+        fallback = {}
+        fb = os.path.join(adir, "coverage-fallback.tsv")
+        if os.path.exists(fb):
+            for line in open(fb):
+                parts = line.rstrip("\n").split("\t")
+                if len(parts) == 3:
+                    fallback[parts[0].rsplit("::", 1)[-1]] = parts[1]
+                    full.setdefault(parts[0].rsplit("::", 1)[-1], parts[0])
         short_names = set(full)
         cdir = os.path.join(adir, "coverage")
         if os.path.isdir(cdir):
@@ -136,7 +146,15 @@ def load_coverage(cov_root, root):
                         source = "kaniraw"
             if not checks:
                 checks = parse_log_coverage(log)
+                if not checks and short in fallback:
+                    try:
+                        checks = parse_log_coverage(open(os.path.join(adir, short + ".coverage-only.log"),
+                                                         errors="replace").read())
+                    except FileNotFoundError:
+                        pass
                 source = "log" if checks else None
+            if source and short in fallback:
+                source += " (coverage-only run)"
             h = harnesses.setdefault(name, {"status": harness_status(log), "covered": 0, "seen": 0,
                                             "source": source})
             for c in checks:
@@ -395,11 +413,11 @@ def main(inp, outdir):
             spans = ", ".join(f"{s[0]}" + (f"-{e[0]}" if e[0] != s[0] else "") for s, e in f["uncovered"])
             r.append(f"- {f['file']}: {f['function']}: lines {spans}")
     r.append("\n## Harnesses\n")
-    r.append("| harness | result | regions covered / instrumented (code under test) |")
-    r.append("|---|---|---:|")
+    r.append("| harness | result | regions covered / instrumented (code under test) | coverage from |")
+    r.append("|---|---|---:|---|")
     for n in sorted(harnesses):
         h = harnesses[n]
-        r.append(f"| {n} | {h['status']} | {h['covered']}/{h['seen']} |")
+        r.append(f"| {n} | {h['status']} | {h['covered']}/{h['seen']} | {h['source'] or 'none'} |")
 
     open(os.path.join(outdir, "summary.md"), "w").write(summary)
     open(os.path.join(outdir, "report.md"), "w").write("\n".join(r) + "\n")
