@@ -23,7 +23,7 @@ reference zlib and Info-ZIP.
 
 ## Verification
 
-58 Kani harnesses sit next to the code they check and run in CI on every
+66 Kani harnesses sit next to the code they check and run in CI on every
 push. For every input up to the stated sizes, they prove these
 properties:
 

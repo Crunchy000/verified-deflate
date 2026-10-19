@@ -682,7 +682,9 @@ impl Decoder {
 /// for the table lookup to be checked symbolically: the canonical walk
 /// alone. `fast_decode_matches_slow` proves the table changes nothing.
 #[cfg(kani)]
-#[cfg_attr(kani_sample, allow(dead_code))] // stubs are not applied when sampling
+// Stubs are not applied when sampling, and the one harness using this is
+// in the extended set.
+#[cfg_attr(any(kani_sample, not(feature = "kani-extended")), allow(dead_code))]
 pub(crate) fn decode_without_table(d: &Decoder, br: &mut BitReader<'_>) -> Result<u16, InflateError> {
     d.decode_slow(br)
 }

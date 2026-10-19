@@ -814,10 +814,11 @@ mod proofs {
     /// lookup table is replaced by the canonical walk it is proved to
     /// agree with (`huffman::proofs::fast_decode_matches_slow`): the
     /// 288-symbol table is too large to check symbolically.
-    #[kani::proof]
     #[kani::stub(crate::lz77::copy_within_buffer, crate::lz77::copy_within_buffer_ref)]
     #[kani::stub(crate::inflate::Output::grow, crate::inflate::grow_is_unreachable)]
     #[kani::stub(crate::huffman::Decoder::decode, crate::huffman::decode_without_table)]
+    #[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
+    #[kani::proof]
     #[kani::unwind(17)]
     fn fixed_block_tokens_roundtrip() {
         let a: u8 = kani::any();

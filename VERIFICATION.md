@@ -5,7 +5,7 @@ weakest:
 
 1. **Kani proofs**: bounded model checking of the real code, for *every*
    input up to the stated size. Each harness is a `#[kani::proof]` function
-   next to the code it checks. 58 harnesses run in CI on every push; 10
+   next to the code it checks. 66 harnesses run in CI on every push; 11
    more are too large for CI runners and are gated behind the
    `kani-extended` feature (see below).
 2. **Safe Rust**: `#![forbid(unsafe_code)]`, so memory safety comes from
@@ -193,7 +193,6 @@ the zlib interop tests confirm the output is unchanged.
 | `stored_cost_is_exact` | The stored-block size model equals the bits written, from any bit offset, for 0, 3 and 8 bytes of any content. |
 | `stored_cost_adds_up_across_blocks` | Across block boundaries, from any bit offset, the size model is one full block plus the rest from the byte-aligned point where that block ends. This holds for any length up to 16 MiB and block sizes of 1–4 bytes and 65,535 (production). With the previous row, the model is exact for any number of blocks. Two one-byte blocks written back to back take exactly the modelled bits. |
 | `fixed_tokens_have_the_rfc_layout` | For any literal, or any match of length 3–258 at distance 1–32768, the fixed-Huffman coder writes exactly RFC 1951's layout. That is the symbol's fixed code (most significant bit first), its extra bits, the distance's five-bit code and extra bits, then end of block. The expected codes are computed from the RFC's ranges, not from the tables. |
-| `fixed_block_tokens_roundtrip` | A literal of any value (every 8- and 9-bit literal code), then a match of length 12 (a length code with an extra bit) at distance 1 (an overlapping copy), written by `write_fixed` and decoded by the real decoder, gives back exactly the bytes it stands for. This runs the decoder's Huffman-block loop on encoder output without the match finder. The decoder's lookup table is replaced by the canonical walk, which `fast_decode_matches_slow` proves it agrees with: the 288-symbol table is too large to check symbolically. |
 
 ### Decoder (`inflate`)
 
@@ -239,6 +238,7 @@ machine or further restructuring of the decoder.
 | `e2e::roundtrip_fixed_lazy` | Any 4 bytes round-trip through fixed Huffman with the level-6 lazy matcher. |
 | `e2e::roundtrip_fixed_greedy` | Any 3 bytes round-trip through fixed Huffman with the greedy matcher. |
 | `e2e::roundtrip_fixed_two_symbol_alphabet` | Any 6 bytes over a two-symbol alphabet round-trip with level 9. |
+| `deflate::proofs::fixed_block_tokens_roundtrip` | A literal of any value (every 8- and 9-bit literal code), then a match of length 12 (a length code with an extra bit) at distance 1 (an overlapping copy), written by `write_fixed` and decoded by the real decoder, gives back exactly the bytes it stands for. This runs the decoder's Huffman-block loop on encoder output without the match finder. The decoder's lookup table is replaced by the canonical walk, which `fast_decode_matches_slow` proves it agrees with: the 288-symbol table is too large to check symbolically. |
 | `e2e::zip_roundtrip_stored` | A one-entry archive of any 3 bytes, stored, reads back exactly and passes its CRC check. |
 | `huffman::proofs::fast_decode_matches_slow_wide` | The table-driven decoder equals the bit-by-bit one for 5 symbols of up to 9 bits and 0–2 bytes of input. |
 | `crc32::proofs::eight_byte_step_equals_table_steps` | The eight-byte CRC step lemma as a single query. CI proves it by linearity instead (see above). |
@@ -408,7 +408,7 @@ The gaps, stated precisely:
 - **Compressor-to-decompressor round trips are proven in CI for stored
   blocks and for fixed-Huffman tokens.**
   - The fixed-Huffman coder's bit layout is proven for every single token.
-  - A literal of any value followed by a match round-trips through the real decoder.
+  - A literal of any value followed by a match round-trips through the real decoder in the extended set: the fixed-Huffman decoder is too large to check symbolically on a CI runner.
   - Round trips that include the match finder, and whole-archive round trips, are in the extended set. In CI they are covered compositionally: tokenizer validity, code tables, Huffman encode and decode, bit I/O.
   - Dynamic-Huffman blocks need more unrolling than a model checker handles at DEFLATE's alphabet sizes. They are covered by the length builder and run-length proofs on small alphabets, zlib interop, and `verify` at run time.
 - **Huffman construction is proven on alphabets of 3–6 symbols**, not on
