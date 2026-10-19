@@ -1,0 +1,4990 @@
+[
+ {
+  "name": "src/adler32.rs:74:24: replace | with ^ in Adler32::finalize",
+  "harnesses": [
+   {
+    "harness": "adler32::proofs::from_checksum_resumes",
+    "status": "SUCCESSFUL",
+    "secs": 2,
+    "detail": []
+   },
+   {
+    "harness": "adler32::proofs::update_matches_bytewise",
+    "status": "SUCCESSFUL",
+    "secs": 909,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:126:17: replace < with <= in BitReader<'a>::fill",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::reader_eof_is_exact",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::read_bits_matches_read_bit",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 29,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::write_then_read_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 116,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_short",
+    "status": "SUCCESSFUL",
+    "secs": 105,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_long",
+    "status": "SUCCESSFUL",
+    "secs": 223,
+    "detail": []
+   },
+   {
+    "harness": "inflate::proofs::stored_block_semantics",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 12,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::fixed_tokens_have_the_rfc_layout",
+    "status": "SUCCESSFUL",
+    "secs": 203,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::encode_then_decode_symbol",
+    "status": "SUCCESSFUL",
+    "secs": 483,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:143:23: replace > with < in BitReader<'a>::refill",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_short",
+    "status": "SUCCESSFUL",
+    "secs": 24,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_long",
+    "status": "SUCCESSFUL",
+    "secs": 41,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 60,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:143:23: replace > with == in BitReader<'a>::refill",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_short",
+    "status": "SUCCESSFUL",
+    "secs": 90,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_long",
+    "status": "SUCCESSFUL",
+    "secs": 188,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 98,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:143:23: replace > with >= in BitReader<'a>::refill",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_short",
+    "status": "SUCCESSFUL",
+    "secs": 119,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_long",
+    "status": "SUCCESSFUL",
+    "secs": 239,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 122,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:143:9: replace BitReader<'a>::refill with ()",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_short",
+    "status": "SUCCESSFUL",
+    "secs": 25,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_long",
+    "status": "SUCCESSFUL",
+    "secs": 48,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 71,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:147:25: replace - with + in BitReader<'a>::refill",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_short",
+    "status": "SUCCESSFUL",
+    "secs": 111,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_long",
+    "status": "SUCCESSFUL",
+    "secs": 238,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 125,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:147:39: replace / with % in BitReader<'a>::refill",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_short",
+    "status": "SUCCESSFUL",
+    "secs": 32,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_long",
+    "status": "SUCCESSFUL",
+    "secs": 60,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 77,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:151:27: replace << with >> in BitReader<'a>::refill",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_long",
+    "status": "SUCCESSFUL",
+    "secs": 212,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:157:35: replace < with <= in BitReader<'a>::refill",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_short",
+    "status": "SUCCESSFUL",
+    "secs": 100,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 104,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:169:22: replace > with == in BitReader<'a>::read_bits",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::reader_eof_is_exact",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::read_bits_matches_read_bit",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 24,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::write_then_read_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 107,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_short",
+    "status": "SUCCESSFUL",
+    "secs": 112,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_long",
+    "status": "SUCCESSFUL",
+    "secs": 252,
+    "detail": []
+   },
+   {
+    "harness": "inflate::proofs::stored_block_semantics",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 13,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::fixed_tokens_have_the_rfc_layout",
+    "status": "SUCCESSFUL",
+    "secs": 227,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::encode_then_decode_symbol",
+    "status": "SUCCESSFUL",
+    "secs": 549,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:169:22: replace > with >= in BitReader<'a>::read_bits",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::reader_eof_is_exact",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::read_bits_matches_read_bit",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 21,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::write_then_read_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 99,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_short",
+    "status": "SUCCESSFUL",
+    "secs": 106,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_long",
+    "status": "SUCCESSFUL",
+    "secs": 231,
+    "detail": []
+   },
+   {
+    "harness": "inflate::proofs::stored_block_semantics",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 12,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::fixed_tokens_have_the_rfc_layout",
+    "status": "SUCCESSFUL",
+    "secs": 190,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::encode_then_decode_symbol",
+    "status": "SUCCESSFUL",
+    "secs": 530,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:170:23: replace < with <= in BitReader<'a>::read_bits",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::reader_eof_is_exact",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::read_bits_matches_read_bit",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 25,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::write_then_read_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 88,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_short",
+    "status": "SUCCESSFUL",
+    "secs": 108,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_long",
+    "status": "SUCCESSFUL",
+    "secs": 184,
+    "detail": []
+   },
+   {
+    "harness": "inflate::proofs::stored_block_semantics",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 10,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::fixed_tokens_have_the_rfc_layout",
+    "status": "SUCCESSFUL",
+    "secs": 196,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::encode_then_decode_symbol",
+    "status": "SUCCESSFUL",
+    "secs": 447,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:201:23: replace < with <= in BitReader<'a>::peek",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_short",
+    "status": "SUCCESSFUL",
+    "secs": 108,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_long",
+    "status": "SUCCESSFUL",
+    "secs": 203,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 316,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:201:23: replace < with == in BitReader<'a>::peek",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_short",
+    "status": "SUCCESSFUL",
+    "secs": 124,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_long",
+    "status": "SUCCESSFUL",
+    "secs": 225,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 110,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:201:23: replace < with > in BitReader<'a>::peek",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_short",
+    "status": "SUCCESSFUL",
+    "secs": 30,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_long",
+    "status": "SUCCESSFUL",
+    "secs": 54,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 84,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:212:9: replace BitReader<'a>::available -> u32 with 0",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 125,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:239:24: replace < with <= in BitReader<'a>::read_aligned_bytes",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::aligned_bytes_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 24,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_short",
+    "status": "SUCCESSFUL",
+    "secs": 111,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_long",
+    "status": "SUCCESSFUL",
+    "secs": 251,
+    "detail": []
+   },
+   {
+    "harness": "inflate::proofs::stored_block_semantics",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 13,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:260:18: replace - with + in BitReader<'a>::bytes_consumed",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::aligned_bytes_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 21,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_short",
+    "status": "SUCCESSFUL",
+    "secs": 84,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_long",
+    "status": "SUCCESSFUL",
+    "secs": 197,
+    "detail": []
+   },
+   {
+    "harness": "inflate::proofs::stored_block_semantics",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 13,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:279:13: replace < with <= in padded_word",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_short",
+    "status": "SUCCESSFUL",
+    "secs": 101,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 97,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:30:9: replace BitWriter::with_capacity -> Self with Default::default()",
+  "harnesses": [
+   {
+    "harness": "deflate::proofs::stored_cost_is_exact",
+    "status": "SUCCESSFUL",
+    "secs": 31,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 13,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::stored_cost_adds_up_across_blocks",
+    "status": "SUCCESSFUL",
+    "secs": 65,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:39:22: replace > with == in BitWriter::write_bits",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::aligned_bytes_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 25,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::write_then_read_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 98,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_short",
+    "status": "SUCCESSFUL",
+    "secs": 115,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_long",
+    "status": "SUCCESSFUL",
+    "secs": 206,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::stored_cost_is_exact",
+    "status": "SUCCESSFUL",
+    "secs": 27,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 14,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::fixed_tokens_have_the_rfc_layout",
+    "status": "SUCCESSFUL",
+    "secs": 196,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::stored_cost_adds_up_across_blocks",
+    "status": "SUCCESSFUL",
+    "secs": 83,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:39:22: replace > with >= in BitWriter::write_bits",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::aligned_bytes_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 28,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::write_then_read_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 106,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_short",
+    "status": "SUCCESSFUL",
+    "secs": 113,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_long",
+    "status": "SUCCESSFUL",
+    "secs": 217,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::stored_cost_is_exact",
+    "status": "SUCCESSFUL",
+    "secs": 26,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 13,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::fixed_tokens_have_the_rfc_layout",
+    "status": "SUCCESSFUL",
+    "secs": 194,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::stored_cost_adds_up_across_blocks",
+    "status": "SUCCESSFUL",
+    "secs": 62,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/bitio.rs:65:23: replace > with >= in BitWriter::pad_to_byte",
+  "harnesses": [
+   {
+    "harness": "bitio::proofs::aligned_bytes_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 18,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::write_then_read_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 101,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_short",
+    "status": "SUCCESSFUL",
+    "secs": 47,
+    "detail": []
+   },
+   {
+    "harness": "bitio::proofs::aligned_bytes_after_lookahead_long",
+    "status": "SUCCESSFUL",
+    "secs": 102,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::stored_cost_is_exact",
+    "status": "SUCCESSFUL",
+    "secs": 17,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 13,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::fixed_tokens_have_the_rfc_layout",
+    "status": "SUCCESSFUL",
+    "secs": 159,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::stored_cost_adds_up_across_blocks",
+    "status": "SUCCESSFUL",
+    "secs": 45,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/deflate.rs:120:26: replace * with +",
+  "harnesses": [
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 11,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/deflate.rs:120:26: replace * with /",
+  "harnesses": [
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 13,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/deflate.rs:123:44: replace * with +",
+  "harnesses": [
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 13,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/deflate.rs:123:44: replace * with /",
+  "harnesses": [
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 10,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/deflate.rs:262:48: replace | with ^ in CodeTable<N>::put_with_extra",
+  "harnesses": [
+   {
+    "harness": "deflate::proofs::fixed_tokens_have_the_rfc_layout",
+    "status": "SUCCESSFUL",
+    "secs": 190,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/deflate.rs:316:28: replace && with || in write_stored_in",
+  "harnesses": [
+   {
+    "harness": "deflate::proofs::stored_cost_is_exact",
+    "status": "SUCCESSFUL",
+    "secs": 28,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::stored_cost_adds_up_across_blocks",
+    "status": "SUCCESSFUL",
+    "secs": 71,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 13,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/deflate.rs:431:16: replace > with < in rle_code_lengths",
+  "harnesses": [
+   {
+    "harness": "deflate::proofs::code_length_rle_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::code_length_rle_zero_runs",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/deflate.rs:431:16: replace > with == in rle_code_lengths",
+  "harnesses": [
+   {
+    "harness": "deflate::proofs::code_length_rle_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::code_length_rle_zero_runs",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/deflate.rs:431:16: replace > with >= in rle_code_lengths",
+  "harnesses": [
+   {
+    "harness": "deflate::proofs::code_length_rle_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 36,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::code_length_rle_zero_runs",
+    "status": "SUCCESSFUL",
+    "secs": 252,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/deflate.rs:435:16: replace > with >= in rle_code_lengths",
+  "harnesses": [
+   {
+    "harness": "deflate::proofs::code_length_rle_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 38,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::code_length_rle_zero_runs",
+    "status": "SUCCESSFUL",
+    "secs": 267,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/deflate.rs:441:12: replace > with >= in rle_code_lengths",
+  "harnesses": [
+   {
+    "harness": "deflate::proofs::code_length_rle_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 27,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::code_length_rle_zero_runs",
+    "status": "SUCCESSFUL",
+    "secs": 178,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/deflate.rs:457:26: replace < with <= in emit_run",
+  "harnesses": [
+   {
+    "harness": "deflate::proofs::code_length_rle_zero_runs",
+    "status": "SUCCESSFUL",
+    "secs": 160,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/deflate.rs:473:26: replace < with <= in emit_run",
+  "harnesses": [
+   {
+    "harness": "deflate::proofs::code_length_rle_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 37,
+    "detail": []
+   },
+   {
+    "harness": "deflate::proofs::code_length_rle_zero_runs",
+    "status": "SUCCESSFUL",
+    "secs": 236,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/deflate.rs:88:34: replace == with != in encode_with_matcher",
+  "harnesses": [
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 14,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/deflate.rs:90:17: replace == with != in encode_with_matcher",
+  "harnesses": [
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "ERROR(-15)",
+    "secs": 510,
+    "detail": [
+     "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.72s",
+     "warning: the following packages contain code that will be rejected by a future version of Rust: verified-deflate v0.1.0 (/home/runner/work/verified-deflate/verified-deflate)",
+     "note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`"
+    ]
+   }
+  ],
+  "verdict": "undetermined"
+ },
+ {
+  "name": "src/huffman.rs:161:10: replace > with < in build_lengths_in",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "SUCCESSFUL",
+    "secs": 100,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_rejects_impossible_limit",
+    "status": "SUCCESSFUL",
+    "secs": 283,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_tight_limit",
+    "status": "SUCCESSFUL",
+    "secs": 377,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "SUCCESSFUL",
+    "secs": 443,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:167:10: replace < with <= in build_lengths_in",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "SUCCESSFUL",
+    "secs": 84,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_rejects_impossible_limit",
+    "status": "SUCCESSFUL",
+    "secs": 252,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_tight_limit",
+    "status": "SUCCESSFUL",
+    "secs": 312,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "SUCCESSFUL",
+    "secs": 446,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:167:10: replace < with == in build_lengths_in",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "SUCCESSFUL",
+    "secs": 72,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_rejects_impossible_limit",
+    "status": "SUCCESSFUL",
+    "secs": 179,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_tight_limit",
+    "status": "SUCCESSFUL",
+    "secs": 238,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "SUCCESSFUL",
+    "secs": 355,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:167:14: replace || with && in build_lengths_in",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "SUCCESSFUL",
+    "secs": 86,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_rejects_impossible_limit",
+    "status": "SUCCESSFUL",
+    "secs": 232,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_tight_limit",
+    "status": "SUCCESSFUL",
+    "secs": 299,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "SUCCESSFUL",
+    "secs": 430,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:220:15: replace > with >= in limit_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::limit_depths_keeps_code_complete",
+    "status": "SUCCESSFUL",
+    "secs": 35,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "SUCCESSFUL",
+    "secs": 73,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_tight_limit",
+    "status": "SUCCESSFUL",
+    "secs": 239,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "SUCCESSFUL",
+    "secs": 482,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:233:41: replace > with < in limit_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::limit_depths_keeps_code_complete",
+    "status": "SUCCESSFUL",
+    "secs": 54,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "SUCCESSFUL",
+    "secs": 478,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:233:41: replace > with == in limit_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::limit_depths_keeps_code_complete",
+    "status": "SUCCESSFUL",
+    "secs": 44,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "SUCCESSFUL",
+    "secs": 485,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:233:41: replace > with >= in limit_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::limit_depths_keeps_code_complete",
+    "status": "SUCCESSFUL",
+    "secs": 45,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "SUCCESSFUL",
+    "secs": 482,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:233:52: replace || with && in limit_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::limit_depths_keeps_code_complete",
+    "status": "SUCCESSFUL",
+    "secs": 53,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_tight_limit",
+    "status": "SUCCESSFUL",
+    "secs": 398,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "SUCCESSFUL",
+    "secs": 500,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:233:65: replace == with != in limit_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::limit_depths_keeps_code_complete",
+    "status": "SUCCESSFUL",
+    "secs": 43,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "SUCCESSFUL",
+    "secs": 426,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:233:77: replace && with || in limit_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::limit_depths_keeps_code_complete",
+    "status": "SUCCESSFUL",
+    "secs": 51,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_tight_limit",
+    "status": "SUCCESSFUL",
+    "secs": 387,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "SUCCESSFUL",
+    "secs": 498,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:233:90: replace < with <= in limit_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::limit_depths_keeps_code_complete",
+    "status": "SUCCESSFUL",
+    "secs": 31,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:233:90: replace < with == in limit_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::limit_depths_keeps_code_complete",
+    "status": "SUCCESSFUL",
+    "secs": 33,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:233:90: replace < with > in limit_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::limit_depths_keeps_code_complete",
+    "status": "SUCCESSFUL",
+    "secs": 46,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:250:25: replace > with >= in limit_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::limit_depths_keeps_code_complete",
+    "status": "SUCCESSFUL",
+    "secs": 40,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:253:41: replace > with >= in limit_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::limit_depths_keeps_code_complete",
+    "status": "SUCCESSFUL",
+    "secs": 44,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:253:65: replace == with != in limit_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::limit_depths_keeps_code_complete",
+    "status": "SUCCESSFUL",
+    "secs": 42,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:253:77: replace && with || in limit_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::limit_depths_keeps_code_complete",
+    "status": "SUCCESSFUL",
+    "secs": 41,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:253:90: replace > with < in limit_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::limit_depths_keeps_code_complete",
+    "status": "SUCCESSFUL",
+    "secs": 31,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:253:90: replace > with == in limit_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::limit_depths_keeps_code_complete",
+    "status": "SUCCESSFUL",
+    "secs": 43,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:253:90: replace > with >= in limit_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::limit_depths_keeps_code_complete",
+    "status": "SUCCESSFUL",
+    "secs": 34,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:261:23: replace << with >> in limit_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::limit_depths_keeps_code_complete",
+    "status": "SUCCESSFUL",
+    "secs": 46,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:261:35: replace - with + in limit_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::limit_depths_keeps_code_complete",
+    "status": "SUCCESSFUL",
+    "secs": 44,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:261:35: replace - with / in limit_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::limit_depths_keeps_code_complete",
+    "status": "SUCCESSFUL",
+    "secs": 55,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:276:5: replace huffman_depths with ()",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "FAILED",
+    "secs": 86,
+    "detail": [
+     "unwinding assertion loop 2"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/huffman.rs:292:22: replace + with * in huffman_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "FAILED",
+    "secs": 101,
+    "detail": [
+     "unwinding assertion loop 2"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/huffman.rs:292:30: replace - with / in huffman_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "SUCCESSFUL",
+    "secs": 106,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_tight_limit",
+    "status": "SUCCESSFUL",
+    "secs": 375,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "FAILED",
+    "secs": 610,
+    "detail": [
+     "unwinding assertion loop 2"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/huffman.rs:292:40: replace > with < in huffman_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "FAILED",
+    "secs": 68,
+    "detail": [
+     "unwinding assertion loop 2"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/huffman.rs:292:40: replace > with == in huffman_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "FAILED",
+    "secs": 74,
+    "detail": [
+     "unwinding assertion loop 2"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/huffman.rs:292:40: replace > with >= in huffman_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "SUCCESSFUL",
+    "secs": 108,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_tight_limit",
+    "status": "SUCCESSFUL",
+    "secs": 413,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "SUCCESSFUL",
+    "secs": 479,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:298:14: replace += with *= in huffman_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "FAILED",
+    "secs": 86,
+    "detail": [
+     "unwinding assertion loop 2"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/huffman.rs:301:23: replace - with + in huffman_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "SUCCESSFUL",
+    "secs": 109,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_tight_limit",
+    "status": "SUCCESSFUL",
+    "secs": 372,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "SUCCESSFUL",
+    "secs": 442,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:301:23: replace - with / in huffman_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "SUCCESSFUL",
+    "secs": 105,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_tight_limit",
+    "status": "SUCCESSFUL",
+    "secs": 366,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "SUCCESSFUL",
+    "secs": 461,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:302:14: replace > with < in huffman_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "FAILED",
+    "secs": 98,
+    "detail": [
+     "unwinding assertion loop 2"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/huffman.rs:302:14: replace > with == in huffman_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "FAILED",
+    "secs": 76,
+    "detail": [
+     "unwinding assertion loop 2"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/huffman.rs:304:48: replace + with * in huffman_depths",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "FAILED",
+    "secs": 96,
+    "detail": [
+     "unwinding assertion loop 2"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/huffman.rs:318:29: replace < with <= in take_lightest",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "FAILED",
+    "secs": 80,
+    "detail": [
+     "unwinding assertion loop 2"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/huffman.rs:318:29: replace < with == in take_lightest",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "FAILED",
+    "secs": 119,
+    "detail": [
+     "unwinding assertion loop 2"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/huffman.rs:318:29: replace < with > in take_lightest",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "SUCCESSFUL",
+    "secs": 105,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_tight_limit",
+    "status": "SUCCESSFUL",
+    "secs": 389,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "SUCCESSFUL",
+    "secs": 409,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:319:59: replace <= with > in take_lightest",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "SUCCESSFUL",
+    "secs": 108,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_tight_limit",
+    "status": "SUCCESSFUL",
+    "secs": 400,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "SUCCESSFUL",
+    "secs": 468,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:324:17: replace - with + in take_lightest",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "SUCCESSFUL",
+    "secs": 109,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_tight_limit",
+    "status": "SUCCESSFUL",
+    "secs": 387,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "FAILED",
+    "secs": 512,
+    "detail": [
+     "unwinding assertion loop 2"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/huffman.rs:324:17: replace - with / in take_lightest",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "SUCCESSFUL",
+    "secs": 90,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_tight_limit",
+    "status": "SUCCESSFUL",
+    "secs": 340,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "FAILED",
+    "secs": 477,
+    "detail": [
+     "unwinding assertion loop 2"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/huffman.rs:333:23: replace / with * in sort_by_weight",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "SUCCESSFUL",
+    "secs": 110,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::sort_by_weight_sorts",
+    "status": "FAILED",
+    "secs": 127,
+    "detail": [
+     "unwinding assertion loop 0"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/huffman.rs:339:15: replace > with >= in sort_by_weight",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "SUCCESSFUL",
+    "secs": 63,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::sort_by_weight_sorts",
+    "status": "SUCCESSFUL",
+    "secs": 109,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_tight_limit",
+    "status": "SUCCESSFUL",
+    "secs": 219,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "SUCCESSFUL",
+    "secs": 252,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:377:24: replace > with >= in heavier",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::sort_by_weight_sorts",
+    "status": "SUCCESSFUL",
+    "secs": 113,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:421:110: replace << with >>",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::sort_by_weight_sorts",
+    "status": "SUCCESSFUL",
+    "secs": 183,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:446:23: replace << with >> in Canonical::rebuild",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 113,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::decode_arbitrary_bits",
+    "status": "SUCCESSFUL",
+    "secs": 45,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::decoder_new_never_panics",
+    "status": "SUCCESSFUL",
+    "secs": 48,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::encode_then_decode_symbol",
+    "status": "SUCCESSFUL",
+    "secs": 527,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:460:30: replace - with + in Canonical::rebuild",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 128,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::decode_arbitrary_bits",
+    "status": "SUCCESSFUL",
+    "secs": 53,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::decoder_new_never_panics",
+    "status": "SUCCESSFUL",
+    "secs": 44,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::encode_then_decode_symbol",
+    "status": "SUCCESSFUL",
+    "secs": 563,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:474:44: replace + with * in Canonical::rebuild",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 121,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::decode_arbitrary_bits",
+    "status": "SUCCESSFUL",
+    "secs": 58,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::decoder_new_never_panics",
+    "status": "SUCCESSFUL",
+    "secs": 52,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::encode_then_decode_symbol",
+    "status": "SUCCESSFUL",
+    "secs": 577,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:497:9: replace Canonical::is_complete -> bool with false",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::decoder_new_never_panics",
+    "status": "FAILED",
+    "secs": 56,
+    "detail": [
+     "assertion failed: d.is_complete() == k == 1 << MAX_CODE_LEN"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/huffman.rs:58:5: replace is_complete -> bool with true",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::build_lengths_full_range_frequencies",
+    "status": "SUCCESSFUL",
+    "secs": 67,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_tight_limit",
+    "status": "SUCCESSFUL",
+    "secs": 248,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::build_lengths_complete_and_limited",
+    "status": "SUCCESSFUL",
+    "secs": 281,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:605:31: replace > with < in Decoder::rebuild_with_fast_bits",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "FAILED",
+    "secs": 117,
+    "detail": [
+     "unwinding assertion loop 1"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/huffman.rs:605:31: replace > with == in Decoder::rebuild_with_fast_bits",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 184,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::decoder_new_never_panics",
+    "status": "SUCCESSFUL",
+    "secs": 35,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:605:31: replace > with >= in Decoder::rebuild_with_fast_bits",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 126,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::decoder_new_never_panics",
+    "status": "SUCCESSFUL",
+    "secs": 46,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:623:17: replace < with == in Decoder::rebuild_with_fast_bits",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 57,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::decoder_new_never_panics",
+    "status": "SUCCESSFUL",
+    "secs": 25,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:623:17: replace < with > in Decoder::rebuild_with_fast_bits",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 54,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::decoder_new_never_panics",
+    "status": "SUCCESSFUL",
+    "secs": 24,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:625:18: replace != with == in Decoder::rebuild_with_fast_bits",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 187,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::decoder_new_never_panics",
+    "status": "SUCCESSFUL",
+    "secs": 58,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:630:31: replace < with == in Decoder::rebuild_with_fast_bits",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 167,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::decoder_new_never_panics",
+    "status": "SUCCESSFUL",
+    "secs": 39,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:630:31: replace < with > in Decoder::rebuild_with_fast_bits",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 160,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::decoder_new_never_panics",
+    "status": "SUCCESSFUL",
+    "secs": 56,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:630:36: replace << with >> in Decoder::rebuild_with_fast_bits",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 120,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::decoder_new_never_panics",
+    "status": "SUCCESSFUL",
+    "secs": 24,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:631:54: replace << with >> in Decoder::rebuild_with_fast_bits",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 64,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::decoder_new_never_panics",
+    "status": "SUCCESSFUL",
+    "secs": 30,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:631:61: replace | with & in Decoder::rebuild_with_fast_bits",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 73,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::decoder_new_never_panics",
+    "status": "SUCCESSFUL",
+    "secs": 45,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:631:61: replace | with ^ in Decoder::rebuild_with_fast_bits",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 109,
+    "detail": []
+   },
+   {
+    "harness": "huffman::proofs::decoder_new_never_panics",
+    "status": "SUCCESSFUL",
+    "secs": 38,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/huffman.rs:643:9: replace Decoder::is_complete -> bool with false",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::decoder_new_never_panics",
+    "status": "FAILED",
+    "secs": 61,
+    "detail": [
+     "assertion failed: d.is_complete() == k == 1 << MAX_CODE_LEN"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/huffman.rs:667:31: replace >> with << in Decoder::decode",
+  "harnesses": [
+   {
+    "harness": "huffman::proofs::fast_decode_matches_slow",
+    "status": "SUCCESSFUL",
+    "secs": 136,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/inflate.rs:107:14: replace > with < in Output::reserve",
+  "harnesses": [
+   {
+    "harness": "inflate::proofs::stored_block_semantics",
+    "status": "FAILED",
+    "secs": 5,
+    "detail": [
+     "output growth is unreachable in this harness"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/inflate.rs:107:14: replace > with == in Output::reserve",
+  "harnesses": [
+   {
+    "harness": "inflate::proofs::stored_block_semantics",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "FAILED",
+    "secs": 7,
+    "detail": [
+     "output growth is unreachable in this harness"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/inflate.rs:107:14: replace > with >= in Output::reserve",
+  "harnesses": [
+   {
+    "harness": "inflate::proofs::stored_block_semantics",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "FAILED",
+    "secs": 10,
+    "detail": [
+     "output growth is unreachable in this harness"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/inflate.rs:107:31: replace - with + in Output::reserve",
+  "harnesses": [
+   {
+    "harness": "inflate::proofs::stored_block_semantics",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 11,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:133:100: replace << with >> in Matcher::hash",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 23,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:133:38: replace | with & in Matcher::hash",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 20,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:133:38: replace | with ^ in Matcher::hash",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 24,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:133:60: replace + with * in Matcher::hash",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 10,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 10,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 26,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:133:66: replace << with >> in Matcher::hash",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 25,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:133:72: replace | with & in Matcher::hash",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 24,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:133:72: replace | with ^ in Matcher::hash",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 23,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:133:9: replace Matcher::hash -> usize with 0",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:133:9: replace Matcher::hash -> usize with 1",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:140:28: replace > with >= in Matcher::bucket",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 14,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:140:9: replace Matcher::bucket -> Option<usize> with Some(0)",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:140:9: replace Matcher::bucket -> Option<usize> with Some(1)",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 10,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:151:27: replace & with ^ in Matcher::insert_at",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 16,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:151:27: replace & with | in Matcher::insert_at",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 23,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:151:42: replace - with + in Matcher::insert_at",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 27,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:151:42: replace - with / in Matcher::insert_at",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 24,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:159:16: replace < with <= in Matcher::max_dist",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 24,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:173:9: replace Matcher::dist_to -> usize with 1",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "FAILED",
+    "secs": 8,
+    "detail": [
+     "unwinding assertion loop 0"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/lz77.rs:209:32: replace < with <= in Matcher::longest_match",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 20,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:229:32: replace - with + in Matcher::longest_match",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 10,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 10,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 27,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:229:32: replace - with / in Matcher::longest_match",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 28,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:230:21: replace > with >= in Matcher::longest_match",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 25,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:242:26: replace + with * in Matcher::longest_match",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 33,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:244:24: replace > with >= in Matcher::longest_match",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 23,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:247:28: replace >= with < in Matcher::longest_match",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 25,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:253:30: replace & with ^ in Matcher::longest_match",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:253:30: replace & with | in Matcher::longest_match",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:254:19: replace -= with += in Matcher::longest_match",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:254:19: replace -= with /= in Matcher::longest_match",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:256:39: replace < with <= in Matcher::longest_match",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 25,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:256:39: replace < with == in Matcher::longest_match",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 22,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:310:65: replace - with + in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 3,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 3,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 16,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:310:65: replace - with / in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 23,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:319:30: replace && with || in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 10,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 16,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:319:37: replace < with <= in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 24,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:319:37: replace < with == in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 10,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 25,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:319:37: replace < with > in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 24,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:319:57: replace && with || in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 10,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 25,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:319:64: replace + with * in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 18,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:319:64: replace + with - in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 16,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:319:68: replace < with <= in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 10,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 25,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:319:68: replace < with == in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 13,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:319:68: replace < with > in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 15,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:320:36: replace >= with < in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 26,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:320:78: replace / with % in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:320:78: replace / with * in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:320:82: replace + with * in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:321:60: replace + with * in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 19,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:321:60: replace + with - in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 19,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:321:87: replace + with * in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 12,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 11,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 28,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:321:87: replace + with - in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 14,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 12,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 33,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:333:43: replace || with && in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 10,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 24,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:333:50: replace <= with > in Matcher::tokenize",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:357:16: replace > with < in tokenize_runs",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::rle_tokens_valid_and_replay",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:357:33: replace == with != in tokenize_runs",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::rle_tokens_valid_and_replay",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:357:45: replace - with / in tokenize_runs",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::rle_tokens_valid_and_replay",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:358:32: replace - with + in tokenize_runs",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::rle_tokens_valid_and_replay",
+    "status": "SUCCESSFUL",
+    "secs": 12,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:358:32: replace - with / in tokenize_runs",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::rle_tokens_valid_and_replay",
+    "status": "SUCCESSFUL",
+    "secs": 11,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:358:38: replace < with <= in tokenize_runs",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::rle_tokens_valid_and_replay",
+    "status": "SUCCESSFUL",
+    "secs": 12,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:360:52: replace - with / in tokenize_runs",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::rle_tokens_valid_and_replay",
+    "status": "SUCCESSFUL",
+    "secs": 11,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:382:26: replace < with <= in common_prefix",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::common_prefix_matches_reference",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::rle_tokens_valid_and_replay",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 10,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 27,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:384:13: replace + with * in common_prefix",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::common_prefix_matches_reference",
+    "status": "SUCCESSFUL",
+    "secs": 3,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::rle_tokens_valid_and_replay",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 24,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:384:17: replace <= with > in common_prefix",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::common_prefix_matches_reference",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::rle_tokens_valid_and_replay",
+    "status": "SUCCESSFUL",
+    "secs": 11,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_small_tables",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 23,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:392:11: replace += with *= in common_prefix",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::common_prefix_matches_reference",
+    "status": "FAILED",
+    "secs": 7,
+    "detail": [
+     "unwinding assertion loop 0"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/lz77.rs:392:11: replace += with -= in common_prefix",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::common_prefix_matches_reference",
+    "status": "FAILED",
+    "secs": 4,
+    "detail": [
+     "attempt to subtract with overflow"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/lz77.rs:437:12: replace <= with > in copy_within_buffer",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::copy_within_buffer_meets_spec",
+    "status": "SUCCESSFUL",
+    "secs": 24,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::short_copy_meets_spec",
+    "status": "SUCCESSFUL",
+    "secs": 135,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:461:37: replace < with <= in copy_within_buffer",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::copy_within_buffer_meets_spec",
+    "status": "SUCCESSFUL",
+    "secs": 26,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:71:13: delete match arm 0 | 1 in MatchConfig::for_level",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::no_chain_means_literals_only",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::rle_tokens_valid_and_replay",
+    "status": "SUCCESSFUL",
+    "secs": 13,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 10,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 20,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 10,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:72:13: delete match arm 2 in MatchConfig::for_level",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::no_chain_means_literals_only",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::rle_tokens_valid_and_replay",
+    "status": "SUCCESSFUL",
+    "secs": 12,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 24,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 12,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:73:13: delete match arm 3 in MatchConfig::for_level",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::no_chain_means_literals_only",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::rle_tokens_valid_and_replay",
+    "status": "SUCCESSFUL",
+    "secs": 13,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 26,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 15,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:74:13: delete match arm 4 in MatchConfig::for_level",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::no_chain_means_literals_only",
+    "status": "SUCCESSFUL",
+    "secs": 3,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::rle_tokens_valid_and_replay",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 10,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 24,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 13,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:75:13: delete match arm 5 in MatchConfig::for_level",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::no_chain_means_literals_only",
+    "status": "SUCCESSFUL",
+    "secs": 3,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::rle_tokens_valid_and_replay",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 25,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 12,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:76:13: delete match arm 6 in MatchConfig::for_level",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::no_chain_means_literals_only",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::rle_tokens_valid_and_replay",
+    "status": "SUCCESSFUL",
+    "secs": 11,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 25,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 12,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:77:13: delete match arm 7 in MatchConfig::for_level",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::no_chain_means_literals_only",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::rle_tokens_valid_and_replay",
+    "status": "SUCCESSFUL",
+    "secs": 10,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 25,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 13,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/lz77.rs:78:13: delete match arm 8 in MatchConfig::for_level",
+  "harnesses": [
+   {
+    "harness": "lz77::proofs::no_chain_means_literals_only",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::rle_tokens_valid_and_replay",
+    "status": "SUCCESSFUL",
+    "secs": 12,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_greedy",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::tokens_valid_and_replay_level9",
+    "status": "SUCCESSFUL",
+    "secs": 11,
+    "detail": []
+   },
+   {
+    "harness": "lz77::proofs::runs_are_matched",
+    "status": "SUCCESSFUL",
+    "secs": 28,
+    "detail": []
+   },
+   {
+    "harness": "e2e::roundtrip_stored",
+    "status": "SUCCESSFUL",
+    "secs": 15,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/zip.rs:168:17: replace && with || in is_leap",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::dos_datetime_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 2,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::unix_time_always_valid",
+    "status": "SUCCESSFUL",
+    "secs": 3,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::civil_date_conversion_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 9,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::is_valid_is_the_calendar",
+    "status": "FAILED",
+    "secs": 6,
+    "detail": [
+     "assertion failed: t.is_valid() == real"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/zip.rs:168:22: replace % with + in is_leap",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::dos_datetime_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 2,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::unix_time_always_valid",
+    "status": "SUCCESSFUL",
+    "secs": 3,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::civil_date_conversion_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::is_valid_is_the_calendar",
+    "status": "FAILED",
+    "secs": 7,
+    "detail": [
+     "assertion failed: t.is_valid() == real"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/zip.rs:168:22: replace % with / in is_leap",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::dos_datetime_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 1,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::unix_time_always_valid",
+    "status": "SUCCESSFUL",
+    "secs": 3,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::civil_date_conversion_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::is_valid_is_the_calendar",
+    "status": "FAILED",
+    "secs": 9,
+    "detail": [
+     "assertion failed: t.is_valid() == real"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/zip.rs:168:39: replace % with + in is_leap",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::dos_datetime_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 2,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::unix_time_always_valid",
+    "status": "FAILED",
+    "secs": 3,
+    "detail": [
+     "assertion failed: DosDateTime::from_unix_seconds(s).is_valid()"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/zip.rs:168:39: replace % with / in is_leap",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::dos_datetime_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 1,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::unix_time_always_valid",
+    "status": "FAILED",
+    "secs": 2,
+    "detail": [
+     "assertion failed: DosDateTime::from_unix_seconds(s).is_valid()"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/zip.rs:168:45: replace == with != in is_leap",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::dos_datetime_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 2,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::unix_time_always_valid",
+    "status": "FAILED",
+    "secs": 3,
+    "detail": [
+     "assertion failed: DosDateTime::from_unix_seconds(s).is_valid()"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/zip.rs:168:5: replace is_leap -> bool with true",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::dos_datetime_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 2,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::unix_time_always_valid",
+    "status": "SUCCESSFUL",
+    "secs": 3,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::civil_date_conversion_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::is_valid_is_the_calendar",
+    "status": "FAILED",
+    "secs": 3,
+    "detail": [
+     "assertion failed: t.is_valid() == real"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/zip.rs:175:14: replace match guard is_leap(year) with true in days_in_month",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::dos_datetime_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 2,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::unix_time_always_valid",
+    "status": "SUCCESSFUL",
+    "secs": 3,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::civil_date_conversion_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 8,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::is_valid_is_the_calendar",
+    "status": "FAILED",
+    "secs": 5,
+    "detail": [
+     "assertion failed: t.is_valid() == real"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/zip.rs:198:48: replace - with + in civil_from_days",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::unix_time_always_valid",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::civil_date_conversion_roundtrip",
+    "status": "FAILED",
+    "secs": 4,
+    "detail": [
+     "assertion failed: days_from_civil(y, m, d) == z"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/zip.rs:239:47: replace | with ^ in DosDateTime::to_dos",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::dos_datetime_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 2,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/zip.rs:239:77: replace | with ^ in DosDateTime::to_dos",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::dos_datetime_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 2,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/zip.rs:23:33: replace << with >>",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::find_eocd_is_sound",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::header_parsers_never_panic",
+    "status": "SUCCESSFUL",
+    "secs": 2,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::eocd_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 3,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::local_header_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::central_header_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/zip.rs:23:39: replace | with &",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::find_eocd_is_sound",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::header_parsers_never_panic",
+    "status": "SUCCESSFUL",
+    "secs": 2,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::eocd_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 3,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::local_header_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::central_header_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/zip.rs:23:39: replace | with ^",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::find_eocd_is_sound",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::header_parsers_never_panic",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::eocd_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::local_header_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 6,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::central_header_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/zip.rs:240:65: replace | with ^ in DosDateTime::to_dos",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::dos_datetime_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 2,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/zip.rs:240:94: replace | with ^ in DosDateTime::to_dos",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::dos_datetime_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 2,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/zip.rs:25:26: replace << with >>",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::find_eocd_is_sound",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::header_parsers_never_panic",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::eocd_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::local_header_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::central_header_roundtrip",
+    "status": "SUCCESSFUL",
+    "secs": 5,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/zip.rs:262:25: replace < with <= in DosDateTime::from_unix_seconds",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::unix_time_always_valid",
+    "status": "SUCCESSFUL",
+    "secs": 3,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::unix_time_converts_exactly",
+    "status": "SUCCESSFUL",
+    "secs": 176,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/zip.rs:264:24: replace > with >= in DosDateTime::from_unix_seconds",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::unix_time_always_valid",
+    "status": "SUCCESSFUL",
+    "secs": 3,
+    "detail": []
+   },
+   {
+    "harness": "zip::proofs::unix_time_converts_exactly",
+    "status": "SUCCESSFUL",
+    "secs": 149,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/zip.rs:510:32: replace > with == in name_is_safe",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::validate_name_is_exactly_the_rule",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/zip.rs:510:32: replace > with >= in name_is_safe",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::validate_name_is_exactly_the_rule",
+    "status": "SUCCESSFUL",
+    "secs": 4,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/zip.rs:525:45: replace + with * in name_is_safe",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::validate_name_is_exactly_the_rule",
+    "status": "FAILED",
+    "secs": 5,
+    "detail": [
+     "assertion failed: name_is_safe(n) == ok"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/zip.rs:525:45: replace + with - in name_is_safe",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::validate_name_is_exactly_the_rule",
+    "status": "FAILED",
+    "secs": 6,
+    "detail": [
+     "attempt to subtract with overflow",
+     "assertion failed: name_is_safe(n) == ok"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/zip.rs:526:33: replace == with != in name_is_safe",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::validate_name_is_exactly_the_rule",
+    "status": "FAILED",
+    "secs": 5,
+    "detail": [
+     "assertion failed: name_is_safe(n) == ok"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/zip.rs:526:49: replace || with && in name_is_safe",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::validate_name_is_exactly_the_rule",
+    "status": "FAILED",
+    "secs": 5,
+    "detail": [
+     "assertion failed: name_is_safe(n) == ok"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/zip.rs:526:57: replace == with != in name_is_safe",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::validate_name_is_exactly_the_rule",
+    "status": "FAILED",
+    "secs": 5,
+    "detail": [
+     "assertion failed: name_is_safe(n) == ok"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/zip.rs:760:19: replace < with <= in find_eocd",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::find_eocd_is_sound",
+    "status": "SUCCESSFUL",
+    "secs": 7,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ },
+ {
+  "name": "src/zip.rs:767:40: replace && with || in find_eocd",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::find_eocd_is_sound",
+    "status": "FAILED",
+    "secs": 4,
+    "detail": [
+     "assertion failed: u32_at(d, i) == EOCD_SIG",
+     "assertion failed: i + EndOfCentralDirectory::SIZE + u16_at(d, i + 20) as usize == len"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/zip.rs:767:75: replace + with - in find_eocd",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::find_eocd_is_sound",
+    "status": "FAILED",
+    "secs": 4,
+    "detail": [
+     "attempt to subtract with overflow"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/zip.rs:771:14: replace == with != in find_eocd",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::find_eocd_is_sound",
+    "status": "FAILED",
+    "secs": 6,
+    "detail": [
+     "attempt to subtract with overflow"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/zip.rs:774:11: replace -= with += in find_eocd",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::find_eocd_is_sound",
+    "status": "FAILED",
+    "secs": 5,
+    "detail": [
+     "index out of bounds: the length is less than or equal to the given index",
+     "index out of bounds: the length is less than or equal to the given index",
+     "unwinding assertion loop 0"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/zip.rs:774:11: replace -= with /= in find_eocd",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::find_eocd_is_sound",
+    "status": "FAILED",
+    "secs": 5,
+    "detail": [
+     "unwinding assertion loop 0"
+    ]
+   }
+  ],
+  "verdict": "caught"
+ },
+ {
+  "name": "src/zip.rs:796:58: replace + with * in record_bounds",
+  "harnesses": [
+   {
+    "harness": "zip::proofs::record_bounds_sound",
+    "status": "SUCCESSFUL",
+    "secs": 3,
+    "detail": []
+   }
+  ],
+  "verdict": "survives"
+ }
+]

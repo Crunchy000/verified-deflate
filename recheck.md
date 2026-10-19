@@ -1,0 +1,191 @@
+# Kani re-check of mutants the sampled proofs missed
+
+216 of 216 candidates checked.
+
+| verdict | mutants | meaning |
+|---|---:|---|
+| caught | 42 | the real proof fails on the mutant: the proof does pin this down |
+| survives | 173 | every harness that reaches it still verifies: the properties do not pin this down |
+| undetermined | 1 | a harness timed out or errored before any failed |
+| unviable | 0 | does not compile under Kani |
+| no-harness | 0 | no verified harness reaches it |
+
+## Survive the real proofs (173)
+
+- `src/adler32.rs:74:24: replace | with ^ in Adler32::finalize` (tests miss it too) — from_checksum_resumes SUCCESSFUL, update_matches_bytewise SUCCESSFUL
+- `src/bitio.rs:126:17: replace < with <= in BitReader<'a>::fill` (tests miss it too) — reader_eof_is_exact SUCCESSFUL, read_bits_matches_read_bit SUCCESSFUL, aligned_bytes_roundtrip SUCCESSFUL, write_then_read_roundtrip SUCCESSFUL, aligned_bytes_after_lookahead_short SUCCESSFUL, aligned_bytes_after_lookahead_long SUCCESSFUL, stored_block_semantics SUCCESSFUL, roundtrip_stored SUCCESSFUL, fixed_tokens_have_the_rfc_layout SUCCESSFUL, encode_then_decode_symbol SUCCESSFUL
+- `src/bitio.rs:143:23: replace > with < in BitReader<'a>::refill` (tests miss it too) — aligned_bytes_after_lookahead_short SUCCESSFUL, aligned_bytes_after_lookahead_long SUCCESSFUL, fast_decode_matches_slow SUCCESSFUL
+- `src/bitio.rs:143:23: replace > with == in BitReader<'a>::refill` (tests miss it too) — aligned_bytes_after_lookahead_short SUCCESSFUL, aligned_bytes_after_lookahead_long SUCCESSFUL, fast_decode_matches_slow SUCCESSFUL
+- `src/bitio.rs:143:23: replace > with >= in BitReader<'a>::refill` (tests miss it too) — aligned_bytes_after_lookahead_short SUCCESSFUL, aligned_bytes_after_lookahead_long SUCCESSFUL, fast_decode_matches_slow SUCCESSFUL
+- `src/bitio.rs:143:9: replace BitReader<'a>::refill with ()` (tests miss it too) — aligned_bytes_after_lookahead_short SUCCESSFUL, aligned_bytes_after_lookahead_long SUCCESSFUL, fast_decode_matches_slow SUCCESSFUL
+- `src/bitio.rs:147:25: replace - with + in BitReader<'a>::refill` (tests catch it) — aligned_bytes_after_lookahead_short SUCCESSFUL, aligned_bytes_after_lookahead_long SUCCESSFUL, fast_decode_matches_slow SUCCESSFUL
+- `src/bitio.rs:147:39: replace / with % in BitReader<'a>::refill` (tests catch it) — aligned_bytes_after_lookahead_short SUCCESSFUL, aligned_bytes_after_lookahead_long SUCCESSFUL, fast_decode_matches_slow SUCCESSFUL
+- `src/bitio.rs:151:27: replace << with >> in BitReader<'a>::refill` (tests catch it) — aligned_bytes_after_lookahead_long SUCCESSFUL
+- `src/bitio.rs:157:35: replace < with <= in BitReader<'a>::refill` (tests miss it too) — aligned_bytes_after_lookahead_short SUCCESSFUL, fast_decode_matches_slow SUCCESSFUL
+- `src/bitio.rs:169:22: replace > with == in BitReader<'a>::read_bits` (tests miss it too) — reader_eof_is_exact SUCCESSFUL, read_bits_matches_read_bit SUCCESSFUL, aligned_bytes_roundtrip SUCCESSFUL, write_then_read_roundtrip SUCCESSFUL, aligned_bytes_after_lookahead_short SUCCESSFUL, aligned_bytes_after_lookahead_long SUCCESSFUL, stored_block_semantics SUCCESSFUL, roundtrip_stored SUCCESSFUL, fixed_tokens_have_the_rfc_layout SUCCESSFUL, encode_then_decode_symbol SUCCESSFUL
+- `src/bitio.rs:169:22: replace > with >= in BitReader<'a>::read_bits` (tests miss it too) — reader_eof_is_exact SUCCESSFUL, read_bits_matches_read_bit SUCCESSFUL, aligned_bytes_roundtrip SUCCESSFUL, write_then_read_roundtrip SUCCESSFUL, aligned_bytes_after_lookahead_short SUCCESSFUL, aligned_bytes_after_lookahead_long SUCCESSFUL, stored_block_semantics SUCCESSFUL, roundtrip_stored SUCCESSFUL, fixed_tokens_have_the_rfc_layout SUCCESSFUL, encode_then_decode_symbol SUCCESSFUL
+- `src/bitio.rs:170:23: replace < with <= in BitReader<'a>::read_bits` (tests miss it too) — reader_eof_is_exact SUCCESSFUL, read_bits_matches_read_bit SUCCESSFUL, aligned_bytes_roundtrip SUCCESSFUL, write_then_read_roundtrip SUCCESSFUL, aligned_bytes_after_lookahead_short SUCCESSFUL, aligned_bytes_after_lookahead_long SUCCESSFUL, stored_block_semantics SUCCESSFUL, roundtrip_stored SUCCESSFUL, fixed_tokens_have_the_rfc_layout SUCCESSFUL, encode_then_decode_symbol SUCCESSFUL
+- `src/bitio.rs:201:23: replace < with <= in BitReader<'a>::peek` (tests miss it too) — aligned_bytes_after_lookahead_short SUCCESSFUL, aligned_bytes_after_lookahead_long SUCCESSFUL, fast_decode_matches_slow SUCCESSFUL
+- `src/bitio.rs:201:23: replace < with == in BitReader<'a>::peek` (tests miss it too) — aligned_bytes_after_lookahead_short SUCCESSFUL, aligned_bytes_after_lookahead_long SUCCESSFUL, fast_decode_matches_slow SUCCESSFUL
+- `src/bitio.rs:201:23: replace < with > in BitReader<'a>::peek` (tests miss it too) — aligned_bytes_after_lookahead_short SUCCESSFUL, aligned_bytes_after_lookahead_long SUCCESSFUL, fast_decode_matches_slow SUCCESSFUL
+- `src/bitio.rs:212:9: replace BitReader<'a>::available -> u32 with 0` (tests miss it too) — fast_decode_matches_slow SUCCESSFUL
+- `src/bitio.rs:239:24: replace < with <= in BitReader<'a>::read_aligned_bytes` (tests miss it too) — aligned_bytes_roundtrip SUCCESSFUL, aligned_bytes_after_lookahead_short SUCCESSFUL, aligned_bytes_after_lookahead_long SUCCESSFUL, stored_block_semantics SUCCESSFUL, roundtrip_stored SUCCESSFUL
+- `src/bitio.rs:260:18: replace - with + in BitReader<'a>::bytes_consumed` (tests catch it) — aligned_bytes_roundtrip SUCCESSFUL, aligned_bytes_after_lookahead_short SUCCESSFUL, aligned_bytes_after_lookahead_long SUCCESSFUL, stored_block_semantics SUCCESSFUL, roundtrip_stored SUCCESSFUL
+- `src/bitio.rs:279:13: replace < with <= in padded_word` (tests miss it too) — aligned_bytes_after_lookahead_short SUCCESSFUL, fast_decode_matches_slow SUCCESSFUL
+- `src/bitio.rs:30:9: replace BitWriter::with_capacity -> Self with Default::default()` (tests miss it too) — stored_cost_is_exact SUCCESSFUL, roundtrip_stored SUCCESSFUL, stored_cost_adds_up_across_blocks SUCCESSFUL
+- `src/bitio.rs:39:22: replace > with == in BitWriter::write_bits` (tests miss it too) — aligned_bytes_roundtrip SUCCESSFUL, write_then_read_roundtrip SUCCESSFUL, aligned_bytes_after_lookahead_short SUCCESSFUL, aligned_bytes_after_lookahead_long SUCCESSFUL, stored_cost_is_exact SUCCESSFUL, roundtrip_stored SUCCESSFUL, fixed_tokens_have_the_rfc_layout SUCCESSFUL, stored_cost_adds_up_across_blocks SUCCESSFUL
+- `src/bitio.rs:39:22: replace > with >= in BitWriter::write_bits` (tests miss it too) — aligned_bytes_roundtrip SUCCESSFUL, write_then_read_roundtrip SUCCESSFUL, aligned_bytes_after_lookahead_short SUCCESSFUL, aligned_bytes_after_lookahead_long SUCCESSFUL, stored_cost_is_exact SUCCESSFUL, roundtrip_stored SUCCESSFUL, fixed_tokens_have_the_rfc_layout SUCCESSFUL, stored_cost_adds_up_across_blocks SUCCESSFUL
+- `src/bitio.rs:65:23: replace > with >= in BitWriter::pad_to_byte` (tests miss it too) — aligned_bytes_roundtrip SUCCESSFUL, write_then_read_roundtrip SUCCESSFUL, aligned_bytes_after_lookahead_short SUCCESSFUL, aligned_bytes_after_lookahead_long SUCCESSFUL, stored_cost_is_exact SUCCESSFUL, roundtrip_stored SUCCESSFUL, fixed_tokens_have_the_rfc_layout SUCCESSFUL, stored_cost_adds_up_across_blocks SUCCESSFUL
+- `src/deflate.rs:120:26: replace * with +` (tests catch it) — roundtrip_stored SUCCESSFUL
+- `src/deflate.rs:120:26: replace * with /` (tests catch it) — roundtrip_stored SUCCESSFUL
+- `src/deflate.rs:123:44: replace * with +` (tests catch it) — roundtrip_stored SUCCESSFUL
+- `src/deflate.rs:123:44: replace * with /` (tests catch it) — roundtrip_stored SUCCESSFUL
+- `src/deflate.rs:262:48: replace | with ^ in CodeTable<N>::put_with_extra` (tests miss it too) — fixed_tokens_have_the_rfc_layout SUCCESSFUL
+- `src/deflate.rs:316:28: replace && with || in write_stored_in` (tests catch it) — stored_cost_is_exact SUCCESSFUL, stored_cost_adds_up_across_blocks SUCCESSFUL, roundtrip_stored SUCCESSFUL
+- `src/deflate.rs:431:16: replace > with < in rle_code_lengths` (tests miss it too) — code_length_rle_roundtrip SUCCESSFUL, code_length_rle_zero_runs SUCCESSFUL
+- `src/deflate.rs:431:16: replace > with == in rle_code_lengths` (tests miss it too) — code_length_rle_roundtrip SUCCESSFUL, code_length_rle_zero_runs SUCCESSFUL
+- `src/deflate.rs:431:16: replace > with >= in rle_code_lengths` (tests miss it too) — code_length_rle_roundtrip SUCCESSFUL, code_length_rle_zero_runs SUCCESSFUL
+- `src/deflate.rs:435:16: replace > with >= in rle_code_lengths` (tests miss it too) — code_length_rle_roundtrip SUCCESSFUL, code_length_rle_zero_runs SUCCESSFUL
+- `src/deflate.rs:441:12: replace > with >= in rle_code_lengths` (tests miss it too) — code_length_rle_roundtrip SUCCESSFUL, code_length_rle_zero_runs SUCCESSFUL
+- `src/deflate.rs:457:26: replace < with <= in emit_run` (tests miss it too) — code_length_rle_zero_runs SUCCESSFUL
+- `src/deflate.rs:473:26: replace < with <= in emit_run` (tests miss it too) — code_length_rle_roundtrip SUCCESSFUL, code_length_rle_zero_runs SUCCESSFUL
+- `src/deflate.rs:88:34: replace == with != in encode_with_matcher` (tests catch it) — roundtrip_stored SUCCESSFUL
+- `src/huffman.rs:161:10: replace > with < in build_lengths_in` (tests catch it) — build_lengths_full_range_frequencies SUCCESSFUL, build_lengths_rejects_impossible_limit SUCCESSFUL, build_lengths_tight_limit SUCCESSFUL, build_lengths_complete_and_limited SUCCESSFUL
+- `src/huffman.rs:167:10: replace < with <= in build_lengths_in` (tests catch it) — build_lengths_full_range_frequencies SUCCESSFUL, build_lengths_rejects_impossible_limit SUCCESSFUL, build_lengths_tight_limit SUCCESSFUL, build_lengths_complete_and_limited SUCCESSFUL
+- `src/huffman.rs:167:10: replace < with == in build_lengths_in` (tests catch it) — build_lengths_full_range_frequencies SUCCESSFUL, build_lengths_rejects_impossible_limit SUCCESSFUL, build_lengths_tight_limit SUCCESSFUL, build_lengths_complete_and_limited SUCCESSFUL
+- `src/huffman.rs:167:14: replace || with && in build_lengths_in` (tests miss it too) — build_lengths_full_range_frequencies SUCCESSFUL, build_lengths_rejects_impossible_limit SUCCESSFUL, build_lengths_tight_limit SUCCESSFUL, build_lengths_complete_and_limited SUCCESSFUL
+- `src/huffman.rs:220:15: replace > with >= in limit_depths` (tests miss it too) — limit_depths_keeps_code_complete SUCCESSFUL, build_lengths_full_range_frequencies SUCCESSFUL, build_lengths_tight_limit SUCCESSFUL, build_lengths_complete_and_limited SUCCESSFUL
+- `src/huffman.rs:233:41: replace > with < in limit_depths` (tests miss it too) — limit_depths_keeps_code_complete SUCCESSFUL, build_lengths_complete_and_limited SUCCESSFUL
+- `src/huffman.rs:233:41: replace > with == in limit_depths` (tests catch it) — limit_depths_keeps_code_complete SUCCESSFUL, build_lengths_complete_and_limited SUCCESSFUL
+- `src/huffman.rs:233:41: replace > with >= in limit_depths` (tests catch it) — limit_depths_keeps_code_complete SUCCESSFUL, build_lengths_complete_and_limited SUCCESSFUL
+- `src/huffman.rs:233:52: replace || with && in limit_depths` (tests catch it) — limit_depths_keeps_code_complete SUCCESSFUL, build_lengths_tight_limit SUCCESSFUL, build_lengths_complete_and_limited SUCCESSFUL
+- `src/huffman.rs:233:65: replace == with != in limit_depths` (tests catch it) — limit_depths_keeps_code_complete SUCCESSFUL, build_lengths_complete_and_limited SUCCESSFUL
+- `src/huffman.rs:233:77: replace && with || in limit_depths` (tests catch it) — limit_depths_keeps_code_complete SUCCESSFUL, build_lengths_tight_limit SUCCESSFUL, build_lengths_complete_and_limited SUCCESSFUL
+- `src/huffman.rs:233:90: replace < with <= in limit_depths` (tests miss it too) — limit_depths_keeps_code_complete SUCCESSFUL
+- `src/huffman.rs:233:90: replace < with == in limit_depths` (tests catch it) — limit_depths_keeps_code_complete SUCCESSFUL
+- `src/huffman.rs:233:90: replace < with > in limit_depths` (tests catch it) — limit_depths_keeps_code_complete SUCCESSFUL
+- `src/huffman.rs:250:25: replace > with >= in limit_depths` (tests miss it too) — limit_depths_keeps_code_complete SUCCESSFUL
+- `src/huffman.rs:253:41: replace > with >= in limit_depths` (tests catch it) — limit_depths_keeps_code_complete SUCCESSFUL
+- `src/huffman.rs:253:65: replace == with != in limit_depths` (tests catch it) — limit_depths_keeps_code_complete SUCCESSFUL
+- `src/huffman.rs:253:77: replace && with || in limit_depths` (tests catch it) — limit_depths_keeps_code_complete SUCCESSFUL
+- `src/huffman.rs:253:90: replace > with < in limit_depths` (tests catch it) — limit_depths_keeps_code_complete SUCCESSFUL
+- `src/huffman.rs:253:90: replace > with == in limit_depths` (tests miss it too) — limit_depths_keeps_code_complete SUCCESSFUL
+- `src/huffman.rs:253:90: replace > with >= in limit_depths` (tests miss it too) — limit_depths_keeps_code_complete SUCCESSFUL
+- `src/huffman.rs:261:23: replace << with >> in limit_depths` (tests miss it too) — limit_depths_keeps_code_complete SUCCESSFUL
+- `src/huffman.rs:261:35: replace - with + in limit_depths` (tests catch it) — limit_depths_keeps_code_complete SUCCESSFUL
+- `src/huffman.rs:261:35: replace - with / in limit_depths` (tests catch it) — limit_depths_keeps_code_complete SUCCESSFUL
+- `src/huffman.rs:292:40: replace > with >= in huffman_depths` (tests miss it too) — build_lengths_full_range_frequencies SUCCESSFUL, build_lengths_tight_limit SUCCESSFUL, build_lengths_complete_and_limited SUCCESSFUL
+- `src/huffman.rs:301:23: replace - with + in huffman_depths` (tests miss it too) — build_lengths_full_range_frequencies SUCCESSFUL, build_lengths_tight_limit SUCCESSFUL, build_lengths_complete_and_limited SUCCESSFUL
+- `src/huffman.rs:301:23: replace - with / in huffman_depths` (tests miss it too) — build_lengths_full_range_frequencies SUCCESSFUL, build_lengths_tight_limit SUCCESSFUL, build_lengths_complete_and_limited SUCCESSFUL
+- `src/huffman.rs:318:29: replace < with > in take_lightest` (tests miss it too) — build_lengths_full_range_frequencies SUCCESSFUL, build_lengths_tight_limit SUCCESSFUL, build_lengths_complete_and_limited SUCCESSFUL
+- `src/huffman.rs:319:59: replace <= with > in take_lightest` (tests catch it) — build_lengths_full_range_frequencies SUCCESSFUL, build_lengths_tight_limit SUCCESSFUL, build_lengths_complete_and_limited SUCCESSFUL
+- `src/huffman.rs:339:15: replace > with >= in sort_by_weight` (tests miss it too) — build_lengths_full_range_frequencies SUCCESSFUL, sort_by_weight_sorts SUCCESSFUL, build_lengths_tight_limit SUCCESSFUL, build_lengths_complete_and_limited SUCCESSFUL
+- `src/huffman.rs:377:24: replace > with >= in heavier` (tests miss it too) — sort_by_weight_sorts SUCCESSFUL
+- `src/huffman.rs:421:110: replace << with >>` (tests miss it too) — sort_by_weight_sorts SUCCESSFUL
+- `src/huffman.rs:446:23: replace << with >> in Canonical::rebuild` (tests miss it too) — fast_decode_matches_slow SUCCESSFUL, decode_arbitrary_bits SUCCESSFUL, decoder_new_never_panics SUCCESSFUL, encode_then_decode_symbol SUCCESSFUL
+- `src/huffman.rs:460:30: replace - with + in Canonical::rebuild` (tests catch it) — fast_decode_matches_slow SUCCESSFUL, decode_arbitrary_bits SUCCESSFUL, decoder_new_never_panics SUCCESSFUL, encode_then_decode_symbol SUCCESSFUL
+- `src/huffman.rs:474:44: replace + with * in Canonical::rebuild` (tests miss it too) — fast_decode_matches_slow SUCCESSFUL, decode_arbitrary_bits SUCCESSFUL, decoder_new_never_panics SUCCESSFUL, encode_then_decode_symbol SUCCESSFUL
+- `src/huffman.rs:58:5: replace is_complete -> bool with true` (tests miss it too) — build_lengths_full_range_frequencies SUCCESSFUL, build_lengths_tight_limit SUCCESSFUL, build_lengths_complete_and_limited SUCCESSFUL
+- `src/huffman.rs:605:31: replace > with == in Decoder::rebuild_with_fast_bits` (tests miss it too) — fast_decode_matches_slow SUCCESSFUL, decoder_new_never_panics SUCCESSFUL
+- `src/huffman.rs:605:31: replace > with >= in Decoder::rebuild_with_fast_bits` (tests miss it too) — fast_decode_matches_slow SUCCESSFUL, decoder_new_never_panics SUCCESSFUL
+- `src/huffman.rs:623:17: replace < with == in Decoder::rebuild_with_fast_bits` (tests miss it too) — fast_decode_matches_slow SUCCESSFUL, decoder_new_never_panics SUCCESSFUL
+- `src/huffman.rs:623:17: replace < with > in Decoder::rebuild_with_fast_bits` (tests miss it too) — fast_decode_matches_slow SUCCESSFUL, decoder_new_never_panics SUCCESSFUL
+- `src/huffman.rs:625:18: replace != with == in Decoder::rebuild_with_fast_bits` (tests miss it too) — fast_decode_matches_slow SUCCESSFUL, decoder_new_never_panics SUCCESSFUL
+- `src/huffman.rs:630:31: replace < with == in Decoder::rebuild_with_fast_bits` (tests miss it too) — fast_decode_matches_slow SUCCESSFUL, decoder_new_never_panics SUCCESSFUL
+- `src/huffman.rs:630:31: replace < with > in Decoder::rebuild_with_fast_bits` (tests miss it too) — fast_decode_matches_slow SUCCESSFUL, decoder_new_never_panics SUCCESSFUL
+- `src/huffman.rs:630:36: replace << with >> in Decoder::rebuild_with_fast_bits` (tests miss it too) — fast_decode_matches_slow SUCCESSFUL, decoder_new_never_panics SUCCESSFUL
+- `src/huffman.rs:631:54: replace << with >> in Decoder::rebuild_with_fast_bits` (tests miss it too) — fast_decode_matches_slow SUCCESSFUL, decoder_new_never_panics SUCCESSFUL
+- `src/huffman.rs:631:61: replace | with & in Decoder::rebuild_with_fast_bits` (tests miss it too) — fast_decode_matches_slow SUCCESSFUL, decoder_new_never_panics SUCCESSFUL
+- `src/huffman.rs:631:61: replace | with ^ in Decoder::rebuild_with_fast_bits` (tests miss it too) — fast_decode_matches_slow SUCCESSFUL, decoder_new_never_panics SUCCESSFUL
+- `src/huffman.rs:667:31: replace >> with << in Decoder::decode` (tests miss it too) — fast_decode_matches_slow SUCCESSFUL
+- `src/inflate.rs:107:31: replace - with + in Output::reserve` (tests catch it) — stored_block_semantics SUCCESSFUL, roundtrip_stored SUCCESSFUL
+- `src/lz77.rs:133:100: replace << with >> in Matcher::hash` (tests miss it too) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:133:38: replace | with & in Matcher::hash` (tests catch it) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:133:38: replace | with ^ in Matcher::hash` (tests miss it too) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:133:60: replace + with * in Matcher::hash` (tests miss it too) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:133:66: replace << with >> in Matcher::hash` (tests miss it too) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:133:72: replace | with & in Matcher::hash` (tests miss it too) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:133:72: replace | with ^ in Matcher::hash` (tests miss it too) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:133:9: replace Matcher::hash -> usize with 0` (tests catch it) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:133:9: replace Matcher::hash -> usize with 1` (tests catch it) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:140:28: replace > with >= in Matcher::bucket` (tests miss it too) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:140:9: replace Matcher::bucket -> Option<usize> with Some(0)` (tests catch it) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:140:9: replace Matcher::bucket -> Option<usize> with Some(1)` (tests catch it) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:151:27: replace & with ^ in Matcher::insert_at` (tests catch it) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:151:27: replace & with | in Matcher::insert_at` (tests catch it) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:151:42: replace - with + in Matcher::insert_at` (tests catch it) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:151:42: replace - with / in Matcher::insert_at` (tests catch it) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:159:16: replace < with <= in Matcher::max_dist` (tests miss it too) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:209:32: replace < with <= in Matcher::longest_match` (tests miss it too) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:229:32: replace - with + in Matcher::longest_match` (tests catch it) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:229:32: replace - with / in Matcher::longest_match` (tests catch it) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:230:21: replace > with >= in Matcher::longest_match` (tests catch it) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:242:26: replace + with * in Matcher::longest_match` (tests catch it) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:244:24: replace > with >= in Matcher::longest_match` (tests miss it too) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:247:28: replace >= with < in Matcher::longest_match` (tests catch it) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:253:30: replace & with ^ in Matcher::longest_match` (tests catch it) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL
+- `src/lz77.rs:253:30: replace & with | in Matcher::longest_match` (tests catch it) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL
+- `src/lz77.rs:254:19: replace -= with += in Matcher::longest_match` (tests miss it too) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL
+- `src/lz77.rs:254:19: replace -= with /= in Matcher::longest_match` (tests miss it too) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL
+- `src/lz77.rs:256:39: replace < with <= in Matcher::longest_match` (tests miss it too) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:256:39: replace < with == in Matcher::longest_match` (tests miss it too) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:310:65: replace - with + in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:310:65: replace - with / in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:319:30: replace && with || in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:319:37: replace < with <= in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:319:37: replace < with == in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:319:37: replace < with > in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:319:57: replace && with || in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:319:64: replace + with * in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:319:64: replace + with - in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:319:68: replace < with <= in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:319:68: replace < with == in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:319:68: replace < with > in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:320:36: replace >= with < in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:320:78: replace / with % in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_small_tables SUCCESSFUL
+- `src/lz77.rs:320:78: replace / with * in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_small_tables SUCCESSFUL
+- `src/lz77.rs:320:82: replace + with * in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_small_tables SUCCESSFUL
+- `src/lz77.rs:321:60: replace + with * in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:321:60: replace + with - in Matcher::tokenize` (tests catch it) — tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:321:87: replace + with * in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:321:87: replace + with - in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:333:43: replace || with && in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:333:50: replace <= with > in Matcher::tokenize` (tests miss it too) — tokens_valid_and_replay_greedy SUCCESSFUL
+- `src/lz77.rs:357:16: replace > with < in tokenize_runs` (tests catch it) — rle_tokens_valid_and_replay SUCCESSFUL
+- `src/lz77.rs:357:33: replace == with != in tokenize_runs` (tests catch it) — rle_tokens_valid_and_replay SUCCESSFUL
+- `src/lz77.rs:357:45: replace - with / in tokenize_runs` (tests miss it too) — rle_tokens_valid_and_replay SUCCESSFUL
+- `src/lz77.rs:358:32: replace - with + in tokenize_runs` (tests catch it) — rle_tokens_valid_and_replay SUCCESSFUL
+- `src/lz77.rs:358:32: replace - with / in tokenize_runs` (tests catch it) — rle_tokens_valid_and_replay SUCCESSFUL
+- `src/lz77.rs:358:38: replace < with <= in tokenize_runs` (tests miss it too) — rle_tokens_valid_and_replay SUCCESSFUL
+- `src/lz77.rs:360:52: replace - with / in tokenize_runs` (tests miss it too) — rle_tokens_valid_and_replay SUCCESSFUL
+- `src/lz77.rs:382:26: replace < with <= in common_prefix` (tests miss it too) — common_prefix_matches_reference SUCCESSFUL, rle_tokens_valid_and_replay SUCCESSFUL, tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:384:13: replace + with * in common_prefix` (tests miss it too) — common_prefix_matches_reference SUCCESSFUL, rle_tokens_valid_and_replay SUCCESSFUL, tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:384:17: replace <= with > in common_prefix` (tests miss it too) — common_prefix_matches_reference SUCCESSFUL, rle_tokens_valid_and_replay SUCCESSFUL, tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, tokens_valid_and_replay_small_tables SUCCESSFUL, runs_are_matched SUCCESSFUL
+- `src/lz77.rs:437:12: replace <= with > in copy_within_buffer` (tests catch it) — copy_within_buffer_meets_spec SUCCESSFUL, short_copy_meets_spec SUCCESSFUL
+- `src/lz77.rs:461:37: replace < with <= in copy_within_buffer` (tests miss it too) — copy_within_buffer_meets_spec SUCCESSFUL
+- `src/lz77.rs:71:13: delete match arm 0 | 1 in MatchConfig::for_level` (tests catch it) — no_chain_means_literals_only SUCCESSFUL, rle_tokens_valid_and_replay SUCCESSFUL, tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, runs_are_matched SUCCESSFUL, roundtrip_stored SUCCESSFUL
+- `src/lz77.rs:72:13: delete match arm 2 in MatchConfig::for_level` (tests catch it) — no_chain_means_literals_only SUCCESSFUL, rle_tokens_valid_and_replay SUCCESSFUL, tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, runs_are_matched SUCCESSFUL, roundtrip_stored SUCCESSFUL
+- `src/lz77.rs:73:13: delete match arm 3 in MatchConfig::for_level` (tests catch it) — no_chain_means_literals_only SUCCESSFUL, rle_tokens_valid_and_replay SUCCESSFUL, tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, runs_are_matched SUCCESSFUL, roundtrip_stored SUCCESSFUL
+- `src/lz77.rs:74:13: delete match arm 4 in MatchConfig::for_level` (tests catch it) — no_chain_means_literals_only SUCCESSFUL, rle_tokens_valid_and_replay SUCCESSFUL, tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, runs_are_matched SUCCESSFUL, roundtrip_stored SUCCESSFUL
+- `src/lz77.rs:75:13: delete match arm 5 in MatchConfig::for_level` (tests catch it) — no_chain_means_literals_only SUCCESSFUL, rle_tokens_valid_and_replay SUCCESSFUL, tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, runs_are_matched SUCCESSFUL, roundtrip_stored SUCCESSFUL
+- `src/lz77.rs:76:13: delete match arm 6 in MatchConfig::for_level` (tests catch it) — no_chain_means_literals_only SUCCESSFUL, rle_tokens_valid_and_replay SUCCESSFUL, tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, runs_are_matched SUCCESSFUL, roundtrip_stored SUCCESSFUL
+- `src/lz77.rs:77:13: delete match arm 7 in MatchConfig::for_level` (tests catch it) — no_chain_means_literals_only SUCCESSFUL, rle_tokens_valid_and_replay SUCCESSFUL, tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, runs_are_matched SUCCESSFUL, roundtrip_stored SUCCESSFUL
+- `src/lz77.rs:78:13: delete match arm 8 in MatchConfig::for_level` (tests catch it) — no_chain_means_literals_only SUCCESSFUL, rle_tokens_valid_and_replay SUCCESSFUL, tokens_valid_and_replay_greedy SUCCESSFUL, tokens_valid_and_replay_level9 SUCCESSFUL, runs_are_matched SUCCESSFUL, roundtrip_stored SUCCESSFUL
+- `src/zip.rs:239:47: replace | with ^ in DosDateTime::to_dos` (tests miss it too) — dos_datetime_roundtrip SUCCESSFUL
+- `src/zip.rs:239:77: replace | with ^ in DosDateTime::to_dos` (tests miss it too) — dos_datetime_roundtrip SUCCESSFUL
+- `src/zip.rs:23:33: replace << with >>` (tests catch it) — find_eocd_is_sound SUCCESSFUL, header_parsers_never_panic SUCCESSFUL, eocd_roundtrip SUCCESSFUL, local_header_roundtrip SUCCESSFUL, central_header_roundtrip SUCCESSFUL
+- `src/zip.rs:23:39: replace | with &` (tests catch it) — find_eocd_is_sound SUCCESSFUL, header_parsers_never_panic SUCCESSFUL, eocd_roundtrip SUCCESSFUL, local_header_roundtrip SUCCESSFUL, central_header_roundtrip SUCCESSFUL
+- `src/zip.rs:23:39: replace | with ^` (tests miss it too) — find_eocd_is_sound SUCCESSFUL, header_parsers_never_panic SUCCESSFUL, eocd_roundtrip SUCCESSFUL, local_header_roundtrip SUCCESSFUL, central_header_roundtrip SUCCESSFUL
+- `src/zip.rs:240:65: replace | with ^ in DosDateTime::to_dos` (tests miss it too) — dos_datetime_roundtrip SUCCESSFUL
+- `src/zip.rs:240:94: replace | with ^ in DosDateTime::to_dos` (tests miss it too) — dos_datetime_roundtrip SUCCESSFUL
+- `src/zip.rs:25:26: replace << with >>` (tests catch it) — find_eocd_is_sound SUCCESSFUL, header_parsers_never_panic SUCCESSFUL, eocd_roundtrip SUCCESSFUL, local_header_roundtrip SUCCESSFUL, central_header_roundtrip SUCCESSFUL
+- `src/zip.rs:262:25: replace < with <= in DosDateTime::from_unix_seconds` (tests miss it too) — unix_time_always_valid SUCCESSFUL, unix_time_converts_exactly SUCCESSFUL
+- `src/zip.rs:264:24: replace > with >= in DosDateTime::from_unix_seconds` (tests miss it too) — unix_time_always_valid SUCCESSFUL, unix_time_converts_exactly SUCCESSFUL
+- `src/zip.rs:510:32: replace > with == in name_is_safe` (tests catch it) — validate_name_is_exactly_the_rule SUCCESSFUL
+- `src/zip.rs:510:32: replace > with >= in name_is_safe` (tests catch it) — validate_name_is_exactly_the_rule SUCCESSFUL
+- `src/zip.rs:760:19: replace < with <= in find_eocd` (tests catch it) — find_eocd_is_sound SUCCESSFUL
+- `src/zip.rs:796:58: replace + with * in record_bounds` (tests catch it) — record_bounds_sound SUCCESSFUL
+
+## Undetermined (1)
+
+- `src/deflate.rs:90:17: replace == with != in encode_with_matcher` (tests catch it) — roundtrip_stored ERROR(-15)
