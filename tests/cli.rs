@@ -199,7 +199,7 @@ fn options_times_modes_and_reports() {
     fs::write(dir.join("bad.zip"), &bad).unwrap();
     let out = vzip(&["test", "bad.zip"], &dir);
     assert!(!out.status.success());
-    assert!(String::from_utf8_lossy(&out.stderr).contains("1 of 1 entries failed"));
+    assert_eq!(String::from_utf8_lossy(&out.stderr).trim(), "vzip: 1 of 1 entries failed");
 
     // Raw `deflate -0`: one stored block, five bytes of framing.
     let sh = |cmd: &str| {

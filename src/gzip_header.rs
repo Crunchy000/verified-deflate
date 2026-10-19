@@ -308,11 +308,12 @@ mod tests {
             .comment("hi")
             .os(FileSystemType::Apple)
             .into_header_xfl(ExtraFlags::MaximumCompression);
-        let mut want = vec![0x1f, 0x8b, 8, FEXTRA | FNAME | FCOMMENT, 1, 2, 3, 4, 2, 19, 2, 0, 9, 9];
+        // RFC 1952 flag bits: FHCRC 0x02, FEXTRA 0x04, FNAME 0x08, FCOMMENT 0x10.
+        let mut want = vec![0x1f, 0x8b, 8, 0x04 | 0x08 | 0x10, 1, 2, 3, 4, 2, 19, 2, 0, 9, 9];
         want.extend_from_slice(b"a.txt\0hi\0");
         assert_eq!(h, want);
         let c = GzBuilder::new().os(FileSystemType::Fat).into_header_with_checksum();
-        assert_eq!(c[3], FHCRC);
+        assert_eq!(c[3], 0x02);
         assert_eq!(&c[10..], &(crc32(&c[..10]) as u16).to_le_bytes());
     }
 

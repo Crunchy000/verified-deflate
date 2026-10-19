@@ -681,6 +681,7 @@ impl Decoder {
 /// Stub for [`Decoder::decode`] in harnesses whose codes are too large
 /// for the table lookup to be checked symbolically: the canonical walk
 /// alone. `fast_decode_matches_slow` proves the table changes nothing.
+#[cfg_attr(mutants, mutants::skip)] // proof code: the checker, not code under test
 #[cfg(kani)]
 // Stubs are not applied when sampling, and the one harness using this is
 // in the extended set.
