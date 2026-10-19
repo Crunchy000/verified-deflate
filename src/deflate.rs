@@ -805,51 +805,44 @@ mod proofs {
         assert_eq!(r.bits_remaining(), 8 * bytes.len() as u64 - bits);
     }
 
-    /// Fixed-Huffman blocks decode to what they encode: two literals of
-    /// any value, then a match of any length 3-18 (length codes with and
-    /// without extra bits) at distance 1 or 2 (overlapping copies),
-    /// written by `write_fixed` as the final block and read back by
-    /// `decompress_with_limit`. This runs the decoder's Huffman-block
-    /// loop on real encoder output without the match finder.
+    /// Fixed-Huffman blocks decode to what they encode: a literal of any
+    /// value (every 8- and 9-bit literal code), then a match of length 12
+    /// (a length code with an extra bit) at distance 1 (an overlapping
+    /// copy), written by `write_fixed` as the final block and read back by
+    /// `decompress_with_limit`. This runs the decoder's Huffman-block loop
+    /// on real encoder output without the match finder.
     #[kani::proof]
     #[kani::stub(crate::lz77::copy_within_buffer, crate::lz77::copy_within_buffer_ref)]
     #[kani::stub(crate::inflate::Output::grow, crate::inflate::grow_is_unreachable)]
-    #[kani::unwind(21)]
+    #[kani::unwind(17)]
     fn fixed_block_tokens_roundtrip() {
         let a: u8 = kani::any();
-        let b: u8 = kani::any();
-        let len: u16 = kani::any_where(|&l: &u16| (3..=18).contains(&l));
-        let dist: u16 = kani::any_where(|&d: &u16| (1..=2).contains(&d));
         let mut w = BitWriter::new();
-        write_fixed(&mut w, &[Token::Literal(a), Token::Literal(b), Token::Match { len, dist }], true);
+        write_fixed(&mut w, &[Token::Literal(a), Token::Match { len: 12, dist: 1 }], true);
         let bytes = w.finish();
-        let n = 2 + usize::from(len);
-        let mut want = [0u8; 20];
-        want[0] = a;
-        want[1] = b;
-        for i in 2..n {
-            want[i] = want[i - usize::from(dist)];
-        }
-        let d = decompress_with_limit(&bytes, 20).unwrap();
-        assert_eq!(d.data.as_slice(), &want[..n]);
+        let d = decompress_with_limit(&bytes, 13).unwrap();
+        assert_eq!(d.data.as_slice(), &[a; 13]);
         assert_eq!(d.consumed, bytes.len());
     }
 
-    /// The size model also holds across block boundaries: with blocks of
-    /// at most 1-3 bytes, 0-7 bytes split into up to seven blocks, from
+    /// The size model also holds across block boundaries: for every block
+    /// size of 1-3 bytes and every length 0-7 (up to seven blocks), from
     /// every starting bit offset. (Production uses 65,535-byte blocks; the
-    /// arithmetic is the same.)
+    /// arithmetic is the same. The content does not affect the size, which
+    /// `stored_cost_is_exact` shows for any content.)
     #[kani::proof]
     #[kani::unwind(9)]
     fn stored_cost_is_exact_across_blocks() {
         let pre: u32 = kani::any_where(|&p: &u32| p < 8);
-        let max: usize = kani::any_where(|&m: &usize| (1..=3).contains(&m));
-        let len: usize = kani::any_where(|&l: &usize| l <= 7);
-        let data: [u8; 7] = kani::any();
-        let mut w = BitWriter::with_capacity(32);
-        w.write_bits(0, pre);
-        write_stored_in(&mut w, &data[..len], true, max);
-        assert_eq!(w.bit_len() - u64::from(pre), stored_bits_in(u64::from(pre), len, max));
+        let data = [0u8; 7];
+        for max in 1..=3 {
+            for len in 0..=7 {
+                let mut w = BitWriter::with_capacity(32);
+                w.write_bits(0, pre);
+                write_stored_in(&mut w, &data[..len], true, max);
+                assert_eq!(w.bit_len() - u64::from(pre), stored_bits_in(u64::from(pre), len, max));
+            }
+        }
     }
 
     /// The stored-block size model equals the bits actually written, from

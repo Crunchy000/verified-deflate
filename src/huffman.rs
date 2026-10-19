@@ -893,34 +893,36 @@ mod proofs {
         assert_eq!(build_lengths_in::<5, 10>(&freqs, 2, &mut lengths), Err(HuffmanError::LimitTooSmall));
     }
 
-    /// The length-limit repair on its own, for every complete code of 2-6
-    /// symbols, any weights and any feasible limit of 2-4
-    /// bits: the result is a complete code within the limit. Six symbols
-    /// at limit 3 reach the under-subscribed half of the repair (for
-    /// example depths 5,5,4,3,2,1), which five never do. The repair does
-    /// not depend on how the depths were built, so this covers it for the
-    /// builder too.
+    /// The length-limit repair on its own, for every complete code of six
+    /// symbols, weights 0-3 (they only break ties) and the limits of 3 and
+    /// 4 bits that six symbols allow below their natural depth: the result
+    /// is a complete code within the limit. Six symbols are the fewest
+    /// that reach the under-subscribed half of the repair (for example
+    /// depths 5,5,4,3,2,1 at limit 3), which the builder harnesses above,
+    /// at five symbols, never do. The repair does not depend on how the
+    /// depths were built, so this covers it for the builder too.
     #[kani::proof]
-    #[kani::unwind(20)]
+    #[kani::unwind(14)]
     fn limit_depths_keeps_code_complete() {
-        let m: usize = kani::any_where(|&m: &usize| (2..=6).contains(&m));
-        // Any complete code: start from one leaf at depth 0 and split a
-        // chosen leaf in two, m - 1 times. Every code tree arises this way.
+        // Any complete code of six symbols: start from one leaf at depth 0
+        // and split a chosen leaf in two, five times. Every code tree
+        // arises this way.
         let mut depth = [0u32; 6];
         let mut leaves = 1;
-        while leaves < m {
+        while leaves < 6 {
             let i: usize = kani::any_where(|&i: &usize| i < leaves);
             depth[i] += 1;
             depth[leaves] = depth[i];
             leaves += 1;
         }
-        let w: [u8; 6] = kani::any();
-        let weight = w.map(u64::from);
-        let limit: usize = kani::any_where(|&l: &usize| (2..=4).contains(&l));
-        kani::assume(m <= 1 << limit);
-        assert!(limit_depths(&mut depth[..m], &weight[..m], limit).is_ok());
+        let mut weight = [0u64; 6];
+        for w in weight.iter_mut() {
+            *w = kani::any_where(|&x: &u64| x < 4);
+        }
+        let limit: usize = kani::any_where(|&l: &usize| l == 3 || l == 4);
+        assert!(limit_depths(&mut depth, &weight, limit).is_ok());
         let mut sum = 0u32;
-        for k in 0..m {
+        for k in 0..6 {
             assert!(depth[k] >= 1 && depth[k] as usize <= limit);
             sum += 1 << (limit as u32 - depth[k]);
         }

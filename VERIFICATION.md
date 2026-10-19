@@ -161,7 +161,7 @@ the zlib interop tests confirm the output is unchanged.
 | `build_lengths_full_range_frequencies` | Same for any `u32` frequencies over 3 symbols and any limit 2–15. |
 | `build_lengths_tight_limit` | Same for 4 symbols in 2 bits, where every skewed distribution needs repair. |
 | `build_lengths_rejects_impossible_limit` | Five used symbols with a 2-bit limit are refused rather than mis-coded. |
-| `limit_depths_keeps_code_complete` | The length-limit repair on its own, for every complete code of 2–6 symbols, any weights and any feasible limit of 2–4 bits: the result is a complete code within the limit. Six symbols are needed to reach the under-subscribed half of the repair (for example depths 5,5,4,3,2,1 at limit 3); five never reach it, so the builder harnesses above do not cover it. |
+| `limit_depths_keeps_code_complete` | The length-limit repair on its own, for every complete code of six symbols, weights 0–3 (they only break ties) and limits of 3 and 4 bits: the result is a complete code within the limit. Six symbols are the fewest that reach the under-subscribed half of the repair (for example depths 5,5,4,3,2,1 at limit 3). Five never do, so the builder harnesses above do not cover it. |
 | `decoder_new_never_panics` | For any lengths (0–255) over 8 symbols, the decoder builder never panics. It accepts exactly the lengths whose Kraft sum is ≤ 1 and reports completeness exactly. |
 | `encode_then_decode_symbol` | For any valid lengths over 6 symbols and any coded symbol, packing its canonical code as the encoder does and decoding returns that symbol. Exactly its length is consumed. |
 | `decode_arbitrary_bits` | Decoding arbitrary bits with any accepted lengths never panics, and only yields symbols that have codes. |
@@ -191,9 +191,9 @@ the zlib interop tests confirm the output is unchanged.
 | `code_length_rle_zero_runs` | Same for 12 lengths drawn from {0, v}, reaching the long-zero-run code 18. |
 | `fixed_code_table_matches_rfc` | The compile-time fixed code tables hold the RFC's canonical codes. |
 | `stored_cost_is_exact` | The stored-block size model equals the bits written, from any bit offset, for 0, 3 and 8 bytes of any content. |
-| `stored_cost_is_exact_across_blocks` | The same across block boundaries: with blocks of at most 1–3 bytes, 0–7 bytes split into up to seven blocks, from any bit offset. Production uses 65,535-byte blocks with the same arithmetic. |
+| `stored_cost_is_exact_across_blocks` | The same across block boundaries: every block size of 1–3 bytes and every length 0–7 (up to seven blocks), from any bit offset. Production uses 65,535-byte blocks with the same arithmetic. |
 | `fixed_tokens_have_the_rfc_layout` | For any literal, or any match of length 3–258 at distance 1–32768, the fixed-Huffman coder writes exactly RFC 1951's layout. That is the symbol's fixed code (most significant bit first), its extra bits, the distance's five-bit code and extra bits, then end of block. The expected codes are computed from the RFC's ranges, not from the tables. |
-| `fixed_block_tokens_roundtrip` | Two literals of any value, then a match of any length 3–18 (length codes with and without extra bits) at distance 1 or 2 (overlapping copies), written by `write_fixed` and decoded by the real decoder, give back exactly the bytes they stand for. This runs the decoder's Huffman-block loop on encoder output without the match finder. |
+| `fixed_block_tokens_roundtrip` | A literal of any value (every 8- and 9-bit literal code), then a match of length 12 (a length code with an extra bit) at distance 1 (an overlapping copy), written by `write_fixed` and decoded by the real decoder, gives back exactly the bytes it stands for. This runs the decoder's Huffman-block loop on encoder output without the match finder. |
 
 ### Decoder (`inflate`)
 
@@ -408,7 +408,7 @@ The gaps, stated precisely:
 - **Compressor-to-decompressor round trips are proven in CI for stored
   blocks and for fixed-Huffman tokens.**
   - The fixed-Huffman coder's bit layout is proven for every single token.
-  - Token sequences of two literals and a short match round-trip through the real decoder.
+  - A literal of any value followed by a match round-trips through the real decoder.
   - Round trips that include the match finder, and whole-archive round trips, are in the extended set. In CI they are covered compositionally: tokenizer validity, code tables, Huffman encode and decode, bit I/O.
   - Dynamic-Huffman blocks need more unrolling than a model checker handles at DEFLATE's alphabet sizes. They are covered by the length builder and run-length proofs on small alphabets, zlib interop, and `verify` at run time.
 - **Huffman construction is proven on alphabets of 3–6 symbols**, not on
