@@ -1,0 +1,4524 @@
+[
+ {
+  "name": "src/adler32.rs:74:24: replace | with ^ in Adler32::finalize",
+  "file": "src/adler32.rs",
+  "span": {
+   "start": {
+    "line": 74,
+    "column": 24
+   },
+   "end": {
+    "line": 74,
+    "column": 25
+   }
+  },
+  "replacement": "^",
+  "harnesses": [
+   "adler32::proofs::from_checksum_resumes",
+   "adler32::proofs::update_matches_bytewise"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/bitio.rs:126:17: replace < with <= in BitReader<'a>::fill",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 126,
+    "column": 17
+   },
+   "end": {
+    "line": 126,
+    "column": 18
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_long",
+   "bitio::proofs::aligned_bytes_after_lookahead_short",
+   "bitio::proofs::aligned_bytes_roundtrip",
+   "bitio::proofs::read_bits_matches_read_bit",
+   "bitio::proofs::reader_eof_is_exact",
+   "bitio::proofs::write_then_read_roundtrip",
+   "deflate::proofs::fixed_tokens_have_the_rfc_layout",
+   "e2e::roundtrip_stored",
+   "huffman::proofs::encode_then_decode_symbol",
+   "inflate::proofs::stored_block_semantics"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/bitio.rs:143:23: replace > with < in BitReader<'a>::refill",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 143,
+    "column": 23
+   },
+   "end": {
+    "line": 143,
+    "column": 24
+   }
+  },
+  "replacement": "<",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_long",
+   "bitio::proofs::aligned_bytes_after_lookahead_short",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/bitio.rs:143:23: replace > with == in BitReader<'a>::refill",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 143,
+    "column": 23
+   },
+   "end": {
+    "line": 143,
+    "column": 24
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_long",
+   "bitio::proofs::aligned_bytes_after_lookahead_short",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/bitio.rs:143:23: replace > with >= in BitReader<'a>::refill",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 143,
+    "column": 23
+   },
+   "end": {
+    "line": 143,
+    "column": 24
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_long",
+   "bitio::proofs::aligned_bytes_after_lookahead_short",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/bitio.rs:143:9: replace BitReader<'a>::refill with ()",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 143,
+    "column": 9
+   },
+   "end": {
+    "line": 161,
+    "column": 10
+   }
+  },
+  "replacement": "()",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_long",
+   "bitio::proofs::aligned_bytes_after_lookahead_short",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/bitio.rs:147:25: replace - with + in BitReader<'a>::refill",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 147,
+    "column": 25
+   },
+   "end": {
+    "line": 147,
+    "column": 26
+   }
+  },
+  "replacement": "+",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_long",
+   "bitio::proofs::aligned_bytes_after_lookahead_short",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/bitio.rs:147:39: replace / with % in BitReader<'a>::refill",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 147,
+    "column": 39
+   },
+   "end": {
+    "line": 147,
+    "column": 40
+   }
+  },
+  "replacement": "%",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_long",
+   "bitio::proofs::aligned_bytes_after_lookahead_short",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/bitio.rs:151:27: replace << with >> in BitReader<'a>::refill",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 151,
+    "column": 27
+   },
+   "end": {
+    "line": 151,
+    "column": 29
+   }
+  },
+  "replacement": ">>",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_long"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/bitio.rs:157:35: replace < with <= in BitReader<'a>::refill",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 157,
+    "column": 35
+   },
+   "end": {
+    "line": 157,
+    "column": 36
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_short",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/bitio.rs:169:22: replace > with == in BitReader<'a>::read_bits",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 169,
+    "column": 22
+   },
+   "end": {
+    "line": 169,
+    "column": 23
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_long",
+   "bitio::proofs::aligned_bytes_after_lookahead_short",
+   "bitio::proofs::aligned_bytes_roundtrip",
+   "bitio::proofs::read_bits_matches_read_bit",
+   "bitio::proofs::reader_eof_is_exact",
+   "bitio::proofs::write_then_read_roundtrip",
+   "deflate::proofs::fixed_tokens_have_the_rfc_layout",
+   "e2e::roundtrip_stored",
+   "huffman::proofs::encode_then_decode_symbol",
+   "inflate::proofs::stored_block_semantics"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/bitio.rs:169:22: replace > with >= in BitReader<'a>::read_bits",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 169,
+    "column": 22
+   },
+   "end": {
+    "line": 169,
+    "column": 23
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_long",
+   "bitio::proofs::aligned_bytes_after_lookahead_short",
+   "bitio::proofs::aligned_bytes_roundtrip",
+   "bitio::proofs::read_bits_matches_read_bit",
+   "bitio::proofs::reader_eof_is_exact",
+   "bitio::proofs::write_then_read_roundtrip",
+   "deflate::proofs::fixed_tokens_have_the_rfc_layout",
+   "e2e::roundtrip_stored",
+   "huffman::proofs::encode_then_decode_symbol",
+   "inflate::proofs::stored_block_semantics"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/bitio.rs:170:23: replace < with <= in BitReader<'a>::read_bits",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 170,
+    "column": 23
+   },
+   "end": {
+    "line": 170,
+    "column": 24
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_long",
+   "bitio::proofs::aligned_bytes_after_lookahead_short",
+   "bitio::proofs::aligned_bytes_roundtrip",
+   "bitio::proofs::read_bits_matches_read_bit",
+   "bitio::proofs::reader_eof_is_exact",
+   "bitio::proofs::write_then_read_roundtrip",
+   "deflate::proofs::fixed_tokens_have_the_rfc_layout",
+   "e2e::roundtrip_stored",
+   "huffman::proofs::encode_then_decode_symbol",
+   "inflate::proofs::stored_block_semantics"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/bitio.rs:201:23: replace < with <= in BitReader<'a>::peek",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 201,
+    "column": 23
+   },
+   "end": {
+    "line": 201,
+    "column": 24
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_long",
+   "bitio::proofs::aligned_bytes_after_lookahead_short",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/bitio.rs:201:23: replace < with == in BitReader<'a>::peek",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 201,
+    "column": 23
+   },
+   "end": {
+    "line": 201,
+    "column": 24
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_long",
+   "bitio::proofs::aligned_bytes_after_lookahead_short",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/bitio.rs:201:23: replace < with > in BitReader<'a>::peek",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 201,
+    "column": 23
+   },
+   "end": {
+    "line": 201,
+    "column": 24
+   }
+  },
+  "replacement": ">",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_long",
+   "bitio::proofs::aligned_bytes_after_lookahead_short",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/bitio.rs:212:9: replace BitReader<'a>::available -> u32 with 0",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 212,
+    "column": 9
+   },
+   "end": {
+    "line": 212,
+    "column": 19
+   }
+  },
+  "replacement": "0",
+  "harnesses": [
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/bitio.rs:239:24: replace < with <= in BitReader<'a>::read_aligned_bytes",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 239,
+    "column": 24
+   },
+   "end": {
+    "line": 239,
+    "column": 25
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_long",
+   "bitio::proofs::aligned_bytes_after_lookahead_short",
+   "bitio::proofs::aligned_bytes_roundtrip",
+   "e2e::roundtrip_stored",
+   "inflate::proofs::stored_block_semantics"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/bitio.rs:260:18: replace - with + in BitReader<'a>::bytes_consumed",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 260,
+    "column": 18
+   },
+   "end": {
+    "line": 260,
+    "column": 19
+   }
+  },
+  "replacement": "+",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_long",
+   "bitio::proofs::aligned_bytes_after_lookahead_short",
+   "bitio::proofs::aligned_bytes_roundtrip",
+   "e2e::roundtrip_stored",
+   "inflate::proofs::stored_block_semantics"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/bitio.rs:279:13: replace < with <= in padded_word",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 279,
+    "column": 13
+   },
+   "end": {
+    "line": 279,
+    "column": 14
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_short",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/bitio.rs:30:9: replace BitWriter::with_capacity -> Self with Default::default()",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 30,
+    "column": 9
+   },
+   "end": {
+    "line": 30,
+    "column": 66
+   }
+  },
+  "replacement": "Default::default()",
+  "harnesses": [
+   "deflate::proofs::stored_cost_adds_up_across_blocks",
+   "deflate::proofs::stored_cost_is_exact",
+   "e2e::roundtrip_stored"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/bitio.rs:39:22: replace > with == in BitWriter::write_bits",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 39,
+    "column": 22
+   },
+   "end": {
+    "line": 39,
+    "column": 23
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_long",
+   "bitio::proofs::aligned_bytes_after_lookahead_short",
+   "bitio::proofs::aligned_bytes_roundtrip",
+   "bitio::proofs::write_then_read_roundtrip",
+   "deflate::proofs::fixed_tokens_have_the_rfc_layout",
+   "deflate::proofs::stored_cost_adds_up_across_blocks",
+   "deflate::proofs::stored_cost_is_exact",
+   "e2e::roundtrip_stored"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/bitio.rs:39:22: replace > with >= in BitWriter::write_bits",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 39,
+    "column": 22
+   },
+   "end": {
+    "line": 39,
+    "column": 23
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_long",
+   "bitio::proofs::aligned_bytes_after_lookahead_short",
+   "bitio::proofs::aligned_bytes_roundtrip",
+   "bitio::proofs::write_then_read_roundtrip",
+   "deflate::proofs::fixed_tokens_have_the_rfc_layout",
+   "deflate::proofs::stored_cost_adds_up_across_blocks",
+   "deflate::proofs::stored_cost_is_exact",
+   "e2e::roundtrip_stored"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/bitio.rs:65:23: replace > with >= in BitWriter::pad_to_byte",
+  "file": "src/bitio.rs",
+  "span": {
+   "start": {
+    "line": 65,
+    "column": 23
+   },
+   "end": {
+    "line": 65,
+    "column": 24
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "bitio::proofs::aligned_bytes_after_lookahead_long",
+   "bitio::proofs::aligned_bytes_after_lookahead_short",
+   "bitio::proofs::aligned_bytes_roundtrip",
+   "bitio::proofs::write_then_read_roundtrip",
+   "deflate::proofs::fixed_tokens_have_the_rfc_layout",
+   "deflate::proofs::stored_cost_adds_up_across_blocks",
+   "deflate::proofs::stored_cost_is_exact",
+   "e2e::roundtrip_stored"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/deflate.rs:120:26: replace * with +",
+  "file": "src/deflate.rs",
+  "span": {
+   "start": {
+    "line": 120,
+    "column": 26
+   },
+   "end": {
+    "line": 120,
+    "column": 27
+   }
+  },
+  "replacement": "+",
+  "harnesses": [
+   "e2e::roundtrip_stored"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/deflate.rs:120:26: replace * with /",
+  "file": "src/deflate.rs",
+  "span": {
+   "start": {
+    "line": 120,
+    "column": 26
+   },
+   "end": {
+    "line": 120,
+    "column": 27
+   }
+  },
+  "replacement": "/",
+  "harnesses": [
+   "e2e::roundtrip_stored"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/deflate.rs:123:44: replace * with +",
+  "file": "src/deflate.rs",
+  "span": {
+   "start": {
+    "line": 123,
+    "column": 44
+   },
+   "end": {
+    "line": 123,
+    "column": 45
+   }
+  },
+  "replacement": "+",
+  "harnesses": [
+   "e2e::roundtrip_stored"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/deflate.rs:123:44: replace * with /",
+  "file": "src/deflate.rs",
+  "span": {
+   "start": {
+    "line": 123,
+    "column": 44
+   },
+   "end": {
+    "line": 123,
+    "column": 45
+   }
+  },
+  "replacement": "/",
+  "harnesses": [
+   "e2e::roundtrip_stored"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/deflate.rs:262:48: replace | with ^ in CodeTable<N>::put_with_extra",
+  "file": "src/deflate.rs",
+  "span": {
+   "start": {
+    "line": 262,
+    "column": 48
+   },
+   "end": {
+    "line": 262,
+    "column": 49
+   }
+  },
+  "replacement": "^",
+  "harnesses": [
+   "deflate::proofs::fixed_tokens_have_the_rfc_layout"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/deflate.rs:316:28: replace && with || in write_stored_in",
+  "file": "src/deflate.rs",
+  "span": {
+   "start": {
+    "line": 316,
+    "column": 28
+   },
+   "end": {
+    "line": 316,
+    "column": 30
+   }
+  },
+  "replacement": "||",
+  "harnesses": [
+   "deflate::proofs::stored_cost_adds_up_across_blocks",
+   "deflate::proofs::stored_cost_is_exact",
+   "e2e::roundtrip_stored"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/deflate.rs:431:16: replace > with < in rle_code_lengths",
+  "file": "src/deflate.rs",
+  "span": {
+   "start": {
+    "line": 431,
+    "column": 16
+   },
+   "end": {
+    "line": 431,
+    "column": 17
+   }
+  },
+  "replacement": "<",
+  "harnesses": [
+   "deflate::proofs::code_length_rle_roundtrip",
+   "deflate::proofs::code_length_rle_zero_runs"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/deflate.rs:431:16: replace > with == in rle_code_lengths",
+  "file": "src/deflate.rs",
+  "span": {
+   "start": {
+    "line": 431,
+    "column": 16
+   },
+   "end": {
+    "line": 431,
+    "column": 17
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "deflate::proofs::code_length_rle_roundtrip",
+   "deflate::proofs::code_length_rle_zero_runs"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/deflate.rs:431:16: replace > with >= in rle_code_lengths",
+  "file": "src/deflate.rs",
+  "span": {
+   "start": {
+    "line": 431,
+    "column": 16
+   },
+   "end": {
+    "line": 431,
+    "column": 17
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "deflate::proofs::code_length_rle_roundtrip",
+   "deflate::proofs::code_length_rle_zero_runs"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/deflate.rs:435:16: replace > with >= in rle_code_lengths",
+  "file": "src/deflate.rs",
+  "span": {
+   "start": {
+    "line": 435,
+    "column": 16
+   },
+   "end": {
+    "line": 435,
+    "column": 17
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "deflate::proofs::code_length_rle_roundtrip",
+   "deflate::proofs::code_length_rle_zero_runs"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/deflate.rs:441:12: replace > with >= in rle_code_lengths",
+  "file": "src/deflate.rs",
+  "span": {
+   "start": {
+    "line": 441,
+    "column": 12
+   },
+   "end": {
+    "line": 441,
+    "column": 13
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "deflate::proofs::code_length_rle_roundtrip",
+   "deflate::proofs::code_length_rle_zero_runs"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/deflate.rs:457:26: replace < with <= in emit_run",
+  "file": "src/deflate.rs",
+  "span": {
+   "start": {
+    "line": 457,
+    "column": 26
+   },
+   "end": {
+    "line": 457,
+    "column": 27
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "deflate::proofs::code_length_rle_zero_runs"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/deflate.rs:473:26: replace < with <= in emit_run",
+  "file": "src/deflate.rs",
+  "span": {
+   "start": {
+    "line": 473,
+    "column": 26
+   },
+   "end": {
+    "line": 473,
+    "column": 27
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "deflate::proofs::code_length_rle_roundtrip",
+   "deflate::proofs::code_length_rle_zero_runs"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/deflate.rs:88:34: replace == with != in encode_with_matcher",
+  "file": "src/deflate.rs",
+  "span": {
+   "start": {
+    "line": 88,
+    "column": 34
+   },
+   "end": {
+    "line": 88,
+    "column": 36
+   }
+  },
+  "replacement": "!=",
+  "harnesses": [
+   "e2e::roundtrip_stored"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/deflate.rs:90:17: replace == with != in encode_with_matcher",
+  "file": "src/deflate.rs",
+  "span": {
+   "start": {
+    "line": 90,
+    "column": 17
+   },
+   "end": {
+    "line": 90,
+    "column": 19
+   }
+  },
+  "replacement": "!=",
+  "harnesses": [
+   "e2e::roundtrip_stored"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:161:10: replace > with < in build_lengths_in",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 161,
+    "column": 10
+   },
+   "end": {
+    "line": 161,
+    "column": 11
+   }
+  },
+  "replacement": "<",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_rejects_impossible_limit",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:167:10: replace < with <= in build_lengths_in",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 167,
+    "column": 10
+   },
+   "end": {
+    "line": 167,
+    "column": 11
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_rejects_impossible_limit",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:167:10: replace < with == in build_lengths_in",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 167,
+    "column": 10
+   },
+   "end": {
+    "line": 167,
+    "column": 11
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_rejects_impossible_limit",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:167:14: replace || with && in build_lengths_in",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 167,
+    "column": 14
+   },
+   "end": {
+    "line": 167,
+    "column": 16
+   }
+  },
+  "replacement": "&&",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_rejects_impossible_limit",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:220:15: replace > with >= in limit_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 220,
+    "column": 15
+   },
+   "end": {
+    "line": 220,
+    "column": 16
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit",
+   "huffman::proofs::limit_depths_keeps_code_complete"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:233:41: replace > with < in limit_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 233,
+    "column": 41
+   },
+   "end": {
+    "line": 233,
+    "column": 42
+   }
+  },
+  "replacement": "<",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::limit_depths_keeps_code_complete"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:233:41: replace > with == in limit_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 233,
+    "column": 41
+   },
+   "end": {
+    "line": 233,
+    "column": 42
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::limit_depths_keeps_code_complete"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:233:41: replace > with >= in limit_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 233,
+    "column": 41
+   },
+   "end": {
+    "line": 233,
+    "column": 42
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::limit_depths_keeps_code_complete"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:233:52: replace || with && in limit_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 233,
+    "column": 52
+   },
+   "end": {
+    "line": 233,
+    "column": 54
+   }
+  },
+  "replacement": "&&",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_tight_limit",
+   "huffman::proofs::limit_depths_keeps_code_complete"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:233:65: replace == with != in limit_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 233,
+    "column": 65
+   },
+   "end": {
+    "line": 233,
+    "column": 67
+   }
+  },
+  "replacement": "!=",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::limit_depths_keeps_code_complete"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:233:77: replace && with || in limit_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 233,
+    "column": 77
+   },
+   "end": {
+    "line": 233,
+    "column": 79
+   }
+  },
+  "replacement": "||",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_tight_limit",
+   "huffman::proofs::limit_depths_keeps_code_complete"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:233:90: replace < with <= in limit_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 233,
+    "column": 90
+   },
+   "end": {
+    "line": 233,
+    "column": 91
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "huffman::proofs::limit_depths_keeps_code_complete"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:233:90: replace < with == in limit_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 233,
+    "column": 90
+   },
+   "end": {
+    "line": 233,
+    "column": 91
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "huffman::proofs::limit_depths_keeps_code_complete"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:233:90: replace < with > in limit_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 233,
+    "column": 90
+   },
+   "end": {
+    "line": 233,
+    "column": 91
+   }
+  },
+  "replacement": ">",
+  "harnesses": [
+   "huffman::proofs::limit_depths_keeps_code_complete"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:250:25: replace > with >= in limit_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 250,
+    "column": 25
+   },
+   "end": {
+    "line": 250,
+    "column": 26
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "huffman::proofs::limit_depths_keeps_code_complete"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:253:41: replace > with >= in limit_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 253,
+    "column": 41
+   },
+   "end": {
+    "line": 253,
+    "column": 42
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "huffman::proofs::limit_depths_keeps_code_complete"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:253:65: replace == with != in limit_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 253,
+    "column": 65
+   },
+   "end": {
+    "line": 253,
+    "column": 67
+   }
+  },
+  "replacement": "!=",
+  "harnesses": [
+   "huffman::proofs::limit_depths_keeps_code_complete"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:253:77: replace && with || in limit_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 253,
+    "column": 77
+   },
+   "end": {
+    "line": 253,
+    "column": 79
+   }
+  },
+  "replacement": "||",
+  "harnesses": [
+   "huffman::proofs::limit_depths_keeps_code_complete"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:253:90: replace > with < in limit_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 253,
+    "column": 90
+   },
+   "end": {
+    "line": 253,
+    "column": 91
+   }
+  },
+  "replacement": "<",
+  "harnesses": [
+   "huffman::proofs::limit_depths_keeps_code_complete"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:253:90: replace > with == in limit_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 253,
+    "column": 90
+   },
+   "end": {
+    "line": 253,
+    "column": 91
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "huffman::proofs::limit_depths_keeps_code_complete"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:253:90: replace > with >= in limit_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 253,
+    "column": 90
+   },
+   "end": {
+    "line": 253,
+    "column": 91
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "huffman::proofs::limit_depths_keeps_code_complete"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:261:23: replace << with >> in limit_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 261,
+    "column": 23
+   },
+   "end": {
+    "line": 261,
+    "column": 25
+   }
+  },
+  "replacement": ">>",
+  "harnesses": [
+   "huffman::proofs::limit_depths_keeps_code_complete"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:261:35: replace - with + in limit_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 261,
+    "column": 35
+   },
+   "end": {
+    "line": 261,
+    "column": 36
+   }
+  },
+  "replacement": "+",
+  "harnesses": [
+   "huffman::proofs::limit_depths_keeps_code_complete"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:261:35: replace - with / in limit_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 261,
+    "column": 35
+   },
+   "end": {
+    "line": 261,
+    "column": 36
+   }
+  },
+  "replacement": "/",
+  "harnesses": [
+   "huffman::proofs::limit_depths_keeps_code_complete"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:276:5: replace huffman_depths with ()",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 276,
+    "column": 5
+   },
+   "end": {
+    "line": 311,
+    "column": 6
+   }
+  },
+  "replacement": "()",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:292:22: replace + with * in huffman_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 292,
+    "column": 22
+   },
+   "end": {
+    "line": 292,
+    "column": 23
+   }
+  },
+  "replacement": "*",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:292:30: replace - with / in huffman_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 292,
+    "column": 30
+   },
+   "end": {
+    "line": 292,
+    "column": 31
+   }
+  },
+  "replacement": "/",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:292:40: replace > with < in huffman_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 292,
+    "column": 40
+   },
+   "end": {
+    "line": 292,
+    "column": 41
+   }
+  },
+  "replacement": "<",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:292:40: replace > with == in huffman_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 292,
+    "column": 40
+   },
+   "end": {
+    "line": 292,
+    "column": 41
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:292:40: replace > with >= in huffman_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 292,
+    "column": 40
+   },
+   "end": {
+    "line": 292,
+    "column": 41
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:298:14: replace += with *= in huffman_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 298,
+    "column": 14
+   },
+   "end": {
+    "line": 298,
+    "column": 16
+   }
+  },
+  "replacement": "*=",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:301:23: replace - with + in huffman_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 301,
+    "column": 23
+   },
+   "end": {
+    "line": 301,
+    "column": 24
+   }
+  },
+  "replacement": "+",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:301:23: replace - with / in huffman_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 301,
+    "column": 23
+   },
+   "end": {
+    "line": 301,
+    "column": 24
+   }
+  },
+  "replacement": "/",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:302:14: replace > with < in huffman_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 302,
+    "column": 14
+   },
+   "end": {
+    "line": 302,
+    "column": 15
+   }
+  },
+  "replacement": "<",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:302:14: replace > with == in huffman_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 302,
+    "column": 14
+   },
+   "end": {
+    "line": 302,
+    "column": 15
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:304:48: replace + with * in huffman_depths",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 304,
+    "column": 48
+   },
+   "end": {
+    "line": 304,
+    "column": 49
+   }
+  },
+  "replacement": "*",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:318:29: replace < with <= in take_lightest",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 318,
+    "column": 29
+   },
+   "end": {
+    "line": 318,
+    "column": 30
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:318:29: replace < with == in take_lightest",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 318,
+    "column": 29
+   },
+   "end": {
+    "line": 318,
+    "column": 30
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:318:29: replace < with > in take_lightest",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 318,
+    "column": 29
+   },
+   "end": {
+    "line": 318,
+    "column": 30
+   }
+  },
+  "replacement": ">",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:319:59: replace <= with > in take_lightest",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 319,
+    "column": 59
+   },
+   "end": {
+    "line": 319,
+    "column": 61
+   }
+  },
+  "replacement": ">",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:324:17: replace - with + in take_lightest",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 324,
+    "column": 17
+   },
+   "end": {
+    "line": 324,
+    "column": 18
+   }
+  },
+  "replacement": "+",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:324:17: replace - with / in take_lightest",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 324,
+    "column": 17
+   },
+   "end": {
+    "line": 324,
+    "column": 18
+   }
+  },
+  "replacement": "/",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:333:23: replace / with * in sort_by_weight",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 333,
+    "column": 23
+   },
+   "end": {
+    "line": 333,
+    "column": 24
+   }
+  },
+  "replacement": "*",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit",
+   "huffman::proofs::sort_by_weight_sorts"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:339:15: replace > with >= in sort_by_weight",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 339,
+    "column": 15
+   },
+   "end": {
+    "line": 339,
+    "column": 16
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit",
+   "huffman::proofs::sort_by_weight_sorts"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:377:24: replace > with >= in heavier",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 377,
+    "column": 24
+   },
+   "end": {
+    "line": 377,
+    "column": 25
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "huffman::proofs::sort_by_weight_sorts"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:421:110: replace << with >>",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 421,
+    "column": 110
+   },
+   "end": {
+    "line": 421,
+    "column": 112
+   }
+  },
+  "replacement": ">>",
+  "harnesses": [
+   "huffman::proofs::sort_by_weight_sorts"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:446:23: replace << with >> in Canonical::rebuild",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 446,
+    "column": 23
+   },
+   "end": {
+    "line": 446,
+    "column": 25
+   }
+  },
+  "replacement": ">>",
+  "harnesses": [
+   "huffman::proofs::decode_arbitrary_bits",
+   "huffman::proofs::decoder_new_never_panics",
+   "huffman::proofs::encode_then_decode_symbol",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:460:30: replace - with + in Canonical::rebuild",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 460,
+    "column": 30
+   },
+   "end": {
+    "line": 460,
+    "column": 31
+   }
+  },
+  "replacement": "+",
+  "harnesses": [
+   "huffman::proofs::decode_arbitrary_bits",
+   "huffman::proofs::decoder_new_never_panics",
+   "huffman::proofs::encode_then_decode_symbol",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:474:44: replace + with * in Canonical::rebuild",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 474,
+    "column": 44
+   },
+   "end": {
+    "line": 474,
+    "column": 45
+   }
+  },
+  "replacement": "*",
+  "harnesses": [
+   "huffman::proofs::decode_arbitrary_bits",
+   "huffman::proofs::decoder_new_never_panics",
+   "huffman::proofs::encode_then_decode_symbol",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:497:9: replace Canonical::is_complete -> bool with false",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 497,
+    "column": 9
+   },
+   "end": {
+    "line": 497,
+    "column": 23
+   }
+  },
+  "replacement": "false",
+  "harnesses": [
+   "huffman::proofs::decoder_new_never_panics"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:58:5: replace is_complete -> bool with true",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 58,
+    "column": 5
+   },
+   "end": {
+    "line": 58,
+    "column": 69
+   }
+  },
+  "replacement": "true",
+  "harnesses": [
+   "huffman::proofs::build_lengths_complete_and_limited",
+   "huffman::proofs::build_lengths_full_range_frequencies",
+   "huffman::proofs::build_lengths_tight_limit"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:605:31: replace > with < in Decoder::rebuild_with_fast_bits",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 605,
+    "column": 31
+   },
+   "end": {
+    "line": 605,
+    "column": 32
+   }
+  },
+  "replacement": "<",
+  "harnesses": [
+   "huffman::proofs::decoder_new_never_panics",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:605:31: replace > with == in Decoder::rebuild_with_fast_bits",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 605,
+    "column": 31
+   },
+   "end": {
+    "line": 605,
+    "column": 32
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "huffman::proofs::decoder_new_never_panics",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:605:31: replace > with >= in Decoder::rebuild_with_fast_bits",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 605,
+    "column": 31
+   },
+   "end": {
+    "line": 605,
+    "column": 32
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "huffman::proofs::decoder_new_never_panics",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:623:17: replace < with == in Decoder::rebuild_with_fast_bits",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 623,
+    "column": 17
+   },
+   "end": {
+    "line": 623,
+    "column": 18
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "huffman::proofs::decoder_new_never_panics",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:623:17: replace < with > in Decoder::rebuild_with_fast_bits",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 623,
+    "column": 17
+   },
+   "end": {
+    "line": 623,
+    "column": 18
+   }
+  },
+  "replacement": ">",
+  "harnesses": [
+   "huffman::proofs::decoder_new_never_panics",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:625:18: replace != with == in Decoder::rebuild_with_fast_bits",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 625,
+    "column": 18
+   },
+   "end": {
+    "line": 625,
+    "column": 20
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "huffman::proofs::decoder_new_never_panics",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:630:31: replace < with == in Decoder::rebuild_with_fast_bits",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 630,
+    "column": 31
+   },
+   "end": {
+    "line": 630,
+    "column": 32
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "huffman::proofs::decoder_new_never_panics",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:630:31: replace < with > in Decoder::rebuild_with_fast_bits",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 630,
+    "column": 31
+   },
+   "end": {
+    "line": 630,
+    "column": 32
+   }
+  },
+  "replacement": ">",
+  "harnesses": [
+   "huffman::proofs::decoder_new_never_panics",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:630:36: replace << with >> in Decoder::rebuild_with_fast_bits",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 630,
+    "column": 36
+   },
+   "end": {
+    "line": 630,
+    "column": 38
+   }
+  },
+  "replacement": ">>",
+  "harnesses": [
+   "huffman::proofs::decoder_new_never_panics",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:631:54: replace << with >> in Decoder::rebuild_with_fast_bits",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 631,
+    "column": 54
+   },
+   "end": {
+    "line": 631,
+    "column": 56
+   }
+  },
+  "replacement": ">>",
+  "harnesses": [
+   "huffman::proofs::decoder_new_never_panics",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:631:61: replace | with & in Decoder::rebuild_with_fast_bits",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 631,
+    "column": 61
+   },
+   "end": {
+    "line": 631,
+    "column": 62
+   }
+  },
+  "replacement": "&",
+  "harnesses": [
+   "huffman::proofs::decoder_new_never_panics",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:631:61: replace | with ^ in Decoder::rebuild_with_fast_bits",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 631,
+    "column": 61
+   },
+   "end": {
+    "line": 631,
+    "column": 62
+   }
+  },
+  "replacement": "^",
+  "harnesses": [
+   "huffman::proofs::decoder_new_never_panics",
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/huffman.rs:643:9: replace Decoder::is_complete -> bool with false",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 643,
+    "column": 9
+   },
+   "end": {
+    "line": 643,
+    "column": 33
+   }
+  },
+  "replacement": "false",
+  "harnesses": [
+   "huffman::proofs::decoder_new_never_panics"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/huffman.rs:667:31: replace >> with << in Decoder::decode",
+  "file": "src/huffman.rs",
+  "span": {
+   "start": {
+    "line": 667,
+    "column": 31
+   },
+   "end": {
+    "line": 667,
+    "column": 33
+   }
+  },
+  "replacement": "<<",
+  "harnesses": [
+   "huffman::proofs::fast_decode_matches_slow"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/inflate.rs:107:14: replace > with < in Output::reserve",
+  "file": "src/inflate.rs",
+  "span": {
+   "start": {
+    "line": 107,
+    "column": 14
+   },
+   "end": {
+    "line": 107,
+    "column": 15
+   }
+  },
+  "replacement": "<",
+  "harnesses": [
+   "e2e::roundtrip_stored",
+   "inflate::proofs::stored_block_semantics"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/inflate.rs:107:14: replace > with == in Output::reserve",
+  "file": "src/inflate.rs",
+  "span": {
+   "start": {
+    "line": 107,
+    "column": 14
+   },
+   "end": {
+    "line": 107,
+    "column": 15
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "e2e::roundtrip_stored",
+   "inflate::proofs::stored_block_semantics"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/inflate.rs:107:14: replace > with >= in Output::reserve",
+  "file": "src/inflate.rs",
+  "span": {
+   "start": {
+    "line": 107,
+    "column": 14
+   },
+   "end": {
+    "line": 107,
+    "column": 15
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "e2e::roundtrip_stored",
+   "inflate::proofs::stored_block_semantics"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/inflate.rs:107:31: replace - with + in Output::reserve",
+  "file": "src/inflate.rs",
+  "span": {
+   "start": {
+    "line": 107,
+    "column": 31
+   },
+   "end": {
+    "line": 107,
+    "column": 32
+   }
+  },
+  "replacement": "+",
+  "harnesses": [
+   "e2e::roundtrip_stored",
+   "inflate::proofs::stored_block_semantics"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:133:100: replace << with >> in Matcher::hash",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 133,
+    "column": 100
+   },
+   "end": {
+    "line": 133,
+    "column": 102
+   }
+  },
+  "replacement": ">>",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:133:38: replace | with & in Matcher::hash",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 133,
+    "column": 38
+   },
+   "end": {
+    "line": 133,
+    "column": 39
+   }
+  },
+  "replacement": "&",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:133:38: replace | with ^ in Matcher::hash",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 133,
+    "column": 38
+   },
+   "end": {
+    "line": 133,
+    "column": 39
+   }
+  },
+  "replacement": "^",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:133:60: replace + with * in Matcher::hash",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 133,
+    "column": 60
+   },
+   "end": {
+    "line": 133,
+    "column": 61
+   }
+  },
+  "replacement": "*",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:133:66: replace << with >> in Matcher::hash",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 133,
+    "column": 66
+   },
+   "end": {
+    "line": 133,
+    "column": 68
+   }
+  },
+  "replacement": ">>",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:133:72: replace | with & in Matcher::hash",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 133,
+    "column": 72
+   },
+   "end": {
+    "line": 133,
+    "column": 73
+   }
+  },
+  "replacement": "&",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:133:72: replace | with ^ in Matcher::hash",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 133,
+    "column": 72
+   },
+   "end": {
+    "line": 133,
+    "column": 73
+   }
+  },
+  "replacement": "^",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:133:9: replace Matcher::hash -> usize with 0",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 133,
+    "column": 9
+   },
+   "end": {
+    "line": 134,
+    "column": 66
+   }
+  },
+  "replacement": "0",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:133:9: replace Matcher::hash -> usize with 1",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 133,
+    "column": 9
+   },
+   "end": {
+    "line": 134,
+    "column": 66
+   }
+  },
+  "replacement": "1",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:140:28: replace > with >= in Matcher::bucket",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 140,
+    "column": 28
+   },
+   "end": {
+    "line": 140,
+    "column": 29
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:140:9: replace Matcher::bucket -> Option<usize> with Some(0)",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 140,
+    "column": 9
+   },
+   "end": {
+    "line": 144,
+    "column": 10
+   }
+  },
+  "replacement": "Some(0)",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:140:9: replace Matcher::bucket -> Option<usize> with Some(1)",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 140,
+    "column": 9
+   },
+   "end": {
+    "line": 144,
+    "column": 10
+   }
+  },
+  "replacement": "Some(1)",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:151:27: replace & with ^ in Matcher::insert_at",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 151,
+    "column": 27
+   },
+   "end": {
+    "line": 151,
+    "column": 28
+   }
+  },
+  "replacement": "^",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:151:27: replace & with | in Matcher::insert_at",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 151,
+    "column": 27
+   },
+   "end": {
+    "line": 151,
+    "column": 28
+   }
+  },
+  "replacement": "|",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:151:42: replace - with + in Matcher::insert_at",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 151,
+    "column": 42
+   },
+   "end": {
+    "line": 151,
+    "column": 43
+   }
+  },
+  "replacement": "+",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:151:42: replace - with / in Matcher::insert_at",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 151,
+    "column": 42
+   },
+   "end": {
+    "line": 151,
+    "column": 43
+   }
+  },
+  "replacement": "/",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:159:16: replace < with <= in Matcher::max_dist",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 159,
+    "column": 16
+   },
+   "end": {
+    "line": 159,
+    "column": 17
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:173:9: replace Matcher::dist_to -> usize with 1",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 173,
+    "column": 9
+   },
+   "end": {
+    "line": 173,
+    "column": 65
+   }
+  },
+  "replacement": "1",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:209:32: replace < with <= in Matcher::longest_match",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 209,
+    "column": 32
+   },
+   "end": {
+    "line": 209,
+    "column": 33
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:229:32: replace - with + in Matcher::longest_match",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 229,
+    "column": 32
+   },
+   "end": {
+    "line": 229,
+    "column": 33
+   }
+  },
+  "replacement": "+",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:229:32: replace - with / in Matcher::longest_match",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 229,
+    "column": 32
+   },
+   "end": {
+    "line": 229,
+    "column": 33
+   }
+  },
+  "replacement": "/",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:230:21: replace > with >= in Matcher::longest_match",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 230,
+    "column": 21
+   },
+   "end": {
+    "line": 230,
+    "column": 22
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:242:26: replace + with * in Matcher::longest_match",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 242,
+    "column": 26
+   },
+   "end": {
+    "line": 242,
+    "column": 27
+   }
+  },
+  "replacement": "*",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:244:24: replace > with >= in Matcher::longest_match",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 244,
+    "column": 24
+   },
+   "end": {
+    "line": 244,
+    "column": 25
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:247:28: replace >= with < in Matcher::longest_match",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 247,
+    "column": 28
+   },
+   "end": {
+    "line": 247,
+    "column": 30
+   }
+  },
+  "replacement": "<",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:253:30: replace & with ^ in Matcher::longest_match",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 253,
+    "column": 30
+   },
+   "end": {
+    "line": 253,
+    "column": 31
+   }
+  },
+  "replacement": "^",
+  "harnesses": [
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:253:30: replace & with | in Matcher::longest_match",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 253,
+    "column": 30
+   },
+   "end": {
+    "line": 253,
+    "column": 31
+   }
+  },
+  "replacement": "|",
+  "harnesses": [
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:254:19: replace -= with += in Matcher::longest_match",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 254,
+    "column": 19
+   },
+   "end": {
+    "line": 254,
+    "column": 21
+   }
+  },
+  "replacement": "+=",
+  "harnesses": [
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:254:19: replace -= with /= in Matcher::longest_match",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 254,
+    "column": 19
+   },
+   "end": {
+    "line": 254,
+    "column": 21
+   }
+  },
+  "replacement": "/=",
+  "harnesses": [
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:256:39: replace < with <= in Matcher::longest_match",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 256,
+    "column": 39
+   },
+   "end": {
+    "line": 256,
+    "column": 40
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:256:39: replace < with == in Matcher::longest_match",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 256,
+    "column": 39
+   },
+   "end": {
+    "line": 256,
+    "column": 40
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:310:65: replace - with + in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 310,
+    "column": 65
+   },
+   "end": {
+    "line": 310,
+    "column": 66
+   }
+  },
+  "replacement": "+",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:310:65: replace - with / in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 310,
+    "column": 65
+   },
+   "end": {
+    "line": 310,
+    "column": 66
+   }
+  },
+  "replacement": "/",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:319:30: replace && with || in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 319,
+    "column": 30
+   },
+   "end": {
+    "line": 319,
+    "column": 32
+   }
+  },
+  "replacement": "||",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:319:37: replace < with <= in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 319,
+    "column": 37
+   },
+   "end": {
+    "line": 319,
+    "column": 38
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:319:37: replace < with == in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 319,
+    "column": 37
+   },
+   "end": {
+    "line": 319,
+    "column": 38
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:319:37: replace < with > in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 319,
+    "column": 37
+   },
+   "end": {
+    "line": 319,
+    "column": 38
+   }
+  },
+  "replacement": ">",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:319:57: replace && with || in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 319,
+    "column": 57
+   },
+   "end": {
+    "line": 319,
+    "column": 59
+   }
+  },
+  "replacement": "||",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:319:64: replace + with * in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 319,
+    "column": 64
+   },
+   "end": {
+    "line": 319,
+    "column": 65
+   }
+  },
+  "replacement": "*",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:319:64: replace + with - in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 319,
+    "column": 64
+   },
+   "end": {
+    "line": 319,
+    "column": 65
+   }
+  },
+  "replacement": "-",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:319:68: replace < with <= in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 319,
+    "column": 68
+   },
+   "end": {
+    "line": 319,
+    "column": 69
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:319:68: replace < with == in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 319,
+    "column": 68
+   },
+   "end": {
+    "line": 319,
+    "column": 69
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:319:68: replace < with > in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 319,
+    "column": 68
+   },
+   "end": {
+    "line": 319,
+    "column": 69
+   }
+  },
+  "replacement": ">",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:320:36: replace >= with < in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 320,
+    "column": 36
+   },
+   "end": {
+    "line": 320,
+    "column": 38
+   }
+  },
+  "replacement": "<",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:320:78: replace / with % in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 320,
+    "column": 78
+   },
+   "end": {
+    "line": 320,
+    "column": 79
+   }
+  },
+  "replacement": "%",
+  "harnesses": [
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:320:78: replace / with * in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 320,
+    "column": 78
+   },
+   "end": {
+    "line": 320,
+    "column": 79
+   }
+  },
+  "replacement": "*",
+  "harnesses": [
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:320:82: replace + with * in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 320,
+    "column": 82
+   },
+   "end": {
+    "line": 320,
+    "column": 83
+   }
+  },
+  "replacement": "*",
+  "harnesses": [
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:321:60: replace + with * in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 321,
+    "column": 60
+   },
+   "end": {
+    "line": 321,
+    "column": 61
+   }
+  },
+  "replacement": "*",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:321:60: replace + with - in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 321,
+    "column": 60
+   },
+   "end": {
+    "line": 321,
+    "column": 61
+   }
+  },
+  "replacement": "-",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:321:87: replace + with * in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 321,
+    "column": 87
+   },
+   "end": {
+    "line": 321,
+    "column": 88
+   }
+  },
+  "replacement": "*",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:321:87: replace + with - in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 321,
+    "column": 87
+   },
+   "end": {
+    "line": 321,
+    "column": 88
+   }
+  },
+  "replacement": "-",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:333:43: replace || with && in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 333,
+    "column": 43
+   },
+   "end": {
+    "line": 333,
+    "column": 45
+   }
+  },
+  "replacement": "&&",
+  "harnesses": [
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:333:50: replace <= with > in Matcher::tokenize",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 333,
+    "column": 50
+   },
+   "end": {
+    "line": 333,
+    "column": 52
+   }
+  },
+  "replacement": ">",
+  "harnesses": [
+   "lz77::proofs::tokens_valid_and_replay_greedy"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:357:16: replace > with < in tokenize_runs",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 357,
+    "column": 16
+   },
+   "end": {
+    "line": 357,
+    "column": 17
+   }
+  },
+  "replacement": "<",
+  "harnesses": [
+   "lz77::proofs::rle_tokens_valid_and_replay"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:357:33: replace == with != in tokenize_runs",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 357,
+    "column": 33
+   },
+   "end": {
+    "line": 357,
+    "column": 35
+   }
+  },
+  "replacement": "!=",
+  "harnesses": [
+   "lz77::proofs::rle_tokens_valid_and_replay"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:357:45: replace - with / in tokenize_runs",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 357,
+    "column": 45
+   },
+   "end": {
+    "line": 357,
+    "column": 46
+   }
+  },
+  "replacement": "/",
+  "harnesses": [
+   "lz77::proofs::rle_tokens_valid_and_replay"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:358:32: replace - with + in tokenize_runs",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 358,
+    "column": 32
+   },
+   "end": {
+    "line": 358,
+    "column": 33
+   }
+  },
+  "replacement": "+",
+  "harnesses": [
+   "lz77::proofs::rle_tokens_valid_and_replay"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:358:32: replace - with / in tokenize_runs",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 358,
+    "column": 32
+   },
+   "end": {
+    "line": 358,
+    "column": 33
+   }
+  },
+  "replacement": "/",
+  "harnesses": [
+   "lz77::proofs::rle_tokens_valid_and_replay"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:358:38: replace < with <= in tokenize_runs",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 358,
+    "column": 38
+   },
+   "end": {
+    "line": 358,
+    "column": 39
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "lz77::proofs::rle_tokens_valid_and_replay"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:360:52: replace - with / in tokenize_runs",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 360,
+    "column": 52
+   },
+   "end": {
+    "line": 360,
+    "column": 53
+   }
+  },
+  "replacement": "/",
+  "harnesses": [
+   "lz77::proofs::rle_tokens_valid_and_replay"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:382:26: replace < with <= in common_prefix",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 382,
+    "column": 26
+   },
+   "end": {
+    "line": 382,
+    "column": 27
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "lz77::proofs::common_prefix_matches_reference",
+   "lz77::proofs::rle_tokens_valid_and_replay",
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:384:13: replace + with * in common_prefix",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 384,
+    "column": 13
+   },
+   "end": {
+    "line": 384,
+    "column": 14
+   }
+  },
+  "replacement": "*",
+  "harnesses": [
+   "lz77::proofs::common_prefix_matches_reference",
+   "lz77::proofs::rle_tokens_valid_and_replay",
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:384:17: replace <= with > in common_prefix",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 384,
+    "column": 17
+   },
+   "end": {
+    "line": 384,
+    "column": 19
+   }
+  },
+  "replacement": ">",
+  "harnesses": [
+   "lz77::proofs::common_prefix_matches_reference",
+   "lz77::proofs::rle_tokens_valid_and_replay",
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9",
+   "lz77::proofs::tokens_valid_and_replay_small_tables"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:392:11: replace += with *= in common_prefix",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 392,
+    "column": 11
+   },
+   "end": {
+    "line": 392,
+    "column": 13
+   }
+  },
+  "replacement": "*=",
+  "harnesses": [
+   "lz77::proofs::common_prefix_matches_reference"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:392:11: replace += with -= in common_prefix",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 392,
+    "column": 11
+   },
+   "end": {
+    "line": 392,
+    "column": 13
+   }
+  },
+  "replacement": "-=",
+  "harnesses": [
+   "lz77::proofs::common_prefix_matches_reference"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:437:12: replace <= with > in copy_within_buffer",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 437,
+    "column": 12
+   },
+   "end": {
+    "line": 437,
+    "column": 14
+   }
+  },
+  "replacement": ">",
+  "harnesses": [
+   "lz77::proofs::copy_within_buffer_meets_spec",
+   "lz77::proofs::short_copy_meets_spec"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:461:37: replace < with <= in copy_within_buffer",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 461,
+    "column": 37
+   },
+   "end": {
+    "line": 461,
+    "column": 38
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "lz77::proofs::copy_within_buffer_meets_spec"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/lz77.rs:71:13: delete match arm 0 | 1 in MatchConfig::for_level",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 71,
+    "column": 13
+   },
+   "end": {
+    "line": 71,
+    "column": 42
+   }
+  },
+  "replacement": "",
+  "harnesses": [
+   "e2e::roundtrip_stored",
+   "lz77::proofs::no_chain_means_literals_only",
+   "lz77::proofs::rle_tokens_valid_and_replay",
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:72:13: delete match arm 2 in MatchConfig::for_level",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 72,
+    "column": 13
+   },
+   "end": {
+    "line": 72,
+    "column": 39
+   }
+  },
+  "replacement": "",
+  "harnesses": [
+   "e2e::roundtrip_stored",
+   "lz77::proofs::no_chain_means_literals_only",
+   "lz77::proofs::rle_tokens_valid_and_replay",
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:73:13: delete match arm 3 in MatchConfig::for_level",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 73,
+    "column": 13
+   },
+   "end": {
+    "line": 73,
+    "column": 40
+   }
+  },
+  "replacement": "",
+  "harnesses": [
+   "e2e::roundtrip_stored",
+   "lz77::proofs::no_chain_means_literals_only",
+   "lz77::proofs::rle_tokens_valid_and_replay",
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:74:13: delete match arm 4 in MatchConfig::for_level",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 74,
+    "column": 13
+   },
+   "end": {
+    "line": 74,
+    "column": 39
+   }
+  },
+  "replacement": "",
+  "harnesses": [
+   "e2e::roundtrip_stored",
+   "lz77::proofs::no_chain_means_literals_only",
+   "lz77::proofs::rle_tokens_valid_and_replay",
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:75:13: delete match arm 5 in MatchConfig::for_level",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 75,
+    "column": 13
+   },
+   "end": {
+    "line": 75,
+    "column": 40
+   }
+  },
+  "replacement": "",
+  "harnesses": [
+   "e2e::roundtrip_stored",
+   "lz77::proofs::no_chain_means_literals_only",
+   "lz77::proofs::rle_tokens_valid_and_replay",
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:76:13: delete match arm 6 in MatchConfig::for_level",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 76,
+    "column": 13
+   },
+   "end": {
+    "line": 76,
+    "column": 42
+   }
+  },
+  "replacement": "",
+  "harnesses": [
+   "e2e::roundtrip_stored",
+   "lz77::proofs::no_chain_means_literals_only",
+   "lz77::proofs::rle_tokens_valid_and_replay",
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:77:13: delete match arm 7 in MatchConfig::for_level",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 77,
+    "column": 13
+   },
+   "end": {
+    "line": 77,
+    "column": 42
+   }
+  },
+  "replacement": "",
+  "harnesses": [
+   "e2e::roundtrip_stored",
+   "lz77::proofs::no_chain_means_literals_only",
+   "lz77::proofs::rle_tokens_valid_and_replay",
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/lz77.rs:78:13: delete match arm 8 in MatchConfig::for_level",
+  "file": "src/lz77.rs",
+  "span": {
+   "start": {
+    "line": 78,
+    "column": 13
+   },
+   "end": {
+    "line": 78,
+    "column": 51
+   }
+  },
+  "replacement": "",
+  "harnesses": [
+   "e2e::roundtrip_stored",
+   "lz77::proofs::no_chain_means_literals_only",
+   "lz77::proofs::rle_tokens_valid_and_replay",
+   "lz77::proofs::runs_are_matched",
+   "lz77::proofs::tokens_valid_and_replay_greedy",
+   "lz77::proofs::tokens_valid_and_replay_level9"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:168:17: replace && with || in is_leap",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 168,
+    "column": 17
+   },
+   "end": {
+    "line": 168,
+    "column": 19
+   }
+  },
+  "replacement": "||",
+  "harnesses": [
+   "zip::proofs::civil_date_conversion_roundtrip",
+   "zip::proofs::dos_datetime_roundtrip",
+   "zip::proofs::is_valid_is_the_calendar",
+   "zip::proofs::unix_time_always_valid"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:168:22: replace % with + in is_leap",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 168,
+    "column": 22
+   },
+   "end": {
+    "line": 168,
+    "column": 23
+   }
+  },
+  "replacement": "+",
+  "harnesses": [
+   "zip::proofs::civil_date_conversion_roundtrip",
+   "zip::proofs::dos_datetime_roundtrip",
+   "zip::proofs::is_valid_is_the_calendar",
+   "zip::proofs::unix_time_always_valid"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:168:22: replace % with / in is_leap",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 168,
+    "column": 22
+   },
+   "end": {
+    "line": 168,
+    "column": 23
+   }
+  },
+  "replacement": "/",
+  "harnesses": [
+   "zip::proofs::civil_date_conversion_roundtrip",
+   "zip::proofs::dos_datetime_roundtrip",
+   "zip::proofs::is_valid_is_the_calendar",
+   "zip::proofs::unix_time_always_valid"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:168:39: replace % with + in is_leap",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 168,
+    "column": 39
+   },
+   "end": {
+    "line": 168,
+    "column": 40
+   }
+  },
+  "replacement": "+",
+  "harnesses": [
+   "zip::proofs::civil_date_conversion_roundtrip",
+   "zip::proofs::dos_datetime_roundtrip",
+   "zip::proofs::is_valid_is_the_calendar",
+   "zip::proofs::unix_time_always_valid"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:168:39: replace % with / in is_leap",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 168,
+    "column": 39
+   },
+   "end": {
+    "line": 168,
+    "column": 40
+   }
+  },
+  "replacement": "/",
+  "harnesses": [
+   "zip::proofs::civil_date_conversion_roundtrip",
+   "zip::proofs::dos_datetime_roundtrip",
+   "zip::proofs::is_valid_is_the_calendar",
+   "zip::proofs::unix_time_always_valid"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:168:45: replace == with != in is_leap",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 168,
+    "column": 45
+   },
+   "end": {
+    "line": 168,
+    "column": 47
+   }
+  },
+  "replacement": "!=",
+  "harnesses": [
+   "zip::proofs::civil_date_conversion_roundtrip",
+   "zip::proofs::dos_datetime_roundtrip",
+   "zip::proofs::is_valid_is_the_calendar",
+   "zip::proofs::unix_time_always_valid"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:168:5: replace is_leap -> bool with true",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 168,
+    "column": 5
+   },
+   "end": {
+    "line": 168,
+    "column": 49
+   }
+  },
+  "replacement": "true",
+  "harnesses": [
+   "zip::proofs::civil_date_conversion_roundtrip",
+   "zip::proofs::dos_datetime_roundtrip",
+   "zip::proofs::is_valid_is_the_calendar",
+   "zip::proofs::unix_time_always_valid"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:175:14: replace match guard is_leap(year) with true in days_in_month",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 175,
+    "column": 14
+   },
+   "end": {
+    "line": 175,
+    "column": 27
+   }
+  },
+  "replacement": "true",
+  "harnesses": [
+   "zip::proofs::civil_date_conversion_roundtrip",
+   "zip::proofs::dos_datetime_roundtrip",
+   "zip::proofs::is_valid_is_the_calendar",
+   "zip::proofs::unix_time_always_valid"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:198:48: replace - with + in civil_from_days",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 198,
+    "column": 48
+   },
+   "end": {
+    "line": 198,
+    "column": 49
+   }
+  },
+  "replacement": "+",
+  "harnesses": [
+   "zip::proofs::civil_date_conversion_roundtrip",
+   "zip::proofs::is_valid_is_the_calendar",
+   "zip::proofs::unix_time_always_valid",
+   "zip::proofs::unix_time_converts_exactly"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/zip.rs:239:47: replace | with ^ in DosDateTime::to_dos",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 239,
+    "column": 47
+   },
+   "end": {
+    "line": 239,
+    "column": 48
+   }
+  },
+  "replacement": "^",
+  "harnesses": [
+   "zip::proofs::dos_datetime_roundtrip"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/zip.rs:239:77: replace | with ^ in DosDateTime::to_dos",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 239,
+    "column": 77
+   },
+   "end": {
+    "line": 239,
+    "column": 78
+   }
+  },
+  "replacement": "^",
+  "harnesses": [
+   "zip::proofs::dos_datetime_roundtrip"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/zip.rs:23:33: replace << with >>",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 23,
+    "column": 33
+   },
+   "end": {
+    "line": 23,
+    "column": 35
+   }
+  },
+  "replacement": ">>",
+  "harnesses": [
+   "zip::proofs::central_header_roundtrip",
+   "zip::proofs::eocd_roundtrip",
+   "zip::proofs::find_eocd_is_sound",
+   "zip::proofs::header_parsers_never_panic",
+   "zip::proofs::local_header_roundtrip"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:23:39: replace | with &",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 23,
+    "column": 39
+   },
+   "end": {
+    "line": 23,
+    "column": 40
+   }
+  },
+  "replacement": "&",
+  "harnesses": [
+   "zip::proofs::central_header_roundtrip",
+   "zip::proofs::eocd_roundtrip",
+   "zip::proofs::find_eocd_is_sound",
+   "zip::proofs::header_parsers_never_panic",
+   "zip::proofs::local_header_roundtrip"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:23:39: replace | with ^",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 23,
+    "column": 39
+   },
+   "end": {
+    "line": 23,
+    "column": 40
+   }
+  },
+  "replacement": "^",
+  "harnesses": [
+   "zip::proofs::central_header_roundtrip",
+   "zip::proofs::eocd_roundtrip",
+   "zip::proofs::find_eocd_is_sound",
+   "zip::proofs::header_parsers_never_panic",
+   "zip::proofs::local_header_roundtrip"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/zip.rs:240:65: replace | with ^ in DosDateTime::to_dos",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 240,
+    "column": 65
+   },
+   "end": {
+    "line": 240,
+    "column": 66
+   }
+  },
+  "replacement": "^",
+  "harnesses": [
+   "zip::proofs::dos_datetime_roundtrip"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/zip.rs:240:94: replace | with ^ in DosDateTime::to_dos",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 240,
+    "column": 94
+   },
+   "end": {
+    "line": 240,
+    "column": 95
+   }
+  },
+  "replacement": "^",
+  "harnesses": [
+   "zip::proofs::dos_datetime_roundtrip"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/zip.rs:25:26: replace << with >>",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 25,
+    "column": 26
+   },
+   "end": {
+    "line": 25,
+    "column": 28
+   }
+  },
+  "replacement": ">>",
+  "harnesses": [
+   "zip::proofs::central_header_roundtrip",
+   "zip::proofs::eocd_roundtrip",
+   "zip::proofs::find_eocd_is_sound",
+   "zip::proofs::header_parsers_never_panic",
+   "zip::proofs::local_header_roundtrip"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:262:25: replace < with <= in DosDateTime::from_unix_seconds",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 262,
+    "column": 25
+   },
+   "end": {
+    "line": 262,
+    "column": 26
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "zip::proofs::unix_time_always_valid",
+   "zip::proofs::unix_time_converts_exactly"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/zip.rs:264:24: replace > with >= in DosDateTime::from_unix_seconds",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 264,
+    "column": 24
+   },
+   "end": {
+    "line": 264,
+    "column": 25
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "zip::proofs::unix_time_always_valid",
+   "zip::proofs::unix_time_converts_exactly"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/zip.rs:510:32: replace > with == in name_is_safe",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 510,
+    "column": 32
+   },
+   "end": {
+    "line": 510,
+    "column": 33
+   }
+  },
+  "replacement": "==",
+  "harnesses": [
+   "zip::proofs::validate_name_is_exactly_the_rule"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:510:32: replace > with >= in name_is_safe",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 510,
+    "column": 32
+   },
+   "end": {
+    "line": 510,
+    "column": 33
+   }
+  },
+  "replacement": ">=",
+  "harnesses": [
+   "zip::proofs::validate_name_is_exactly_the_rule"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:525:45: replace + with * in name_is_safe",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 525,
+    "column": 45
+   },
+   "end": {
+    "line": 525,
+    "column": 46
+   }
+  },
+  "replacement": "*",
+  "harnesses": [
+   "zip::proofs::validate_name_is_exactly_the_rule"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:525:45: replace + with - in name_is_safe",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 525,
+    "column": 45
+   },
+   "end": {
+    "line": 525,
+    "column": 46
+   }
+  },
+  "replacement": "-",
+  "harnesses": [
+   "zip::proofs::validate_name_is_exactly_the_rule"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:526:33: replace == with != in name_is_safe",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 526,
+    "column": 33
+   },
+   "end": {
+    "line": 526,
+    "column": 35
+   }
+  },
+  "replacement": "!=",
+  "harnesses": [
+   "zip::proofs::validate_name_is_exactly_the_rule"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:526:49: replace || with && in name_is_safe",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 526,
+    "column": 49
+   },
+   "end": {
+    "line": 526,
+    "column": 51
+   }
+  },
+  "replacement": "&&",
+  "harnesses": [
+   "zip::proofs::validate_name_is_exactly_the_rule"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:526:57: replace == with != in name_is_safe",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 526,
+    "column": 57
+   },
+   "end": {
+    "line": 526,
+    "column": 59
+   }
+  },
+  "replacement": "!=",
+  "harnesses": [
+   "zip::proofs::validate_name_is_exactly_the_rule"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:760:19: replace < with <= in find_eocd",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 760,
+    "column": 19
+   },
+   "end": {
+    "line": 760,
+    "column": 20
+   }
+  },
+  "replacement": "<=",
+  "harnesses": [
+   "zip::proofs::find_eocd_is_sound"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:767:40: replace && with || in find_eocd",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 767,
+    "column": 40
+   },
+   "end": {
+    "line": 767,
+    "column": 42
+   }
+  },
+  "replacement": "||",
+  "harnesses": [
+   "zip::proofs::find_eocd_is_sound"
+  ],
+  "tests_caught": false
+ },
+ {
+  "name": "src/zip.rs:767:75: replace + with - in find_eocd",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 767,
+    "column": 75
+   },
+   "end": {
+    "line": 767,
+    "column": 76
+   }
+  },
+  "replacement": "-",
+  "harnesses": [
+   "zip::proofs::find_eocd_is_sound"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:771:14: replace == with != in find_eocd",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 771,
+    "column": 14
+   },
+   "end": {
+    "line": 771,
+    "column": 16
+   }
+  },
+  "replacement": "!=",
+  "harnesses": [
+   "zip::proofs::find_eocd_is_sound"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:774:11: replace -= with += in find_eocd",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 774,
+    "column": 11
+   },
+   "end": {
+    "line": 774,
+    "column": 13
+   }
+  },
+  "replacement": "+=",
+  "harnesses": [
+   "zip::proofs::find_eocd_is_sound"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:774:11: replace -= with /= in find_eocd",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 774,
+    "column": 11
+   },
+   "end": {
+    "line": 774,
+    "column": 13
+   }
+  },
+  "replacement": "/=",
+  "harnesses": [
+   "zip::proofs::find_eocd_is_sound"
+  ],
+  "tests_caught": true
+ },
+ {
+  "name": "src/zip.rs:796:58: replace + with * in record_bounds",
+  "file": "src/zip.rs",
+  "span": {
+   "start": {
+    "line": 796,
+    "column": 58
+   },
+   "end": {
+    "line": 796,
+    "column": 59
+   }
+  },
+  "replacement": "*",
+  "harnesses": [
+   "zip::proofs::record_bounds_sound"
+  ],
+  "tests_caught": true
+ }
+]

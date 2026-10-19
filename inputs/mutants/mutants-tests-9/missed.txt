@@ -1,0 +1,12 @@
+src/compat.rs:299:29: replace / with % in deflate_bytes_gzip_conf
+src/deflate.rs:96:19: replace < with == in encode_with_matcher
+src/huffman.rs:446:23: replace << with >> in Canonical::rebuild
+src/huffman.rs:630:31: replace < with == in Decoder::rebuild_with_fast_bits
+src/lz77.rs:31:9: replace Token::output_len -> usize with 0
+src/lz77.rs:209:32: replace < with <= in Matcher::longest_match
+src/lz77.rs:310:65: replace - with / in Matcher::tokenize
+src/lz77.rs:320:82: replace + with - in Matcher::tokenize
+src/lz77.rs:333:43: replace || with && in Matcher::tokenize
+src/lz77.rs:357:45: replace - with / in tokenize_runs
+src/zip.rs:196:40: replace - with / in civil_from_days
+src/zip.rs:478:20: replace < with > in EndOfCentralDirectory::parse

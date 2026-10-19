@@ -1,0 +1,16 @@
+src/crc32.rs:43:11: replace += with -= in make_tables
+src/crc32.rs:32:11: replace += with *= in make_tables
+src/gzip_header.rs:59:9: replace FileSystemType::from_u8 -> FileSystemType with Default::default()
+src/huffman.rs:69:44: replace + with * in canonical_codes
+src/huffman.rs:85:25: replace - with / in canonical_codes
+src/huffman.rs:98:14: replace += with -= in canonical_codes
+src/huffman.rs:421:60: replace + with *
+src/huffman.rs:469:17: replace += with *= in Canonical::rebuild
+src/huffman.rs:487:15: replace += with -= in Canonical::rebuild
+src/huffman.rs:623:17: replace < with <= in Decoder::rebuild_with_fast_bits
+src/huffman.rs:636:15: replace += with *= in Decoder::rebuild_with_fast_bits
+src/tables.rs:66:11: replace += with -= in len_code_by_search
+src/tables.rs:94:15: replace + with * in build_dist_code
+src/write.rs:218:9: replace ZlibEncoder<W>::reset -> io::Result<W> with Ok(Default::default())
+src/write.rs:310:9: replace GzEncoder<W>::reset -> io::Result<W> with Ok(Default::default())
+src/zip.rs:94:9: replace <impl std::error::Error for ZipError>::source -> Option<&(dyn std::error::Error +'static)> with Some(Box::leak(Box::new(Default::default())))

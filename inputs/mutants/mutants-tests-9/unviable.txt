@@ -1,0 +1,9 @@
+src/bitio.rs:300:36: replace - with + in reverse_bits
+src/gzip_header.rs:284:5: replace default_os -> FileSystemType with Default::default()
+src/huffman.rs:73:14: replace > with < in canonical_codes
+src/huffman.rs:86:17: replace < with <= in canonical_codes
+src/huffman.rs:477:22: replace + with * in Canonical::rebuild
+src/huffman.rs:614:44: replace + with * in Decoder::rebuild_with_fast_bits
+src/tables.rs:122:5: replace fixed_litlen_lengths -> [u8; 288] with [1; 288]
+src/tables.rs:95:11: replace += with *= in build_dist_code
+src/write.rs:112:9: replace Core<W>::reset -> W with Default::default()

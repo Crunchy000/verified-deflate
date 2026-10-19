@@ -1,0 +1,14 @@
+src/adler32.rs:54:9: replace Adler32::from_checksum -> Self with Default::default()
+src/compat.rs:141:9: replace CompressionOptions::huffman_only -> CompressionOptions with Default::default()
+src/crc32.rs:40:31: replace & with ^ in make_tables
+src/deflate.rs:246:15: replace += with -= in CodeTable<N>::from_lengths
+src/huffman.rs:79:11: replace += with -= in canonical_codes
+src/huffman.rs:96:22: replace + with - in canonical_codes
+src/huffman.rs:402:28: replace << with >>
+src/huffman.rs:466:21: replace < with == in Canonical::rebuild
+src/huffman.rs:481:17: replace < with <= in Canonical::rebuild
+src/huffman.rs:620:17: replace += with -= in Decoder::rebuild_with_fast_bits
+src/huffman.rs:632:29: replace += with -= in Decoder::rebuild_with_fast_bits
+src/tables.rs:92:13: replace < with <= in build_dist_code
+src/tables.rs:127:21: replace < with == in fixed_litlen_lengths
+src/write.rs:281:9: replace GzEncoder<W>::from_builder -> GzEncoder<W> with GzEncoder::from(Default::default())

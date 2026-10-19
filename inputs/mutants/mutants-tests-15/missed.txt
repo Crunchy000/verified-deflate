@@ -1,0 +1,11 @@
+src/bin/vzip.rs:76:41: replace == with != in create
+src/deflate.rs:457:26: replace < with <= in emit_run
+src/huffman.rs:58:5: replace is_complete -> bool with true
+src/huffman.rs:233:41: replace > with < in limit_depths
+src/huffman.rs:333:23: replace / with % in sort_by_weight
+src/huffman.rs:377:24: replace > with >= in heavier
+src/huffman.rs:631:54: replace << with >> in Decoder::rebuild_with_fast_bits
+src/lz77.rs:133:66: replace << with >> in Matcher::hash
+src/lz77.rs:321:87: replace + with - in Matcher::tokenize
+src/lz77.rs:319:30: replace && with || in Matcher::tokenize
+src/zip.rs:23:39: replace | with ^

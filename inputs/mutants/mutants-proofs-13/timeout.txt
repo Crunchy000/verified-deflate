@@ -1,0 +1,2 @@
+src/huffman.rs:110:11: replace += with *= in canonical_codes
+src/huffman.rs:478:17: replace += with *= in Canonical::rebuild

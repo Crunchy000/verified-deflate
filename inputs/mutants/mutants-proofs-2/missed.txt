@@ -1,0 +1,40 @@
+src/bin/vzip.rs:61:5: replace take_level -> (u8, Vec<String>) with (0, vec![String::new()])
+src/bin/vzip.rs:83:37: delete field verify from struct FileOptions expression in create
+src/bin/vzip.rs:150:16: replace += with *= in add_path
+src/bin/vzip.rs:234:5: replace test -> Result<()> with Ok(())
+src/bitio.rs:59:20: replace % with + in BitWriter::is_byte_aligned
+src/bitio.rs:150:73: replace - with / in BitReader<'a>::refill
+src/compat.rs:180:37: replace + with - in CompressionOptions::engine
+src/compat.rs:279:5: replace deflate_bytes_zlib -> Vec<u8> with vec![0]
+src/deflate.rs:167:9: replace StreamEncoder::push -> usize with 0
+src/deflate.rs:204:16: replace > with == in StreamEncoder::compress_pending
+src/deflate.rs:294:22: replace match guard fixed <= stored with true in write_block
+src/deflate.rs:345:34: replace | with ^ in write_fixed
+src/deflate.rs:404:20: replace + with * in BlockStats::body_bits
+src/deflate.rs:506:40: replace + with - in plan_dynamic
+src/deflate.rs:519:85: replace + with * in plan_dynamic
+src/deflate.rs:524:34: replace * with / in plan_dynamic
+src/gzip_header.rs:54:9: replace FileSystemType::as_u8 -> u8 with 0
+src/gzip_header.rs:74:13: delete match arm 13 in FileSystemType::from_u8
+src/gzip_header.rs:195:9: replace GzBuilder::filename -> GzBuilder with Default::default()
+src/gzip_header.rs:243:17: replace |= with &= in GzBuilder::into_header_inner
+src/huffman.rs:144:45: replace * with + in build_lengths
+src/huffman.rs:233:65: replace == with != in limit_depths
+src/huffman.rs:261:35: replace - with / in limit_depths
+src/huffman.rs:301:23: replace - with / in huffman_depths
+src/huffman.rs:623:17: replace < with == in Decoder::rebuild_with_fast_bits
+src/inflate.rs:118:30: replace + with * in Output::grow
+src/lz77.rs:77:13: delete match arm 7 in MatchConfig::for_level
+src/lz77.rs:133:100: replace << with >> in Matcher::hash
+src/lz77.rs:151:42: replace - with / in Matcher::insert_at
+src/lz77.rs:254:19: replace -= with += in Matcher::longest_match
+src/lz77.rs:319:37: replace < with <= in Matcher::tokenize
+src/lz77.rs:324:29: replace += with *= in Matcher::tokenize
+src/write.rs:62:36: replace == with != in Core<W>::send
+src/write.rs:205:9: replace ZlibEncoder<W>::output_all -> io::Result<()> with Ok(())
+src/zip.rs:72:9: replace <impl fmt::Display for ZipError>::fmt -> fmt::Result with Ok(Default::default())
+src/zip.rs:185:40: replace - with / in days_from_civil
+src/zip.rs:239:77: replace | with ^ in DosDateTime::to_dos
+src/zip.rs:510:32: replace > with >= in name_is_safe
+src/zip.rs:683:9: replace ZipWriter::add_directory -> Result<(), ZipError> with Ok(())
+src/zip.rs:848:9: replace ZipArchive<'a>::entries -> &[ZipEntry] with Vec::leak(Vec::new())

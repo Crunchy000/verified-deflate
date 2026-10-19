@@ -1,0 +1,2 @@
+src/inflate.rs:175:44: replace + with * in codes
+src/lz77.rs:349:16: replace < with == in tokenize_runs

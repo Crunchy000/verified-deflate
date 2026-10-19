@@ -1,0 +1,1 @@
+src/lz77.rs:271:9: replace Matcher::tokenize -> (usize, usize) with (0, 1)

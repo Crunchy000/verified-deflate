@@ -1,0 +1,2 @@
+src/deflate.rs:167:9: replace StreamEncoder::push -> usize with 0
+src/lz77.rs:352:20: replace == with != in tokenize_runs

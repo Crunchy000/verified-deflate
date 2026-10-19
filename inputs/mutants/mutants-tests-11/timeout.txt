@@ -1,0 +1,4 @@
+src/deflate.rs:180:9: replace StreamEncoder::compress_pending with ()
+src/lz77.rs:271:9: replace Matcher::tokenize -> (usize, usize) with (1, 0)
+src/lz77.rs:343:5: replace tokenize_runs -> (usize, usize) with (0, 0)
+src/write.rs:58:25: replace < with == in Core<W>::send

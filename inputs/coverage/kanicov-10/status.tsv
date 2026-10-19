@@ -1,0 +1,14 @@
+zip::proofs::local_header_roundtrip	0	17
+zip::proofs::central_header_roundtrip	0	25
+zip::proofs::eocd_roundtrip	0	14
+zip::proofs::header_parsers_never_panic	0	6
+zip::proofs::find_eocd_is_sound	0	6
+zip::proofs::directory_bounds_sound	0	1
+zip::proofs::record_bounds_sound	0	5
+zip::proofs::dos_datetime_roundtrip	0	2
+zip::proofs::civil_date_conversion_roundtrip	0	8
+zip::proofs::size_limits_are_exact	0	3
+zip::proofs::is_valid_is_the_calendar	0	9
+zip::proofs::unix_time_converts_exactly	0	126
+zip::proofs::unix_time_always_valid	0	4
+zip::proofs::validate_name_is_exactly_the_rule	0	11

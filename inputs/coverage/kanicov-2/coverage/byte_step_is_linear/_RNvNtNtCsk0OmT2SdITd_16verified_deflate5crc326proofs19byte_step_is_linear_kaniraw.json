@@ -1,0 +1,1 @@
+{"data":{"src/crc32.rs":[{"function":"crc32::byte_table","term":{"Counter":0},"region":{"file":"src/crc32.rs","start":[54,1],"end":[56,2]},"status":"COVERED"},{"function":"crc32::proofs::byte_step_is_linear","term":{"Counter":0},"region":{"file":"src/crc32.rs","start":[227,5],"end":[231,6]},"status":"COVERED"}]}}

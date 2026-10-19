@@ -1,0 +1,3 @@
+src/deflate.rs:123:44: replace * with /
+src/deflate.rs:192:32: replace >= with < in StreamEncoder::compress_pending
+src/lz77.rs:392:11: replace += with *= in common_prefix

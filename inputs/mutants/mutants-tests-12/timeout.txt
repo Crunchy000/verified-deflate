@@ -1,0 +1,4 @@
+src/deflate.rs:181:29: replace && with || in StreamEncoder::compress_pending
+src/lz77.rs:271:9: replace Matcher::tokenize -> (usize, usize) with (1, 1)
+src/lz77.rs:343:5: replace tokenize_runs -> (usize, usize) with (0, 1)
+src/write.rs:160:9: replace <impl Write for DeflateEncoder<W>>::write -> io::Result<usize> with Ok(0)

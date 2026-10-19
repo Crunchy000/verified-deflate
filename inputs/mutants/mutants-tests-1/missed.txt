@@ -1,0 +1,9 @@
+src/deflate.rs:473:26: replace < with <= in emit_run
+src/huffman.rs:220:15: replace > with >= in limit_depths
+src/huffman.rs:301:23: replace - with + in huffman_depths
+src/huffman.rs:334:17: replace > with == in sort_by_weight
+src/lz77.rs:133:60: replace + with * in Matcher::hash
+src/lz77.rs:319:37: replace < with > in Matcher::tokenize
+src/zip.rs:141:5: replace check_archive_end -> Result<(), ZipError> with Ok(())
+src/zip.rs:185:40: replace - with + in days_from_civil
+src/zip.rs:198:48: replace - with / in civil_from_days

@@ -1,0 +1,3 @@
+src/deflate.rs:170:27: replace - with + in StreamEncoder::push
+src/lz77.rs:271:9: replace Matcher::tokenize -> (usize, usize) with (0, 0)
+src/zip.rs:774:11: replace -= with /= in find_eocd

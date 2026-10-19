@@ -1,0 +1,31 @@
+src/bin/vzip.rs:61:5: replace take_level -> (u8, Vec<String>) with (0, vec!["xyzzy".into()])
+src/bin/vzip.rs:90:27: replace == with != in create
+src/bin/vzip.rs:156:5: replace open -> Result<Vec<u8>> with Ok(vec![])
+src/bin/vzip.rs:242:21: replace += with -= in test
+src/bitio.rs:150:58: replace << with >> in BitReader<'a>::refill
+src/compat.rs:168:43: replace == with != in CompressionOptions::engine
+src/compat.rs:180:37: replace + with * in CompressionOptions::engine
+src/compat.rs:279:5: replace deflate_bytes_zlib -> Vec<u8> with vec![1]
+src/deflate.rs:167:9: replace StreamEncoder::push -> usize with 1
+src/deflate.rs:204:16: replace > with < in StreamEncoder::compress_pending
+src/deflate.rs:294:22: replace match guard fixed <= stored with false in write_block
+src/deflate.rs:404:13: replace + with - in BlockStats::body_bits
+src/deflate.rs:506:40: replace + with * in plan_dynamic
+src/deflate.rs:522:52: replace + with - in plan_dynamic
+src/deflate.rs:539:5: replace write_dynamic with ()
+src/gzip_header.rs:54:9: replace FileSystemType::as_u8 -> u8 with 1
+src/gzip_header.rs:75:13: delete match arm 14 in FileSystemType::from_u8
+src/gzip_header.rs:204:9: replace GzBuilder::comment -> GzBuilder with Default::default()
+src/gzip_header.rs:248:17: replace |= with &= in GzBuilder::into_header_inner
+src/huffman.rs:144:45: replace * with / in build_lengths
+src/huffman.rs:233:90: replace < with == in limit_depths
+src/huffman.rs:302:14: replace > with == in huffman_depths
+src/huffman.rs:623:17: replace < with > in Decoder::rebuild_with_fast_bits
+src/lz77.rs:78:13: delete match arm 8 in MatchConfig::for_level
+src/lz77.rs:254:19: replace -= with /= in Matcher::longest_match
+src/lz77.rs:319:68: replace < with == in Matcher::tokenize
+src/lz77.rs:325:32: replace + with - in Matcher::tokenize
+src/write.rs:74:9: replace Core<W>::write -> io::Result<usize> with Ok(0)
+src/zip.rs:94:9: replace <impl std::error::Error for ZipError>::source -> Option<&(dyn std::error::Error +'static)> with None
+src/zip.rs:525:45: replace + with - in name_is_safe
+src/zip.rs:685:35: replace & with | in ZipWriter::add_directory

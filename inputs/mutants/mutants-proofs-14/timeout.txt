@@ -1,0 +1,1 @@
+src/huffman.rs:51:11: replace += with *= in kraft_sum

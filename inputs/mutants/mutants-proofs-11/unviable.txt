@@ -1,0 +1,12 @@
+src/crc32.rs:39:25: replace - with + in make_tables
+src/deflate.rs:492:37: replace + with -
+src/deflate.rs:511:67: replace + with * in plan_dynamic
+src/huffman.rs:89:14: replace += with *= in canonical_codes
+src/huffman.rs:447:14: replace > with < in Canonical::rebuild
+src/huffman.rs:630:31: replace < with <= in Decoder::rebuild_with_fast_bits
+src/inflate.rs:46:33: replace + with - in decompress_with_limit
+src/lz77.rs:70:9: replace MatchConfig::for_level -> Self with Default::default()
+src/tables.rs:73:17: replace < with <= in dist_code_by_search
+src/tables.rs:84:11: replace += with *= in build_len_code
+src/write.rs:153:9: replace DeflateEncoder<W>::reset -> io::Result<W> with Ok(Default::default())
+src/zip.rs:329:9: replace LocalHeader::parse -> Result<Self, ZipError> with Ok(Default::default())

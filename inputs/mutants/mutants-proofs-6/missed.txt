@@ -1,0 +1,39 @@
+src/bin/vzip.rs:61:5: replace take_level -> (u8, Vec<String>) with (1, vec!["xyzzy".into()])
+src/bin/vzip.rs:90:66: replace * with + in create
+src/bin/vzip.rs:161:5: replace extract -> Result<()> with Ok(())
+src/bin/vzip.rs:255:5: replace read_stdin -> Result<Vec<u8>> with Ok(vec![])
+src/bitio.rs:30:9: replace BitWriter::with_capacity -> Self with Default::default()
+src/bitio.rs:65:23: replace > with >= in BitWriter::pad_to_byte
+src/bitio.rs:143:23: replace > with < in BitReader<'a>::refill
+src/bitio.rs:201:23: replace < with > in BitReader<'a>::peek
+src/compat.rs:171:69: delete field lazy from struct MatchConfig expression in CompressionOptions::engine
+src/compat.rs:206:9: replace <impl From<Compression> for CompressionOptions>::from -> CompressionOptions with Default::default()
+src/compat.rs:298:5: replace deflate_bytes_gzip_conf -> Vec<u8> with vec![1]
+src/deflate.rs:167:51: replace - with + in StreamEncoder::push
+src/deflate.rs:205:34: replace - with / in StreamEncoder::compress_pending
+src/deflate.rs:293:36: replace < with > in write_block
+src/deflate.rs:408:9: replace BlockStats::fixed_bits -> u64 with 1
+src/deflate.rs:508:36: replace + with - in plan_dynamic
+src/deflate.rs:524:59: replace + with * in plan_dynamic
+src/deflate.rs:539:39: replace << with >> in write_dynamic
+src/gzip_header.rs:62:13: delete match arm 1 in FileSystemType::from_u8
+src/gzip_header.rs:78:13: delete match arm 17 in FileSystemType::from_u8
+src/gzip_header.rs:224:9: replace GzBuilder::into_header_xfl -> Vec<u8> with vec![]
+src/gzip_header.rs:277:5: replace without_nul -> Vec<u8> with vec![]
+src/huffman.rs:292:40: replace > with == in huffman_depths
+src/huffman.rs:474:44: replace + with * in Canonical::rebuild
+src/huffman.rs:605:31: replace > with < in Decoder::rebuild_with_fast_bits
+src/huffman.rs:643:9: replace Decoder::is_complete -> bool with false
+src/huffman.rs:687:5: replace decode_without_table -> Result<u16, InflateError> with Ok(1)
+src/inflate.rs:210:22: replace + with - in read_dynamic_codes
+src/lz77.rs:125:26: replace < with == in Matcher::prime
+src/lz77.rs:256:39: replace < with == in Matcher::longest_match
+src/lz77.rs:319:64: replace + with - in Matcher::tokenize
+src/lz77.rs:360:52: replace - with / in tokenize_runs
+src/write.rs:90:12: delete ! in Core<W>::sync_flush
+src/write.rs:225:9: replace ZlibEncoder<W>::checksum -> u32 with 1
+src/write.rs:321:9: replace GzEncoder<W>::checksum -> u32 with 0
+src/zip.rs:175:14: replace match guard is_leap(year) with true in days_in_month
+src/zip.rs:686:25: replace | with ^ in ZipWriter::add_directory
+src/zip.rs:745:30: replace == with != in ZipEntry::is_dir
+src/zip.rs:858:9: replace ZipArchive<'a>::is_empty -> bool with true

@@ -1,0 +1,18 @@
+src/bin/vzip.rs:76:18: delete ! in create
+src/bitio.rs:239:24: replace < with <= in BitReader<'a>::read_aligned_bytes
+src/bitio.rs:279:13: replace < with <= in padded_word
+src/deflate.rs:431:16: replace > with >= in rle_code_lengths
+src/gzip_header.rs:10:21: replace << with >>
+src/huffman.rs:332:5: replace sort_by_weight with ()
+src/huffman.rs:631:61: replace | with ^ in Decoder::rebuild_with_fast_bits
+src/inflate.rs:196:26: replace || with && in read_dynamic_codes
+src/lz77.rs:133:38: replace | with ^ in Matcher::hash
+src/lz77.rs:319:57: replace && with || in Matcher::tokenize
+src/lz77.rs:321:60: replace + with * in Matcher::tokenize
+src/tables.rs:65:17: replace < with <= in len_code_by_search
+src/zip.rs:135:41: replace + with * in check_entry_end
+src/zip.rs:264:24: replace > with >= in DosDateTime::from_unix_seconds
+src/zip.rs:329:20: replace < with <= in LocalHeader::parse
+src/zip.rs:669:39: replace | with ^ in ZipWriter::add_file
+src/zip.rs:688:41: replace | with ^ in ZipWriter::add_directory
+src/zip.rs:767:40: replace && with || in find_eocd

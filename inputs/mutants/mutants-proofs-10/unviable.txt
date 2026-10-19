@@ -1,0 +1,11 @@
+src/crc32.rs:37:17: replace < with <= in make_tables
+src/deflate.rs:341:48: replace + with - in stored_bits_in
+src/deflate.rs:511:67: replace + with - in plan_dynamic
+src/huffman.rs:89:14: replace += with -= in canonical_codes
+src/huffman.rs:106:21: replace += with -= in canonical_codes
+src/huffman.rs:447:14: replace > with == in Canonical::rebuild
+src/huffman.rs:460:30: replace - with / in Canonical::rebuild
+src/huffman.rs:477:39: replace + with - in Canonical::rebuild
+src/inflate.rs:41:5: replace decompress_with_limit -> Result<Decompressed, InflateError> with Ok(Default::default())
+src/tables.rs:84:11: replace += with -= in build_len_code
+src/write.rs:146:9: replace DeflateEncoder<W>::finish -> io::Result<W> with Ok(Default::default())

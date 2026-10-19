@@ -1,0 +1,10 @@
+src/crc32.rs:43:11: replace += with *= in make_tables
+src/huffman.rs:85:21: replace * with + in canonical_codes
+src/huffman.rs:98:14: replace += with *= in canonical_codes
+src/huffman.rs:457:22: replace += with -= in Canonical::rebuild
+src/huffman.rs:474:44: replace + with - in Canonical::rebuild
+src/huffman.rs:487:15: replace += with *= in Canonical::rebuild
+src/tables.rs:66:11: replace += with *= in len_code_by_search
+src/tables.rs:94:51: replace + with - in build_dist_code
+src/tables.rs:129:21: replace < with <= in fixed_litlen_lengths
+src/write.rs:316:9: replace GzEncoder<W>::reset_with_builder -> io::Result<W> with Ok(Default::default())

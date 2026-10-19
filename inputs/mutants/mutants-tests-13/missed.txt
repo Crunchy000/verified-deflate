@@ -1,0 +1,10 @@
+src/bitio.rs:169:22: replace > with >= in BitReader<'a>::read_bits
+src/bitio.rs:212:9: replace BitReader<'a>::available -> u32 with 0
+src/deflate.rs:431:16: replace > with < in rle_code_lengths
+src/huffman.rs:76:14: replace > with >= in canonical_codes
+src/huffman.rs:253:90: replace > with >= in limit_depths
+src/huffman.rs:377:24: replace > with == in heavier
+src/huffman.rs:631:61: replace | with & in Decoder::rebuild_with_fast_bits
+src/huffman.rs:667:31: replace >> with << in Decoder::decode
+src/inflate.rs:107:14: replace > with >= in Output::reserve
+src/zip.rs:135:41: replace + with - in check_entry_end

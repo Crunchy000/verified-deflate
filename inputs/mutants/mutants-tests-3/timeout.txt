@@ -1,0 +1,5 @@
+src/crc32.rs:41:15: replace += with *= in make_tables
+src/bitio.rs:283:11: replace += with *= in padded_word
+src/lz77.rs:281:27: replace + with * in Matcher::tokenize
+src/write.rs:74:9: replace Core<W>::write -> io::Result<usize> with Ok(0)
+src/zip.rs:533:11: replace += with *= in name_is_safe

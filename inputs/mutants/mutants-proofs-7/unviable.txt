@@ -1,0 +1,9 @@
+src/crc32.rs:35:13: replace < with <= in make_tables
+src/huffman.rs:71:13: replace < with <= in canonical_codes
+src/huffman.rs:86:17: replace < with == in canonical_codes
+src/huffman.rs:444:39: replace + with - in Canonical::rebuild
+src/huffman.rs:458:15: replace += with -= in Canonical::rebuild
+src/inflate.rs:135:30: replace + with *
+src/inflate.rs:191:35: replace + with * in read_dynamic_codes
+src/tables.rs:82:13: replace < with <= in build_len_code
+src/zip.rs:478:9: replace EndOfCentralDirectory::parse -> Result<Self, ZipError> with Ok(Default::default())

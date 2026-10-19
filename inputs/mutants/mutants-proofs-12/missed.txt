@@ -1,0 +1,42 @@
+src/bin/vzip.rs:66:26: replace - with / in take_level
+src/bin/vzip.rs:124:49: replace & with | in options_for
+src/bin/vzip.rs:193:82: replace & with ^ in extract
+src/bin/vzip.rs:271:5: replace raw_inflate -> Result<()> with Ok(())
+src/compat.rs:31:33: replace * with /
+src/compat.rs:175:91: replace > with >= in CompressionOptions::engine
+src/compat.rs:246:5: replace deflate_bytes -> Vec<u8> with vec![0]
+src/compat.rs:317:5: replace deflate_bytes_gzip -> Vec<u8> with vec![0]
+src/deflate.rs:63:44: delete field level from struct CompressOptions expression in compress
+src/deflate.rs:108:24: replace >= with < in encode_with_matcher
+src/deflate.rs:181:29: replace && with || in StreamEncoder::compress_pending
+src/deflate.rs:402:9: replace BlockStats::body_bits -> u64 with 1
+src/deflate.rs:431:16: replace > with == in rle_code_lengths
+src/deflate.rs:512:49: replace + with - in plan_dynamic
+src/deflate.rs:524:26: replace + with * in plan_dynamic
+src/deflate.rs:542:27: replace - with / in write_dynamic
+src/gzip_header.rs:68:13: delete match arm 7 in FileSystemType::from_u8
+src/gzip_header.rs:134:13: delete match arm 4 in ExtraFlags::from_u8
+src/gzip_header.rs:235:9: replace GzBuilder::into_header_with_checksum -> Vec<u8> with vec![]
+src/gzip_header.rs:287:9: delete match arm "win32" in default_os
+src/huffman.rs:167:14: replace || with && in build_lengths_in
+src/huffman.rs:253:90: replace > with < in limit_depths
+src/huffman.rs:324:17: replace - with + in take_lightest
+src/huffman.rs:508:9: replace Canonical::is_single_unit_code -> bool with false
+src/huffman.rs:630:36: replace << with >> in Decoder::rebuild_with_fast_bits
+src/inflate.rs:107:14: replace > with < in Output::reserve
+src/inflate.rs:222:8: delete ! in read_dynamic_codes
+src/lz77.rs:71:13: delete match arm 0 | 1 in MatchConfig::for_level
+src/lz77.rs:133:72: replace | with ^ in Matcher::hash
+src/lz77.rs:244:24: replace > with >= in Matcher::longest_match
+src/lz77.rs:320:78: replace / with * in Matcher::tokenize
+src/lz77.rs:358:38: replace < with <= in tokenize_runs
+src/write.rs:58:25: replace < with > in Core<W>::send
+src/write.rs:160:9: replace <impl Write for DeflateEncoder<W>>::write -> io::Result<usize> with Ok(0)
+src/write.rs:246:41: delete ! in <impl Drop for ZlibEncoder<W>>::drop
+src/write.rs:343:38: replace && with || in <impl Drop for GzEncoder<W>>::drop
+src/zip.rs:168:22: replace % with / in is_leap
+src/zip.rs:240:65: replace | with ^ in DosDateTime::to_dos
+src/zip.rs:500:5: replace validate_name -> Result<(), ZipError> with Ok(())
+src/zip.rs:526:57: replace == with != in name_is_safe
+src/zip.rs:669:68: replace << with >> in ZipWriter::add_file
+src/zip.rs:688:49: replace << with >> in ZipWriter::add_directory

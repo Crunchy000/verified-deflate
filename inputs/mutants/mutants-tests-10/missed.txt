@@ -1,0 +1,12 @@
+src/bitio.rs:39:22: replace > with >= in BitWriter::write_bits
+src/compat.rs:299:29: replace / with * in deflate_bytes_gzip_conf
+src/deflate.rs:262:48: replace | with ^ in CodeTable<N>::put_with_extra
+src/deflate.rs:293:55: replace < with <= in write_block
+src/huffman.rs:73:14: replace > with >= in canonical_codes
+src/huffman.rs:630:31: replace < with > in Decoder::rebuild_with_fast_bits
+src/lz77.rs:31:9: replace Token::output_len -> usize with 1
+src/lz77.rs:320:82: replace + with * in Matcher::tokenize
+src/lz77.rs:333:50: replace <= with > in Matcher::tokenize
+src/lz77.rs:414:82: replace && with || in match_is_valid
+src/zip.rs:135:5: replace check_entry_end -> Result<(), ZipError> with Ok(())
+src/zip.rs:240:94: replace | with ^ in DosDateTime::to_dos

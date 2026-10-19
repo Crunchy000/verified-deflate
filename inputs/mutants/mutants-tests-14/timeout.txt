@@ -1,0 +1,2 @@
+src/huffman.rs:51:11: replace += with *= in kraft_sum
+src/lz77.rs:343:5: replace tokenize_runs -> (usize, usize) with (1, 1)

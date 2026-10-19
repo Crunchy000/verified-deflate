@@ -1,0 +1,8 @@
+src/huffman.rs:86:17: replace < with > in canonical_codes
+src/huffman.rs:102:13: replace < with <= in canonical_codes
+src/huffman.rs:444:39: replace + with * in Canonical::rebuild
+src/huffman.rs:458:15: replace += with *= in Canonical::rebuild
+src/huffman.rs:614:44: replace + with - in Decoder::rebuild_with_fast_bits
+src/tables.rs:73:22: replace && with || in dist_code_by_search
+src/tables.rs:83:37: replace + with - in build_len_code
+src/tables.rs:95:11: replace += with -= in build_dist_code

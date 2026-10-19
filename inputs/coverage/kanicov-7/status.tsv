@@ -1,0 +1,10 @@
+lz77::proofs::tokens_valid_and_replay_small_tables	0	66
+lz77::proofs::tokens_valid_and_replay_level9	0	66
+lz77::proofs::tokens_valid_and_replay_greedy	0	60
+lz77::proofs::runs_are_matched	0	85
+lz77::proofs::rle_tokens_valid_and_replay	0	55
+lz77::proofs::no_chain_means_literals_only	0	13
+lz77::proofs::common_prefix_matches_reference	0	11
+lz77::proofs::copy_within_buffer_meets_spec	0	50
+lz77::proofs::short_copy_meets_spec	0	573
+lz77::proofs::replay_arbitrary_tokens	0	43

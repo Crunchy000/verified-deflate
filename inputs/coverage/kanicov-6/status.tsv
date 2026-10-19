@@ -1,0 +1,6 @@
+huffman::proofs::canonical_codes_are_prefix_free	0	147
+huffman::proofs::limit_depths_keeps_code_complete	0	98
+huffman::proofs::decoder_new_never_panics	0	187
+huffman::proofs::encode_then_decode_symbol	143	600
+huffman::proofs::decode_arbitrary_bits	0	150
+huffman::proofs::fast_decode_matches_slow	143	427

@@ -1,0 +1,43 @@
+src/bin/vzip.rs:61:5: replace take_level -> (u8, Vec<String>) with (1, vec![String::new()])
+src/bin/vzip.rs:90:74: replace / with * in create
+src/bin/vzip.rs:156:5: replace open -> Result<Vec<u8>> with Ok(vec![1])
+src/bin/vzip.rs:246:12: replace == with != in test
+src/bitio.rs:143:23: replace > with == in BitReader<'a>::refill
+src/bitio.rs:150:67: replace * with / in BitReader<'a>::refill
+src/bitio.rs:201:23: replace < with == in BitReader<'a>::peek
+src/compat.rs:171:55: delete field max_chain from struct MatchConfig expression in CompressionOptions::engine
+src/compat.rs:183:87: replace + with * in CompressionOptions::engine
+src/compat.rs:298:5: replace deflate_bytes_gzip_conf -> Vec<u8> with vec![0]
+src/crc32.rs:124:5: replace crc32 -> u32 with 1
+src/deflate.rs:167:33: replace - with / in StreamEncoder::push
+src/deflate.rs:205:34: replace - with + in StreamEncoder::compress_pending
+src/deflate.rs:293:36: replace < with == in write_block
+src/deflate.rs:408:9: replace BlockStats::fixed_bits -> u64 with 0
+src/deflate.rs:507:41: replace + with * in plan_dynamic
+src/deflate.rs:524:59: replace + with - in plan_dynamic
+src/deflate.rs:539:34: replace | with ^ in write_dynamic
+src/gzip_header.rs:61:13: delete match arm 0 in FileSystemType::from_u8
+src/gzip_header.rs:77:13: delete match arm 16 in FileSystemType::from_u8
+src/gzip_header.rs:218:9: replace GzBuilder::xfl -> GzBuilder with Default::default()
+src/gzip_header.rs:258:17: replace |= with &= in GzBuilder::into_header_inner
+src/huffman.rs:233:90: replace < with <= in limit_depths
+src/huffman.rs:276:5: replace huffman_depths with ()
+src/huffman.rs:319:59: replace <= with > in take_lightest
+src/huffman.rs:421:110: replace << with >>
+src/huffman.rs:605:31: replace > with == in Decoder::rebuild_with_fast_bits
+src/huffman.rs:625:18: replace != with == in Decoder::rebuild_with_fast_bits
+src/huffman.rs:687:5: replace decode_without_table -> Result<u16, InflateError> with Ok(0)
+src/inflate.rs:193:5: replace read_dynamic_codes -> Result<(), InflateError> with Ok(())
+src/inflate.rs:205:8: delete ! in read_dynamic_codes
+src/lz77.rs:122:9: replace Matcher::prime with ()
+src/lz77.rs:319:68: replace < with <= in Matcher::tokenize
+src/lz77.rs:357:16: replace > with < in tokenize_runs
+src/lz77.rs:384:17: replace <= with > in common_prefix
+src/write.rs:90:9: replace Core<W>::sync_flush -> io::Result<()> with Ok(())
+src/write.rs:225:9: replace ZlibEncoder<W>::checksum -> u32 with 0
+src/zip.rs:95:13: delete match arm Self::Inflate(e) in <impl std::error::Error for ZipError>::source
+src/zip.rs:526:49: replace || with && in name_is_safe
+src/zip.rs:686:25: replace | with & in ZipWriter::add_directory
+src/zip.rs:745:9: replace ZipEntry::is_dir -> bool with false
+src/zip.rs:811:41: replace || with && in ZipArchive<'a>::parse
+src/zip.rs:853:9: replace ZipArchive<'a>::len -> usize with 1

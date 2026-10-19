@@ -1,0 +1,1 @@
+src/huffman.rs:632:34: replace << with >> in Decoder::rebuild_with_fast_bits

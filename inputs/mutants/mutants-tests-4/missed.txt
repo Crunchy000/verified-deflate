@@ -1,0 +1,13 @@
+src/adler32.rs:74:24: replace | with ^ in Adler32::finalize
+src/bitio.rs:143:9: replace BitReader<'a>::refill with ()
+src/bitio.rs:265:51: replace + with - in BitReader<'a>::bits_remaining
+src/deflate.rs:204:16: replace > with >= in StreamEncoder::compress_pending
+src/deflate.rs:435:16: replace > with >= in rle_code_lengths
+src/huffman.rs:250:25: replace > with >= in limit_depths
+src/huffman.rs:677:9: replace Decoder::decode_slow -> Result<u16, InflateError> with Ok(1)
+src/lz77.rs:114:9: replace Matcher::reset with ()
+src/lz77.rs:319:68: replace < with > in Matcher::tokenize
+src/lz77.rs:325:32: replace + with * in Matcher::tokenize
+src/lz77.rs:382:26: replace < with <= in common_prefix
+src/zip.rs:239:47: replace | with ^ in DosDateTime::to_dos
+src/zip.rs:414:20: replace < with <= in CentralHeader::parse

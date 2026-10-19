@@ -1,0 +1,2 @@
+src/huffman.rs:335:15: replace -= with += in sort_by_weight
+src/huffman.rs:636:15: replace += with *= in Decoder::rebuild_with_fast_bits

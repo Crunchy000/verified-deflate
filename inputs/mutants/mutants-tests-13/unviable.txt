@@ -1,0 +1,8 @@
+src/crc32.rs:22:11: replace += with *= in byte_bitwise
+src/huffman.rs:92:40: replace + with * in canonical_codes
+src/huffman.rs:110:11: replace += with *= in canonical_codes
+src/huffman.rs:450:45: replace + with - in Canonical::rebuild
+src/huffman.rs:465:29: replace - with / in Canonical::rebuild
+src/huffman.rs:478:17: replace += with *= in Canonical::rebuild
+src/tables.rs:73:13: replace + with * in dist_code_by_search
+src/write.rs:281:9: replace GzEncoder<W>::from_builder -> GzEncoder<W> with GzEncoder::new()

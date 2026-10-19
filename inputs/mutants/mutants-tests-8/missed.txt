@@ -1,0 +1,13 @@
+src/bitio.rs:39:22: replace > with == in BitWriter::write_bits
+src/bitio.rs:126:17: replace < with <= in BitReader<'a>::fill
+src/compat.rs:299:33: replace + with * in deflate_bytes_gzip_conf
+src/huffman.rs:73:14: replace > with == in canonical_codes
+src/huffman.rs:182:22: replace == with != in build_lengths_in
+src/huffman.rs:292:40: replace > with >= in huffman_depths
+src/huffman.rs:339:15: replace > with >= in sort_by_weight
+src/lz77.rs:125:26: replace < with <= in Matcher::prime
+src/lz77.rs:256:39: replace < with <= in Matcher::longest_match
+src/lz77.rs:310:65: replace - with + in Matcher::tokenize
+src/lz77.rs:320:36: replace >= with < in Matcher::tokenize
+src/lz77.rs:414:5: replace match_is_valid -> bool with true
+src/zip.rs:196:40: replace - with + in civil_from_days

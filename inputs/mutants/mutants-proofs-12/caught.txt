@@ -1,0 +1,75 @@
+src/adler32.rs:63:19: replace += with *= in Adler32::update
+src/bitio.rs:40:39: replace & with ^ in BitWriter::write_bits
+src/bitio.rs:54:33: replace * with + in BitWriter::bit_len
+src/bitio.rs:89:9: replace BitWriter::finish -> Vec<u8> with vec![0]
+src/bitio.rs:128:26: replace |= with &= in BitReader<'a>::fill
+src/bitio.rs:148:59: replace + with - in BitReader<'a>::refill
+src/bitio.rs:169:22: replace > with < in BitReader<'a>::read_bits
+src/bitio.rs:153:29: replace * with + in BitReader<'a>::refill
+src/bitio.rs:186:22: replace += with -= in BitReader<'a>::read_bit
+src/bitio.rs:204:28: replace << with >> in BitReader<'a>::peek
+src/bitio.rs:260:9: replace BitReader<'a>::bytes_consumed -> usize with 0
+src/bitio.rs:239:24: replace < with == in BitReader<'a>::read_aligned_bytes
+src/bitio.rs:279:13: replace < with == in padded_word
+src/crc32.rs:39:25: replace - with / in make_tables
+src/crc32.rs:55:21: replace ^ with | in byte_table
+src/crc32.rs:63:20: replace + with * in lanes
+src/crc32.rs:81:5: replace fold -> u32 with 0
+src/deflate.rs:262:66: replace + with - in CodeTable<N>::put_with_extra
+src/deflate.rs:304:5: replace write_stored with ()
+src/deflate.rs:340:35: replace + with - in stored_bits_in
+src/deflate.rs:456:17: replace >= with < in emit_run
+src/deflate.rs:471:25: replace - with + in emit_run
+src/huffman.rs:49:42: replace - with / in kraft_sum
+src/huffman.rs:76:14: replace > with < in canonical_codes
+src/huffman.rs:185:20: replace << with >> in build_lengths_in
+src/huffman.rs:230:25: replace < with <= in limit_depths
+src/huffman.rs:241:35: replace - with / in limit_depths
+src/huffman.rs:292:14: replace - with / in huffman_depths
+src/huffman.rs:317:25: replace < with == in take_lightest
+src/huffman.rs:377:5: replace heavier -> bool with false
+src/huffman.rs:386:49: replace + with - in sift_down
+src/huffman.rs:465:29: replace - with + in Canonical::rebuild
+src/huffman.rs:666:9: replace Decoder::decode -> Result<u16, InflateError> with Ok(1)
+src/inflate.rs:143:20: delete ! in State<'_>::stored
+src/inflate.rs:170:48: replace + with * in codes
+src/inflate.rs:195:43: replace + with - in read_dynamic_codes
+src/inflate.rs:245:21: replace + with - in expand_code_length
+src/lz77.rs:140:16: replace + with - in Matcher::bucket
+src/lz77.rs:190:9: replace Matcher::find_match -> Option<(usize, usize)> with Some((0, 1))
+src/lz77.rs:215:34: replace + with * in Matcher::longest_match
+src/lz77.rs:271:9: replace Matcher::tokenize -> (usize, usize) with (1, 1)
+src/lz77.rs:316:28: replace + with - in Matcher::tokenize
+src/lz77.rs:343:5: replace tokenize_runs -> (usize, usize) with (0, 1)
+src/lz77.rs:367:24: replace + with - in tokenize_runs
+src/lz77.rs:390:22: replace + with * in common_prefix
+src/lz77.rs:414:90: replace <= with > in match_is_valid
+src/lz77.rs:444:26: replace + with * in copy_within_buffer
+src/lz77.rs:450:21: replace + with - in copy_within_buffer
+src/lz77.rs:461:28: replace - with + in copy_within_buffer
+src/lz77.rs:477:23: replace + with - in word4
+src/tables.rs:65:17: replace < with == in len_code_by_search
+src/tables.rs:90:5: replace build_dist_code -> [u8; 512] with [0; 512]
+src/tables.rs:105:18: replace - with + in length_code
+src/zip.rs:112:5: replace u32_at -> u32 with 1
+src/zip.rs:135:52: replace + with * in check_entry_end
+src/zip.rs:184:27: replace - with + in days_from_civil
+src/zip.rs:188:45: replace - with / in days_from_civil
+src/zip.rs:189:19: replace * with / in days_from_civil
+src/zip.rs:195:5: replace civil_from_days -> (i64, u8, u8) with (1, 0, 1)
+src/zip.rs:197:23: replace * with + in civil_from_days
+src/zip.rs:199:19: replace - with + in civil_from_days
+src/zip.rs:200:17: replace * with + in civil_from_days
+src/zip.rs:202:29: replace + with * in civil_from_days
+src/zip.rs:230:13: replace && with || in DosDateTime::is_valid
+src/zip.rs:234:28: replace % with + in DosDateTime::is_valid
+src/zip.rs:252:34: replace & with ^ in DosDateTime::from_dos
+src/zip.rs:264:24: replace > with == in DosDateTime::from_unix_seconds
+src/zip.rs:329:20: replace < with == in LocalHeader::parse
+src/zip.rs:522:13: replace <= with > in name_is_safe
+src/zip.rs:763:27: replace - with + in find_eocd
+src/zip.rs:781:5: replace directory_bounds -> Result<(usize, usize), ZipError> with Ok((1, 0))
+src/zip.rs:797:13: replace > with < in record_bounds
+src/zip.rs:825:34: replace == with != in ZipArchive<'a>::parse
+src/zip.rs:868:9: replace ZipArchive<'a>::raw_data -> Result<&'a[u8], ZipError> with Ok(Vec::leak(Vec::new()))
+src/zip.rs:894:22: replace != with == in ZipArchive<'a>::read

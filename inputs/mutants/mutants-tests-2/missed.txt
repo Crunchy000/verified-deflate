@@ -1,0 +1,15 @@
+src/bin/vzip.rs:83:37: delete field verify from struct FileOptions expression in create
+src/bitio.rs:265:9: replace BitReader<'a>::bits_remaining -> u64 with 0
+src/deflate.rs:345:34: replace | with ^ in write_fixed
+src/huffman.rs:84:16: replace <= with > in canonical_codes
+src/huffman.rs:301:23: replace - with / in huffman_depths
+src/huffman.rs:334:17: replace > with < in sort_by_weight
+src/huffman.rs:382:34: replace + with * in sift_down
+src/huffman.rs:623:17: replace < with == in Decoder::rebuild_with_fast_bits
+src/lz77.rs:133:100: replace << with >> in Matcher::hash
+src/lz77.rs:254:19: replace -= with += in Matcher::longest_match
+src/lz77.rs:319:37: replace < with <= in Matcher::tokenize
+src/lz77.rs:382:26: replace < with == in common_prefix
+src/zip.rs:185:40: replace - with / in days_from_civil
+src/zip.rs:198:33: replace + with - in civil_from_days
+src/zip.rs:239:77: replace | with ^ in DosDateTime::to_dos

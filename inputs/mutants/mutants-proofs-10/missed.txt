@@ -1,0 +1,40 @@
+src/bin/vzip.rs:65:33: replace == with != in take_level
+src/bin/vzip.rs:113:5: replace options_for -> FileOptions with Default::default()
+src/bin/vzip.rs:185:12: delete ! in extract
+src/bin/vzip.rs:262:8: delete ! in raw_deflate
+src/bitio.rs:39:22: replace > with >= in BitWriter::write_bits
+src/bitio.rs:84:9: replace BitWriter::take_bytes -> Vec<u8> with vec![1]
+src/bitio.rs:147:25: replace - with + in BitReader<'a>::refill
+src/compat.rs:175:91: replace > with == in CompressionOptions::engine
+src/compat.rs:231:5: replace deflate_bytes_conf -> Vec<u8> with vec![1]
+src/compat.rs:299:29: replace / with * in deflate_bytes_gzip_conf
+src/deflate.rs:63:5: replace compress -> Vec<u8> with vec![0]
+src/deflate.rs:96:19: replace < with > in encode_with_matcher
+src/deflate.rs:170:27: replace - with / in StreamEncoder::push
+src/deflate.rs:225:9: replace StreamEncoder::take_output -> Vec<u8> with vec![0]
+src/deflate.rs:262:48: replace | with ^ in CodeTable<N>::put_with_extra
+src/deflate.rs:293:55: replace < with <= in write_block
+src/deflate.rs:524:30: replace + with * in plan_dynamic
+src/deflate.rs:541:27: replace - with / in write_dynamic
+src/gzip_header.rs:66:13: delete match arm 5 in FileSystemType::from_u8
+src/gzip_header.rs:132:9: replace ExtraFlags::from_u8 -> ExtraFlags with Default::default()
+src/gzip_header.rs:230:9: replace GzBuilder::into_header -> Vec<u8> with vec![0]
+src/gzip_header.rs:285:9: delete match arm "linux" | "freebsd" | "dragonfly" | "netbsd" | "openbsd" | "solaris" | "bitrig" in default_os
+src/huffman.rs:253:65: replace == with != in limit_depths
+src/huffman.rs:292:22: replace + with * in huffman_depths
+src/huffman.rs:502:9: replace Canonical::coded_symbols -> usize with 1
+src/huffman.rs:630:31: replace < with > in Decoder::rebuild_with_fast_bits
+src/huffman.rs:654:9: replace Decoder::is_single_unit_code -> bool with false
+src/inflate.rs:212:15: replace < with <= in read_dynamic_codes
+src/lz77.rs:133:9: replace Matcher::hash -> usize with 1
+src/lz77.rs:320:82: replace + with * in Matcher::tokenize
+src/lz77.rs:333:50: replace <= with > in Matcher::tokenize
+src/write.rs:57:9: replace Core<W>::send -> io::Result<()> with Ok(())
+src/write.rs:246:9: replace <impl Drop for ZlibEncoder<W>>::drop with ()
+src/write.rs:336:9: replace <impl Write for GzEncoder<W>>::flush -> io::Result<()> with Ok(())
+src/zip.rs:240:94: replace | with ^ in DosDateTime::to_dos
+src/zip.rs:658:24: replace < with > in ZipWriter::add_file
+src/zip.rs:688:56: replace | with & in ZipWriter::add_directory
+src/zip.rs:796:58: replace + with * in record_bounds
+src/zip.rs:825:81: replace || with && in ZipArchive<'a>::parse
+src/zip.rs:863:9: replace ZipArchive<'a>::index_of -> Option<usize> with Some(1)

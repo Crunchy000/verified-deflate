@@ -1,0 +1,8 @@
+crc32::proofs::table_matches_definition	0	2
+crc32::proofs::slicing_tables_follow_recurrence	0	5
+crc32::proofs::byte_step_is_linear	0	5
+crc32::proofs::lanes_are_linear	0	90
+crc32::proofs::eight_byte_step_matches_on_a_basis	0	7
+crc32::proofs::table_step_equals_bitwise_step	0	3
+crc32::proofs::update_matches_reference	0	13
+crc32::proofs::streaming_is_concatenation	0	840

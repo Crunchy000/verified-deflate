@@ -1,0 +1,1 @@
+src/lz77.rs:460:26: replace + with * in copy_within_buffer

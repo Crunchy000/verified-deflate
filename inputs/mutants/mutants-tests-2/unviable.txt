@@ -1,0 +1,14 @@
+src/compat.rs:162:9: replace CompressionOptions::engine -> (MatchConfig, Strategy) with (Default::default(), Default::default())
+src/crc32.rs:30:13: replace < with <= in make_tables
+src/crc32.rs:41:15: replace += with -= in make_tables
+src/huffman.rs:66:22: replace != with == in canonical_codes
+src/huffman.rs:96:38: replace - with + in canonical_codes
+src/huffman.rs:410:31: replace + with *
+src/huffman.rs:466:21: replace < with <= in Canonical::rebuild
+src/huffman.rs:485:25: replace += with -= in Canonical::rebuild
+src/huffman.rs:580:9: replace Decoder::with_fast_bits -> Result<Self, HuffmanError> with Ok(Default::default())
+src/huffman.rs:632:34: replace << with >> in Decoder::rebuild_with_fast_bits
+src/tables.rs:65:39: replace + with - in len_code_by_search
+src/tables.rs:74:11: replace += with *= in dist_code_by_search
+src/write.rs:295:9: replace GzEncoder<W>::finish -> io::Result<W> with Ok(Default::default())
+src/zip.rs:260:9: replace DosDateTime::from_unix_seconds -> Self with Default::default()

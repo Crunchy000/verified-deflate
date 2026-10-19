@@ -1,0 +1,6 @@
+src/huffman.rs:85:21: replace * with / in canonical_codes
+src/huffman.rs:627:25: replace += with -= in Decoder::rebuild_with_fast_bits
+src/inflate.rs:135:30: replace + with -
+src/inflate.rs:191:35: replace + with - in read_dynamic_codes
+src/tables.rs:134:11: replace += with -= in fixed_litlen_lengths
+src/zip.rs:103:9: replace <impl From<InflateError> for ZipError>::from -> Self with Default::default()

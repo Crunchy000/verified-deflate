@@ -1,0 +1,9 @@
+src/bin/vzip.rs:242:21: replace += with -= in test
+src/huffman.rs:85:25: replace - with + in canonical_codes
+src/huffman.rs:623:17: replace < with > in Decoder::rebuild_with_fast_bits
+src/huffman.rs:677:9: replace Decoder::decode_slow -> Result<u16, InflateError> with Ok(0)
+src/lz77.rs:254:19: replace -= with /= in Matcher::longest_match
+src/lz77.rs:319:68: replace < with == in Matcher::tokenize
+src/lz77.rs:325:32: replace + with - in Matcher::tokenize
+src/lz77.rs:382:26: replace < with > in common_prefix
+src/zip.rs:141:21: replace + with * in check_archive_end

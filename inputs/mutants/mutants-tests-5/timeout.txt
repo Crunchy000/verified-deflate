@@ -1,0 +1,2 @@
+src/huffman.rs:335:15: replace -= with /= in sort_by_weight
+src/lz77.rs:463:16: replace += with *= in copy_within_buffer

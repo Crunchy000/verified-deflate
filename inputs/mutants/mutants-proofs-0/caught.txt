@@ -1,0 +1,68 @@
+src/adler32.rs:66:15: replace %= with += in Adler32::update
+src/bitio.rs:42:18: replace |= with &= in BitWriter::write_bits
+src/bitio.rs:120:23: replace - with / in BitReader<'a>::fill
+src/bitio.rs:129:28: replace += with -= in BitReader<'a>::fill
+src/bitio.rs:190:18: replace >>= with <<= in BitReader<'a>::read_bit
+src/bitio.rs:219:18: replace >>= with <<= in BitReader<'a>::consume
+src/bitio.rs:245:22: replace >>= with <<= in BitReader<'a>::read_aligned_bytes
+src/bitio.rs:260:32: replace / with % in BitReader<'a>::bytes_consumed
+src/bitio.rs:280:14: replace < with > in padded_word
+src/crc32.rs:30:13: replace < with == in make_tables
+src/crc32.rs:62:5: replace lanes -> u32 with 1
+src/crc32.rs:64:20: replace + with - in lanes
+src/crc32.rs:90:5: replace update -> u32 with 0
+src/deflate.rs:327:28: delete ! in write_stored_chunk
+src/deflate.rs:341:24: replace + with - in stored_bits_in
+src/deflate.rs:345:5: replace write_fixed with ()
+src/deflate.rs:432:17: replace += with -= in rle_code_lengths
+src/deflate.rs:458:24: replace - with + in emit_run
+src/deflate.rs:473:26: replace < with > in emit_run
+src/huffman.rs:43:13: replace < with > in kraft_sum
+src/huffman.rs:58:5: replace is_complete -> bool with false
+src/huffman.rs:167:23: replace == with != in build_lengths_in
+src/huffman.rs:220:15: replace > with < in limit_depths
+src/huffman.rs:247:17: replace < with > in limit_depths
+src/huffman.rs:381:5: replace sift_down with ()
+src/huffman.rs:452:17: replace < with > in Canonical::rebuild
+src/huffman.rs:523:9: replace Canonical::decode -> Result<u16, InflateError> with Ok(0)
+src/huffman.rs:668:28: replace <= with > in Decoder::decode
+src/inflate.rs:50:22: replace >> with << in decompress_with_limit
+src/inflate.rs:150:22: replace += with *= in State<'_>::stored
+src/inflate.rs:176:18: replace > with == in codes
+src/inflate.rs:196:13: replace > with < in read_dynamic_codes
+src/inflate.rs:249:15: replace > with == in expand_code_length
+src/lz77.rs:133:60: replace + with - in Matcher::hash
+src/lz77.rs:208:9: replace Matcher::longest_match -> Option<(usize, usize)> with None
+src/lz77.rs:230:21: replace > with < in Matcher::longest_match
+src/lz77.rs:279:52: replace + with - in Matcher::tokenize
+src/lz77.rs:349:16: replace < with > in tokenize_runs
+src/lz77.rs:358:54: replace - with / in tokenize_runs
+src/lz77.rs:382:5: replace common_prefix -> usize with 0
+src/lz77.rs:432:13: replace == with != in copy_within_buffer
+src/lz77.rs:445:21: replace + with * in copy_within_buffer
+src/lz77.rs:453:25: replace + with - in copy_within_buffer
+src/lz77.rs:462:34: replace + with - in copy_within_buffer
+src/lz77.rs:497:20: replace + with * in copy_match
+src/tables.rs:73:37: replace + with * in dist_code_by_search
+src/tables.rs:111:18: replace - with + in distance_code
+src/zip.rs:112:45: replace + with * in u32_at
+src/zip.rs:135:21: replace + with * in check_entry_end
+src/zip.rs:185:20: replace >= with < in days_from_civil
+src/zip.rs:188:30: replace / with * in days_from_civil
+src/zip.rs:189:41: replace / with * in days_from_civil
+src/zip.rs:195:5: replace civil_from_days -> (i64, u8, u8) with (-1, 0, 1)
+src/zip.rs:199:32: replace + with - in civil_from_days
+src/zip.rs:201:18: replace - with + in civil_from_days
+src/zip.rs:203:29: replace + with * in civil_from_days
+src/zip.rs:226:13: replace && with || in DosDateTime::is_valid
+src/zip.rs:239:9: replace DosDateTime::to_dos -> (u16, u16) with (1, 1)
+src/zip.rs:240:88: replace << with >> in DosDateTime::to_dos
+src/zip.rs:253:28: replace & with | in DosDateTime::from_dos
+src/zip.rs:276:24: replace / with * in DosDateTime::from_unix_seconds
+src/zip.rs:393:9: replace CentralHeader::write with ()
+src/zip.rs:524:25: replace - with + in name_is_safe
+src/zip.rs:530:27: replace == with != in name_is_safe
+src/zip.rs:695:9: replace ZipWriter::finish -> Result<Vec<u8>, ZipError> with Ok(vec![0])
+src/zip.rs:767:107: replace == with != in find_eocd
+src/zip.rs:783:12: replace > with >= in directory_bounds
+src/zip.rs:871:68: replace + with * in ZipArchive<'a>::raw_data

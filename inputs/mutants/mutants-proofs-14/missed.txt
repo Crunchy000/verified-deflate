@@ -1,0 +1,47 @@
+src/bin/vzip.rs:76:18: delete ! in create
+src/bin/vzip.rs:130:5: replace add_path -> Result<()> with Ok(())
+src/bin/vzip.rs:226:15: replace += with -= in list
+src/adler32.rs:28:5: replace adler32 -> u32 with 0
+src/bitio.rs:59:9: replace BitWriter::is_byte_aligned -> bool with true
+src/bitio.rs:239:24: replace < with <= in BitReader<'a>::read_aligned_bytes
+src/bitio.rs:260:18: replace - with + in BitReader<'a>::bytes_consumed
+src/bitio.rs:279:13: replace < with <= in padded_word
+src/compat.rs:178:17: delete field nice_len from struct MatchConfig expression in CompressionOptions::engine
+src/compat.rs:261:5: replace deflate_bytes_zlib_conf -> Vec<u8> with vec![]
+src/deflate.rs:120:26: replace * with /
+src/deflate.rs:181:32: delete ! in StreamEncoder::compress_pending
+src/deflate.rs:316:28: replace && with || in write_stored_in
+src/deflate.rs:402:81: replace * with / in BlockStats::body_bits
+src/deflate.rs:431:16: replace > with >= in rle_code_lengths
+src/deflate.rs:498:5: replace last_nonzero -> usize with 1
+src/deflate.rs:515:33: replace += with -= in plan_dynamic
+src/deflate.rs:524:22: replace + with * in plan_dynamic
+src/gzip_header.rs:10:21: replace << with >>
+src/gzip_header.rs:70:13: delete match arm 9 in FileSystemType::from_u8
+src/gzip_header.rs:141:9: replace ExtraFlags::as_u8 -> u8 with 1
+src/gzip_header.rs:235:9: replace GzBuilder::into_header_with_checksum -> Vec<u8> with vec![1]
+src/huffman.rs:141:5: replace build_lengths -> Result<(), HuffmanError> with Ok(())
+src/huffman.rs:233:41: replace > with == in limit_depths
+src/huffman.rs:292:30: replace - with / in huffman_depths
+src/huffman.rs:508:20: replace == with != in Canonical::is_single_unit_code
+src/huffman.rs:631:61: replace | with ^ in Decoder::rebuild_with_fast_bits
+src/inflate.rs:107:31: replace - with + in Output::reserve
+src/inflate.rs:175:44: replace + with - in codes
+src/inflate.rs:226:8: delete ! in read_dynamic_codes
+src/lz77.rs:73:13: delete match arm 3 in MatchConfig::for_level
+src/lz77.rs:133:38: replace | with ^ in Matcher::hash
+src/lz77.rs:229:32: replace - with / in Matcher::longest_match
+src/lz77.rs:247:28: replace >= with < in Matcher::longest_match
+src/lz77.rs:319:57: replace && with || in Matcher::tokenize
+src/lz77.rs:321:60: replace + with * in Matcher::tokenize
+src/lz77.rs:358:32: replace - with / in tokenize_runs
+src/tables.rs:65:17: replace < with <= in len_code_by_search
+src/write.rs:62:27: replace match guard e.kind() == io::ErrorKind::Interrupted with true in Core<W>::send
+src/write.rs:166:9: replace <impl Write for DeflateEncoder<W>>::flush -> io::Result<()> with Ok(())
+src/zip.rs:23:39: replace | with &
+src/zip.rs:168:45: replace == with != in is_leap
+src/zip.rs:264:24: replace > with >= in DosDateTime::from_unix_seconds
+src/zip.rs:669:39: replace | with ^ in ZipWriter::add_file
+src/zip.rs:688:41: replace | with ^ in ZipWriter::add_directory
+src/zip.rs:767:40: replace && with || in find_eocd
+src/zip.rs:906:9: replace ZipArchive<'a>::read_by_name -> Result<Vec<u8>, ZipError> with Ok(vec![])

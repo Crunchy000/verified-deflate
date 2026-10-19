@@ -1,0 +1,9 @@
+src/crc32.rs:32:11: replace += with -= in make_tables
+src/huffman.rs:69:44: replace + with - in canonical_codes
+src/huffman.rs:421:60: replace + with -
+src/huffman.rs:454:18: replace > with < in Canonical::rebuild
+src/huffman.rs:469:17: replace += with -= in Canonical::rebuild
+src/huffman.rs:636:15: replace += with -= in Decoder::rebuild_with_fast_bits
+src/write.rs:211:9: replace ZlibEncoder<W>::finish -> io::Result<W> with Ok(Default::default())
+src/write.rs:300:9: replace GzEncoder<W>::reset_inner -> io::Result<W> with Ok(Default::default())
+src/zip.rs:848:9: replace ZipArchive<'a>::entries -> &[ZipEntry] with Vec::leak(vec![Default::default()])

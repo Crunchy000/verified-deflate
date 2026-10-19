@@ -1,0 +1,4 @@
+src/huffman.rs:303:12: replace -= with /= in huffman_depths
+src/lz77.rs:305:24: replace == with != in Matcher::tokenize
+src/lz77.rs:395:11: replace += with *= in common_prefix
+src/lz77.rs:460:26: replace + with - in copy_within_buffer

@@ -1,0 +1,9 @@
+src/compat.rs:131:9: replace CompressionOptions::fast -> CompressionOptions with Default::default()
+src/crc32.rs:40:31: replace & with | in make_tables
+src/deflate.rs:244:17: replace < with <= in CodeTable<N>::from_lengths
+src/deflate.rs:524:18: replace + with - in plan_dynamic
+src/huffman.rs:465:25: replace * with / in Canonical::rebuild
+src/tables.rs:65:13: replace + with - in len_code_by_search
+src/tables.rs:73:37: replace + with - in dist_code_by_search
+src/tables.rs:125:21: replace < with <= in fixed_litlen_lengths
+src/write.rs:281:9: replace GzEncoder<W>::from_builder -> GzEncoder<W> with GzEncoder::new(Default::default())

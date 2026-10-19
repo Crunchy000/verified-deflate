@@ -1,0 +1,107 @@
+src/bin/vzip.rs:65:25: replace && with || in take_level
+src/bin/vzip.rs:168:13: delete match arm "-o" in extract
+src/bin/vzip.rs:255:5: replace read_stdin -> Result<Vec<u8>> with Ok(vec![1])
+src/bin/vzip.rs:98:5: replace archive_name -> Result<String> with Ok(String::new())
+src/adler32.rs:59:9: replace Adler32::update with ()
+src/bitio.rs:54:9: replace BitWriter::bit_len -> u64 with 0
+src/bitio.rs:84:9: replace BitWriter::take_bytes -> Vec<u8> with vec![]
+src/bitio.rs:147:39: replace / with % in BitReader<'a>::refill
+src/bitio.rs:152:22: replace += with -= in BitReader<'a>::refill
+src/bitio.rs:160:29: replace * with / in BitReader<'a>::refill
+src/bitio.rs:175:20: replace -= with /= in BitReader<'a>::read_bits
+src/bitio.rs:204:19: replace & with | in BitReader<'a>::peek
+src/bitio.rs:227:20: replace -= with /= in BitReader<'a>::align_to_byte
+src/bitio.rs:248:29: replace - with / in BitReader<'a>::read_aligned_bytes
+src/bitio.rs:265:27: replace - with + in BitReader<'a>::bits_remaining
+src/bitio.rs:300:29: replace >> with << in reverse_bits
+src/compat.rs:175:65: replace && with || in CompressionOptions::engine
+src/compat.rs:231:5: replace deflate_bytes_conf -> Vec<u8> with vec![]
+src/crc32.rs:21:38: replace ^ with | in byte_bitwise
+src/crc32.rs:37:17: replace < with == in make_tables
+src/crc32.rs:55:58: replace ^ with | in byte_table
+src/crc32.rs:62:14: replace + with * in lanes
+src/crc32.rs:73:17: replace ^ with | in step8
+src/deflate.rs:90:17: replace == with != in encode_with_matcher
+src/crc32.rs:146:9: replace Crc32::finalize -> u32 with 1
+src/deflate.rs:220:9: replace StreamEncoder::finish with ()
+src/deflate.rs:170:39: replace == with != in StreamEncoder::push
+src/deflate.rs:261:36: replace << with >> in CodeTable<N>::put_with_extra
+src/deflate.rs:340:24: replace - with + in stored_bits_in
+src/deflate.rs:341:34: replace - with + in stored_bits_in
+src/deflate.rs:364:54: replace - with / in write_tokens
+src/deflate.rs:408:11: replace + with * in BlockStats::fixed_bits
+src/deflate.rs:450:5: replace emit_run with ()
+src/deflate.rs:293:55: replace < with == in write_block
+src/deflate.rs:465:17: replace > with < in emit_run
+src/deflate.rs:477:17: replace > with >= in emit_run
+src/deflate.rs:510:20: replace + with - in plan_dynamic
+src/deflate.rs:524:49: replace + with * in plan_dynamic
+src/deflate.rs:540:26: replace - with / in write_dynamic
+src/gzip_header.rs:64:13: delete match arm 3 in FileSystemType::from_u8
+src/gzip_header.rs:80:13: delete match arm 19 in FileSystemType::from_u8
+src/gzip_header.rs:224:9: replace GzBuilder::into_header_xfl -> Vec<u8> with vec![1]
+src/gzip_header.rs:277:5: replace without_nul -> Vec<u8> with vec![1]
+src/huffman.rs:49:17: replace += with -= in kraft_sum
+src/huffman.rs:161:10: replace > with >= in build_lengths_in
+src/huffman.rs:227:17: replace > with < in limit_depths
+src/huffman.rs:241:23: replace << with >> in limit_depths
+src/huffman.rs:253:41: replace > with >= in limit_depths
+src/huffman.rs:304:48: replace + with - in huffman_depths
+src/huffman.rs:321:21: replace - with + in take_lightest
+src/huffman.rs:477:22: replace + with - in Canonical::rebuild
+src/huffman.rs:497:19: replace == with != in Canonical::is_complete
+src/huffman.rs:628:29: replace <= with > in Decoder::rebuild_with_fast_bits
+src/huffman.rs:386:22: replace < with > in sift_down
+src/inflate.rs:34:5: replace decompress -> Result<Vec<u8>, InflateError> with Ok(vec![0])
+src/inflate.rs:104:14: replace > with >= in Output::reserve
+src/huffman.rs:648:9: replace Decoder::coded_symbols -> usize with 1
+src/inflate.rs:140:9: replace State<'_>::stored -> Result<(), InflateError> with Ok(())
+src/inflate.rs:166:26: replace - with + in codes
+src/inflate.rs:193:42: replace + with - in read_dynamic_codes
+src/inflate.rs:212:15: replace < with == in read_dynamic_codes
+src/inflate.rs:243:27: replace - with + in expand_code_length
+src/inflate.rs:253:10: replace += with *= in expand_code_length
+src/lz77.rs:140:9: replace Matcher::bucket -> Option<usize> with Some(1)
+src/lz77.rs:173:9: replace Matcher::dist_to -> usize with 0
+src/lz77.rs:209:32: replace < with > in Matcher::longest_match
+src/lz77.rs:243:58: replace + with - in Matcher::longest_match
+src/lz77.rs:332:24: replace + with * in Matcher::tokenize
+src/lz77.rs:357:45: replace - with + in tokenize_runs
+src/lz77.rs:360:83: replace + with * in tokenize_runs
+src/lz77.rs:388:43: replace ^ with | in common_prefix
+src/lz77.rs:443:42: replace - with / in copy_within_buffer
+src/lz77.rs:449:26: replace + with - in copy_within_buffer
+src/lz77.rs:470:23: replace + with - in word8
+src/tables.rs:61:5: replace len_code_by_search -> u8 with 0
+src/tables.rs:122:5: replace fixed_litlen_lengths -> [u8; 288] with [0; 288]
+src/write.rs:46:9: replace Core<W>::collect with ()
+src/write.rs:101:12: delete ! in Core<W>::finish_with
+src/write.rs:231:9: replace <impl Write for ZlibEncoder<W>>::write -> io::Result<usize> with Ok(1)
+src/zip.rs:108:5: replace u16_at -> u16 with 1
+src/zip.rs:127:18: replace match guard v != u32::MAX with false in field32
+src/write.rs:327:9: replace <impl Write for GzEncoder<W>>::write -> io::Result<usize> with Ok(0)
+src/zip.rs:168:12: replace == with != in is_leap
+src/zip.rs:184:5: replace days_from_civil -> i64 with 0
+src/zip.rs:187:29: replace % with + in days_from_civil
+src/zip.rs:189:35: replace - with / in days_from_civil
+src/zip.rs:195:5: replace civil_from_days -> (i64, u8, u8) with (0, 0, 1)
+src/zip.rs:198:39: replace / with % in civil_from_days
+src/zip.rs:200:28: replace / with % in civil_from_days
+src/zip.rs:202:19: replace < with == in civil_from_days
+src/zip.rs:234:13: replace && with || in DosDateTime::is_valid
+src/zip.rs:232:28: replace <= with > in DosDateTime::is_valid
+src/zip.rs:239:99: replace / with * in DosDateTime::to_dos
+src/zip.rs:250:24: replace & with | in DosDateTime::from_dos
+src/zip.rs:261:55: replace * with / in DosDateTime::from_unix_seconds
+src/zip.rs:278:26: replace % with + in DosDateTime::from_unix_seconds
+src/zip.rs:478:20: replace < with == in EndOfCentralDirectory::parse
+src/zip.rs:516:29: replace - with + in name_is_safe
+src/zip.rs:526:38: replace && with || in name_is_safe
+src/zip.rs:651:40: replace == with != in ZipWriter::add_file
+src/zip.rs:686:34: replace & with | in ZipWriter::add_directory
+src/zip.rs:760:5: replace find_eocd -> Result<usize, ZipError> with Ok(1)
+src/zip.rs:794:5: replace record_bounds -> Result<(usize, usize, usize), ZipError> with Ok((1, 1, 1))
+src/zip.rs:811:87: replace == with != in ZipArchive<'a>::parse
+src/zip.rs:774:11: replace -= with += in find_eocd
+src/zip.rs:863:9: replace ZipArchive<'a>::index_of -> Option<usize> with None
+src/zip.rs:880:37: replace != with == in ZipArchive<'a>::read

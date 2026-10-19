@@ -1,0 +1,3 @@
+src/bitio.rs:283:11: replace += with *= in padded_word
+src/crc32.rs:41:15: replace += with *= in make_tables
+src/zip.rs:533:11: replace += with *= in name_is_safe

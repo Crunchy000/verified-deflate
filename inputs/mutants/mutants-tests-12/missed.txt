@@ -1,0 +1,14 @@
+src/deflate.rs:431:16: replace > with == in rle_code_lengths
+src/gzip_header.rs:287:9: delete match arm "win32" in default_os
+src/huffman.rs:167:14: replace || with && in build_lengths_in
+src/huffman.rs:377:5: replace heavier -> bool with false
+src/huffman.rs:386:49: replace + with - in sift_down
+src/huffman.rs:465:29: replace - with + in Canonical::rebuild
+src/huffman.rs:630:36: replace << with >> in Decoder::rebuild_with_fast_bits
+src/lz77.rs:133:72: replace | with ^ in Matcher::hash
+src/lz77.rs:244:24: replace > with >= in Matcher::longest_match
+src/lz77.rs:320:78: replace / with * in Matcher::tokenize
+src/lz77.rs:358:38: replace < with <= in tokenize_runs
+src/zip.rs:135:52: replace + with * in check_entry_end
+src/zip.rs:240:65: replace | with ^ in DosDateTime::to_dos
+src/zip.rs:329:20: replace < with == in LocalHeader::parse

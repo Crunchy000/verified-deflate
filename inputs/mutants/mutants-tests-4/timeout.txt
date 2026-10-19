@@ -1,0 +1,3 @@
+src/huffman.rs:335:15: replace -= with += in sort_by_weight
+src/huffman.rs:382:27: replace * with / in sift_down
+src/lz77.rs:298:20: replace < with == in Matcher::tokenize

@@ -1,0 +1,12 @@
+src/crc32.rs:22:11: replace += with -= in byte_bitwise
+src/deflate.rs:239:9: replace CodeTable<N>::from_lengths -> Result<Self, HuffmanError> with Ok(Default::default())
+src/deflate.rs:341:44: replace + with - in stored_bits_in
+src/deflate.rs:492:37: replace + with *
+src/huffman.rs:92:40: replace + with - in canonical_codes
+src/huffman.rs:110:11: replace += with -= in canonical_codes
+src/huffman.rs:447:14: replace > with >= in Canonical::rebuild
+src/huffman.rs:478:17: replace += with -= in Canonical::rebuild
+src/huffman.rs:618:26: replace + with - in Decoder::rebuild_with_fast_bits
+src/inflate.rs:46:33: replace + with * in decompress_with_limit
+src/tables.rs:73:13: replace + with - in dist_code_by_search
+src/tables.rs:124:13: replace < with <= in fixed_litlen_lengths

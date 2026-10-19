@@ -1,0 +1,10 @@
+src/bitio.rs:30:9: replace BitWriter::with_capacity -> Self with Default::default()
+src/bitio.rs:65:23: replace > with >= in BitWriter::pad_to_byte
+src/bitio.rs:143:23: replace > with < in BitReader<'a>::refill
+src/bitio.rs:201:23: replace < with > in BitReader<'a>::peek
+src/huffman.rs:474:44: replace + with * in Canonical::rebuild
+src/huffman.rs:605:31: replace > with < in Decoder::rebuild_with_fast_bits
+src/huffman.rs:687:5: replace decode_without_table -> Result<u16, InflateError> with Ok(1)
+src/lz77.rs:256:39: replace < with == in Matcher::longest_match
+src/lz77.rs:319:64: replace + with - in Matcher::tokenize
+src/lz77.rs:360:52: replace - with / in tokenize_runs

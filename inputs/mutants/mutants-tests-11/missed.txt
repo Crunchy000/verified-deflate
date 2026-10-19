@@ -1,0 +1,12 @@
+src/bitio.rs:169:22: replace > with == in BitReader<'a>::read_bits
+src/deflate.rs:96:19: replace < with <= in encode_with_matcher
+src/gzip_header.rs:286:9: delete match arm "macos" in default_os
+src/huffman.rs:253:90: replace > with == in limit_depths
+src/lz77.rs:140:28: replace > with >= in Matcher::bucket
+src/lz77.rs:133:72: replace | with & in Matcher::hash
+src/lz77.rs:320:78: replace / with % in Matcher::tokenize
+src/lz77.rs:414:44: replace && with || in match_is_valid
+src/lz77.rs:461:37: replace < with <= in copy_within_buffer
+src/zip.rs:262:25: replace < with <= in DosDateTime::from_unix_seconds
+src/zip.rs:658:24: replace < with <= in ZipWriter::add_file
+src/zip.rs:688:56: replace | with ^ in ZipWriter::add_directory

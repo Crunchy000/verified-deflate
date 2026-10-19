@@ -1,0 +1,7 @@
+deflate::proofs::code_length_rle_roundtrip	0	83
+deflate::proofs::code_length_rle_zero_runs	0	380
+deflate::proofs::fixed_code_table_matches_rfc	0	4
+deflate::proofs::fixed_tokens_have_the_rfc_layout	0	376
+deflate::proofs::fixed_block_tokens_roundtrip	143	373
+deflate::proofs::stored_cost_adds_up_across_blocks	0	569
+deflate::proofs::stored_cost_is_exact	0	92

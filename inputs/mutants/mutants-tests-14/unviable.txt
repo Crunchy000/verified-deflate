@@ -1,0 +1,7 @@
+src/compat.rs:121:9: replace CompressionOptions::high -> CompressionOptions with Default::default()
+src/huffman.rs:77:25: replace += with -= in canonical_codes
+src/huffman.rs:450:45: replace + with * in Canonical::rebuild
+src/huffman.rs:465:25: replace * with + in Canonical::rebuild
+src/huffman.rs:618:38: replace - with + in Decoder::rebuild_with_fast_bits
+src/write.rs:281:9: replace GzEncoder<W>::from_builder -> GzEncoder<W> with GzEncoder::from_iter([Default::default()])
+src/zip.rs:806:9: replace ZipArchive<'a>::parse -> Result<Self, ZipError> with Ok(Default::default())

@@ -1,0 +1,7 @@
+bitio::proofs::write_then_read_roundtrip	0	101
+bitio::proofs::reader_eof_is_exact	0	8
+bitio::proofs::read_bits_matches_read_bit	0	12
+bitio::proofs::aligned_bytes_roundtrip	0	54
+bitio::proofs::aligned_bytes_after_lookahead_short	0	128
+bitio::proofs::aligned_bytes_after_lookahead_long	0	233
+bitio::proofs::reverse_bits_is_reversal	0	1

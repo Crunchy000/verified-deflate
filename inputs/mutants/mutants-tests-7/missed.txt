@@ -1,0 +1,13 @@
+src/bitio.rs:143:23: replace > with >= in BitReader<'a>::refill
+src/bitio.rs:201:23: replace < with <= in BitReader<'a>::peek
+src/bitio.rs:265:47: replace * with / in BitReader<'a>::bits_remaining
+src/compat.rs:171:82: delete field max_lazy from struct MatchConfig expression in CompressionOptions::engine
+src/deflate.rs:293:36: replace < with <= in write_block
+src/deflate.rs:441:12: replace > with >= in rle_code_lengths
+src/deflate.rs:508:36: replace + with * in plan_dynamic
+src/huffman.rs:48:14: replace > with >= in kraft_sum
+src/huffman.rs:605:31: replace > with >= in Decoder::rebuild_with_fast_bits
+src/lz77.rs:159:16: replace < with <= in Matcher::max_dist
+src/lz77.rs:319:64: replace + with * in Matcher::tokenize
+src/lz77.rs:384:13: replace + with * in common_prefix
+src/zip.rs:127:18: replace match guard v != u32::MAX with true in field32

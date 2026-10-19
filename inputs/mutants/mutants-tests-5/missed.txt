@@ -1,0 +1,11 @@
+src/bitio.rs:143:23: replace > with == in BitReader<'a>::refill
+src/bitio.rs:201:23: replace < with == in BitReader<'a>::peek
+src/bitio.rs:265:51: replace + with * in BitReader<'a>::bits_remaining
+src/deflate.rs:539:34: replace | with ^ in write_dynamic
+src/huffman.rs:233:90: replace < with <= in limit_depths
+src/huffman.rs:421:110: replace << with >>
+src/huffman.rs:605:31: replace > with == in Decoder::rebuild_with_fast_bits
+src/huffman.rs:625:18: replace != with == in Decoder::rebuild_with_fast_bits
+src/huffman.rs:687:5: replace decode_without_table -> Result<u16, InflateError> with Ok(0)
+src/lz77.rs:319:68: replace < with <= in Matcher::tokenize
+src/lz77.rs:384:17: replace <= with > in common_prefix

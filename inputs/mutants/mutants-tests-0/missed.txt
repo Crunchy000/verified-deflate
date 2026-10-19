@@ -1,0 +1,13 @@
+src/bitio.rs:157:35: replace < with <= in BitReader<'a>::refill
+src/bitio.rs:170:23: replace < with <= in BitReader<'a>::read_bits
+src/crc32.rs:18:21: replace ^ with | in byte_bitwise
+src/huffman.rs:261:23: replace << with >> in limit_depths
+src/huffman.rs:318:29: replace < with > in take_lightest
+src/huffman.rs:333:23: replace / with * in sort_by_weight
+src/huffman.rs:381:5: replace sift_down with ()
+src/lz77.rs:319:37: replace < with == in Matcher::tokenize
+src/lz77.rs:321:87: replace + with * in Matcher::tokenize
+src/lz77.rs:358:54: replace - with / in tokenize_runs
+src/tables.rs:65:13: replace + with * in len_code_by_search
+src/zip.rs:135:21: replace + with * in check_entry_end
+src/zip.rs:198:48: replace - with + in civil_from_days
