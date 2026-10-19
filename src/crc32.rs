@@ -3,12 +3,12 @@
 //!
 //! The implementation is table-driven "slicing-by-8": eight bytes per step
 //! from eight tables, then the classic one-table step for the last few
-//! bytes. The tables are computed at compile time from a bit-at-a-time
-//! reference ([`update_bitwise`]). Kani proves, for every register value
-//! and every input, that one table step equals eight bitwise steps, and
-//! (by linearity) that one eight-byte step equals eight table steps; so
-//! the fast CRC agrees with the bitwise definition on inputs of every
-//! length.
+//! bytes. The tables are computed at compile time, bit by bit. Kani
+//! proves, for every register value and every input, that one table step
+//! equals eight steps of [`update_bitwise`], an independent bit-at-a-time
+//! definition, and (by linearity) that one eight-byte step equals eight
+//! table steps; so the fast CRC agrees with the bitwise definition on
+//! inputs of every length.
 
 /// The reflected CRC-32 polynomial.
 pub const POLY: u32 = 0xEDB8_8320;
@@ -97,10 +97,26 @@ pub fn update(crc: u32, data: &[u8]) -> u32 {
     fold(!c, rest, byte_table)
 }
 
-/// Bit-at-a-time reference implementation of [`update`]. Slow; used as the
-/// specification in proofs and tests.
+/// Bit-at-a-time definition of [`update`]: the register starts inverted,
+/// each byte is XORed in and shifted out bit by bit against the reflected
+/// polynomial, and the result is inverted. Written independently of the
+/// table-driven code (it shares no function or constant with it), so that
+/// a mistake there cannot also hide here. Slow; the specification in
+/// proofs and tests.
+#[cfg_attr(mutants, mutants::skip)] // specification used by proofs
 pub fn update_bitwise(crc: u32, data: &[u8]) -> u32 {
-    fold(crc, data, byte_bitwise)
+    let mut c = !crc;
+    for &b in data {
+        c ^= u32::from(b);
+        for _ in 0..8 {
+            let low = c & 1;
+            c >>= 1;
+            if low == 1 {
+                c ^= 0xEDB8_8320;
+            }
+        }
+    }
+    !c
 }
 
 /// CRC-32 of `data`.
@@ -173,12 +189,17 @@ mod tests {
 mod proofs {
     use super::*;
 
+    /// One raw-register step of the independent definition.
+    fn spec_step(c: u32, b: u8) -> u32 {
+        !update_bitwise(!c, &[b])
+    }
+
     /// Every table entry equals the bitwise definition.
     #[kani::proof]
     #[kani::unwind(9)]
     fn table_matches_definition() {
         let b: u8 = kani::any();
-        assert_eq!(TABLES[0][b as usize], byte_bitwise(0, b));
+        assert_eq!(TABLES[0][b as usize], spec_step(0, b));
     }
 
     /// Each slicing table is the previous one followed by a zero byte.
@@ -268,15 +289,15 @@ mod proofs {
     }
 
     /// The key lemma: for every register value and every byte, the table
-    /// step equals eight bitwise steps. `update` and `update_bitwise` are
-    /// the same fold over these steps, so they agree on all inputs of every
-    /// length.
+    /// step equals eight bitwise steps of the independent definition.
+    /// `update` applies such steps between the same two inversions as
+    /// `update_bitwise`, so they agree on all inputs of every length.
     #[kani::proof]
     #[kani::unwind(9)]
     fn table_step_equals_bitwise_step() {
         let c: u32 = kani::any();
         let b: u8 = kani::any();
-        assert_eq!(byte_table(c, b), byte_bitwise(c, b));
+        assert_eq!(byte_table(c, b), spec_step(c, b));
     }
 
     /// Direct check of whole computations on up to 4 bytes from any

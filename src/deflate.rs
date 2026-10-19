@@ -301,11 +301,17 @@ fn write_block(w: &mut BitWriter, tokens: &[Token], span: &[u8], last: bool, str
 /// Writes `data` as one or more stored blocks (an empty input still gets
 /// one empty block so the stream has a final block).
 pub(crate) fn write_stored(w: &mut BitWriter, data: &[u8], last: bool) {
+    write_stored_in(w, data, last, MAX_STORED_BLOCK);
+}
+
+/// [`write_stored`] with blocks of at most `max` bytes (the proofs use
+/// small blocks to reach the multi-block case).
+fn write_stored_in(w: &mut BitWriter, data: &[u8], last: bool, max: usize) {
     if data.is_empty() {
         write_stored_chunk(w, data, last);
         return;
     }
-    let mut chunks = data.chunks(MAX_STORED_BLOCK).peekable();
+    let mut chunks = data.chunks(max).peekable();
     while let Some(chunk) = chunks.next() {
         let is_last = last && chunks.peek().is_none();
         write_stored_chunk(w, chunk, is_last);
@@ -325,7 +331,12 @@ fn write_stored_chunk(w: &mut BitWriter, chunk: &[u8], last: bool) {
 /// Exact size in bits of [`write_stored`] for `len` bytes when the writer
 /// is at bit position `bit_pos`.
 pub(crate) fn stored_bits(bit_pos: u64, len: usize) -> u64 {
-    let chunks = if len == 0 { 1 } else { len.div_ceil(MAX_STORED_BLOCK) } as u64;
+    stored_bits_in(bit_pos, len, MAX_STORED_BLOCK)
+}
+
+/// [`stored_bits`] for blocks of at most `max` bytes.
+fn stored_bits_in(bit_pos: u64, len: usize, max: usize) -> u64 {
+    let chunks = if len == 0 { 1 } else { len.div_ceil(max) } as u64;
     let first_pad = (8 - (bit_pos + 3) % 8) % 8;
     3 + first_pad + 32 + (chunks - 1) * (3 + 5 + 32) + 8 * len as u64
 }
@@ -589,6 +600,52 @@ mod tests {
     }
 
     #[test]
+    fn streaming_memory_is_bounded() {
+        // The encoder keeps one window of history plus one chunk of input,
+        // however much data passes through.
+        let mut e = StreamEncoder::new(MatchConfig::for_level(6), Strategy::Auto);
+        let mut x = 1u32;
+        let piece: Vec<u8> = (0..100_000)
+            .map(|i| {
+                x = x.wrapping_mul(1_103_515_245).wrapping_add(12345);
+                if i % 3 == 0 {
+                    (x >> 24) as u8
+                } else {
+                    b'a' + (i % 5) as u8
+                }
+            })
+            .collect();
+        let mut fed = 0;
+        while fed < 3_000_000 {
+            let mut rest = &piece[..];
+            while !rest.is_empty() {
+                let n = e.push(rest);
+                rest = &rest[n..];
+                assert!(e.hist <= WINDOW, "history {} after {fed} bytes", e.hist);
+                assert!(e.buf.len() <= WINDOW + STREAM_CHUNK, "buffer {} after {fed} bytes", e.buf.len());
+            }
+            fed += piece.len();
+            let _ = e.take_output();
+        }
+    }
+
+    #[test]
+    fn stored_blocks_mark_only_the_last_final() {
+        // Small blocks reach the multi-block path: only the last block of
+        // the last call may carry BFINAL, or decoding would stop early.
+        let data: Vec<u8> = (0..11u8).collect();
+        for max in 1..=4 {
+            let mut w = BitWriter::with_capacity(64);
+            write_stored_in(&mut w, &data[..5], false, max);
+            write_stored_in(&mut w, &data[5..], true, max);
+            let bits = w.bit_len();
+            let out = w.finish();
+            assert_eq!(crate::decompress(&out).unwrap(), data, "max {max}");
+            assert_eq!(bits, stored_bits_in(0, 5, max) + stored_bits_in(stored_bits_in(0, 5, max), 6, max));
+        }
+    }
+
+    #[test]
     fn empty_input_is_two_bytes() {
         assert_eq!(compress(b"", 6), vec![0x03, 0x00]);
         assert_eq!(compress(b"", 0), vec![0x01, 0x00, 0x00, 0xff, 0xff]);
@@ -627,6 +684,7 @@ mod tests {
 #[cfg(kani)]
 mod proofs {
     use super::*;
+    use crate::bitio::BitReader;
     use crate::inflate::expand_code_length;
 
     fn check_rle<const N: usize>(lengths: &[u8; N]) {
@@ -684,6 +742,118 @@ mod proofs {
         let d: usize = kani::any();
         kani::assume(d < 32);
         assert_eq!(FIXED_DIST.code[d], reverse_bits(d as u16, 5));
+    }
+
+    /// Reads an `n`-bit Huffman code, most significant bit first.
+    fn read_code(r: &mut BitReader<'_>, n: u32) -> u32 {
+        let mut c = 0;
+        for _ in 0..n {
+            c = (c << 1) | r.read_bit().unwrap();
+        }
+        c
+    }
+
+    /// Checks that the next bits are `sym`'s fixed literal/length code,
+    /// computed from the ranges in RFC 1951 §3.2.6 (not from the tables).
+    fn expect_fixed_symbol(r: &mut BitReader<'_>, sym: u32) {
+        let (code, n) = match sym {
+            0..=143 => (0x30 + sym, 8),
+            144..=255 => (0x190 + sym - 144, 9),
+            256..=279 => (sym - 256, 7),
+            _ => (0xc0 + sym - 280, 8),
+        };
+        assert_eq!(read_code(r, n), code);
+    }
+
+    /// The fixed-Huffman entropy coder writes exactly RFC 1951's layout:
+    /// for any literal, or any match of length 3-258 at distance 1-32768,
+    /// the symbol's fixed code (most significant bit first), its extra
+    /// bits (least significant first), the distance's five-bit code and
+    /// extra bits, then the end-of-block code, and nothing else. The
+    /// length and distance codes are `length_code` and `distance_code`,
+    /// which the `tables` proofs check against the RFC's tables.
+    #[kani::proof]
+    #[kani::unwind(10)]
+    fn fixed_tokens_have_the_rfc_layout() {
+        let token = if kani::any() {
+            Token::Literal(kani::any())
+        } else {
+            Token::Match {
+                len: kani::any_where(|&l: &u16| (3..=258).contains(&l)),
+                dist: kani::any_where(|&d: &u16| (1..=32768).contains(&d)),
+            }
+        };
+        let mut w = BitWriter::new();
+        write_tokens(&mut w, &[token], &FIXED_LIT, &FIXED_DIST);
+        let bits = w.bit_len();
+        let bytes = w.finish();
+        let mut r = BitReader::new(&bytes);
+        match token {
+            Token::Literal(b) => expect_fixed_symbol(&mut r, u32::from(b)),
+            Token::Match { len, dist } => {
+                let lc = length_code(usize::from(len));
+                expect_fixed_symbol(&mut r, 257 + lc as u32);
+                let extra = u32::from(LENGTH_EXTRA[lc]);
+                assert_eq!(r.read_bits(extra), Ok(u32::from(len - LENGTH_BASE[lc])));
+                let dc = distance_code(usize::from(dist));
+                assert_eq!(read_code(&mut r, 5), dc as u32);
+                let extra = u32::from(DIST_EXTRA[dc]);
+                assert_eq!(r.read_bits(extra), Ok(u32::from(dist - DIST_BASE[dc])));
+            }
+        }
+        expect_fixed_symbol(&mut r, 256);
+        assert_eq!(r.bits_remaining(), 8 * bytes.len() as u64 - bits);
+    }
+
+    /// Fixed-Huffman blocks decode to what they encode: a literal of any
+    /// value (every 8- and 9-bit literal code), then a match of length 12
+    /// (a length code with an extra bit) at distance 1 (an overlapping
+    /// copy), written by `write_fixed` as the final block and read back by
+    /// `decompress_with_limit`. This runs the decoder's Huffman-block loop
+    /// on real encoder output without the match finder. The decoder's
+    /// lookup table is replaced by the canonical walk it is proved to
+    /// agree with (`huffman::proofs::fast_decode_matches_slow`): the
+    /// 288-symbol table is too large to check symbolically.
+    #[kani::stub(crate::lz77::copy_within_buffer, crate::lz77::copy_within_buffer_ref)]
+    #[kani::stub(crate::inflate::Output::grow, crate::inflate::grow_is_unreachable)]
+    #[kani::stub(crate::huffman::Decoder::decode, crate::huffman::decode_without_table)]
+    #[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
+    #[kani::proof]
+    #[kani::unwind(17)]
+    fn fixed_block_tokens_roundtrip() {
+        let a: u8 = kani::any();
+        let mut w = BitWriter::new();
+        write_fixed(&mut w, &[Token::Literal(a), Token::Match { len: 12, dist: 1 }], true);
+        let bytes = w.finish();
+        let d = decompress_with_limit(&bytes, 13).unwrap();
+        assert_eq!(d.data.as_slice(), &[a; 13]);
+        assert_eq!(d.consumed, bytes.len());
+    }
+
+    /// The size model adds up across block boundaries: from any bit
+    /// offset, `len` bytes cost one full block of `max` bytes plus the
+    /// rest from the byte-aligned position where that block ends, for any
+    /// length and block sizes of 1-4 bytes and 65,535 (production). With
+    /// `stored_cost_is_exact` (one block), this makes the model exact for
+    /// any number of blocks. The writer side: two one-byte blocks written
+    /// back to back take exactly the modelled bits.
+    #[kani::proof]
+    fn stored_cost_adds_up_across_blocks() {
+        let pos: u64 = kani::any_where(|&p: &u64| p < 1 << 40);
+        let len: usize = kani::any_where(|&l: &usize| l < 1 << 24);
+        let small: usize = kani::any_where(|&m: &usize| (1..=4).contains(&m));
+        for max in [small, MAX_STORED_BLOCK] {
+            if len > max {
+                let first = stored_bits_in(pos, max, max);
+                assert_eq!((pos + first) % 8, 0);
+                assert_eq!(stored_bits_in(pos, len, max), first + stored_bits_in(pos + first, len - max, max));
+            }
+        }
+        let pre: u32 = kani::any_where(|&p: &u32| p < 8);
+        let mut w = BitWriter::with_capacity(16);
+        w.write_bits(0, pre);
+        write_stored_in(&mut w, &[0, 0], true, 1);
+        assert_eq!(w.bit_len() - u64::from(pre), stored_bits_in(u64::from(pre), 2, 1));
     }
 
     /// The stored-block size model equals the bits actually written, from

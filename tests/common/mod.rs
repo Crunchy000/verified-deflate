@@ -78,6 +78,18 @@ pub fn corpus() -> Vec<(String, Vec<u8>)> {
         rec.extend_from_slice(&(i * 7 % 13).to_be_bytes());
     }
     v.push(("records-400k".into(), rec));
+    // Compressible, then incompressible, then compressible again: encoders
+    // emit Huffman blocks around stored blocks, so a stored block starts
+    // while the decoder's bit buffer still holds bytes it looked ahead at.
+    let mut mixed = Vec::new();
+    for i in 0..30_000u32 {
+        mixed.push(b"abcab "[(i % 6) as usize]);
+    }
+    mixed.extend(rng.bytes(70_000));
+    for i in 0..30_000u32 {
+        mixed.push(b"xyzzy\n"[(i % 6) as usize]);
+    }
+    v.push(("text-random-text".into(), mixed));
     // This crate's own sources.
     let mut src = Vec::new();
     for f in ["src/lib.rs", "src/deflate.rs", "src/inflate.rs", "src/huffman.rs", "src/zip.rs"] {
