@@ -798,6 +798,27 @@ mod tests {
     }
 
     #[test]
+    fn completeness_and_degenerate_alphabets() {
+        // `is_complete` is the completeness check the builder proofs use.
+        assert!(is_complete(&[1, 1]));
+        assert!(is_complete(&[1, 2, 2]));
+        assert!(is_complete(&[2, 2, 2, 2, 0]));
+        assert!(!is_complete(&[1]));
+        assert!(!is_complete(&[1, 2]));
+        assert!(!is_complete(&[1, 1, 1]));
+        assert!(!is_complete(&[0, 0]));
+        assert!(!is_complete(&[16, 16]));
+        // Fewer than two symbols, or no bits, cannot make a code.
+        let mut one = [0u8; 1];
+        assert_eq!(build_lengths(&[5], 3, &mut one), Err(HuffmanError::LimitTooSmall));
+        assert_eq!(build_lengths(&[], 3, &mut []), Err(HuffmanError::LimitTooSmall));
+        let mut two = [0u8; 2];
+        assert_eq!(build_lengths(&[5, 5], 0, &mut two), Err(HuffmanError::LimitTooSmall));
+        assert_eq!(build_lengths(&[5, 5], 1, &mut two), Ok(()));
+        assert_eq!(two, [1, 1]);
+    }
+
+    #[test]
     fn build_lengths_full_litlen_alphabet() {
         let freqs: Vec<u32> = (0..286u32).map(|i| (i * 7919) % 1000 + 1).collect();
         let mut lengths = vec![0u8; 286];

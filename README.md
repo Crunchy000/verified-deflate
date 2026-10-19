@@ -60,8 +60,10 @@ modelling choices behind it, and what is **not** proven.
 
 The proofs are themselves checked. Kani's source coverage shows which code
 each proof reaches. Mutation testing plants about 1,900 small bugs; the
-proofs catch 63% of them and the tests a further 21%. VERIFICATION.md
-lists the gaps that remain.
+proofs catch 67% of them and the tests a further 26%. Each of the rest
+was checked by hand, and none is a missing check: they are heuristics,
+fast paths with a proven fallback, or changes with no observable effect
+(see VERIFICATION.md).
 
 Two further checks run on top of the proofs. The test suite compares the
 engine against real zlib in both directions: zlib decodes every stream

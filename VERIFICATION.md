@@ -298,97 +298,73 @@ Some details of the setup:
 
 ### Results (October 2026)
 
-Of 1,903 mutants that compile (156 more do not):
+Of about 1,900 mutants that compile:
 
-| caught by | mutants | share |
+| caught by | first run | after closing the gaps |
 |---|---:|---:|
-| the proofs | 1,203 | 63% |
-| only the tests | 403 | 21% |
-| nothing | 297 | 16% |
+| the proofs | 1,203 (63%) | 1,281 (67%) |
+| only the tests | 403 (21%) | 486 (26%) |
+| nothing | 297 (16%) | 135 (7%) |
 
-Of the mutants caught by the proofs, 39 were missed by sampling and caught
-only by real Kani. The 59 mutants that a proof executes but does not
-catch, and that the tests do catch, mark properties weaker than the
-code's job. By file:
+In the second run, 42 of the mutants caught by the proofs were missed by
+sampling and caught only by real Kani. One more was undetermined: its
+harness timed out. By file, after:
 
 | file | mutants | proofs | tests only | nothing |
 |---|---:|---:|---:|---:|
 | `adler32` | 23 | 20 | 2 | 1 |
-| `bitio` | 196 | 140 | 27 | 29 |
-| `crc32` | 81 | 77 | 4 | 0 |
-| `tables` | 58 | 56 | 0 | 2 |
-| `huffman` | 275 | 199 | 22 | 54 |
-| `lz77` | 281 | 200 | 27 | 54 |
-| `deflate` | 231 | 92 | 119 | 20 |
-| `inflate` | 107 | 80 | 25 | 2 |
-| `zip` | 440 | 339 | 48 | 53 |
-| `write`, `compat`, `gzip_header`, `error` | 149 | 0 | 92 | 57 |
-| `vzip` | 62 | 0 | 37 | 25 |
+| `bitio` | 196 | 158 | 19 | 19 |
+| `crc32` | 78 | 75 | 2 | 1 |
+| `tables` | 57 | 55 | 0 | 2 |
+| `huffman` | 276 | 211 | 39 | 26 |
+| `lz77` | 281 | 200 | 35 | 46 |
+| `deflate` | 232 | 109 | 106 | 16 |
+| `inflate` | 107 | 81 | 26 | 0 |
+| `zip` | 442 | 372 | 55 | 15 |
+| `write`, `compat`, `gzip_header`, `error` | 149 | 0 | 143 | 6 |
+| `vzip` | 62 | 0 | 59 | 3 |
 
-Most of the 297 that nothing catches change nothing that matters:
+(Two mutants found by the second run were closed after it and are counted as caught here: the `is_complete` check and the degenerate alphabets of `build_lengths`.)
 
-- **Match-finder heuristics** (most of the 54 in `lz77`): hash function,
-  chain limits, lazy-match thresholds, level table. They change the
-  compression ratio and speed; the proofs check that tokens are valid and
-  replay to the input, which any heuristic satisfies.
-- **The Huffman fast table and bit-reader refill.** A wrong or missing
-  table entry makes `decode` fall back to the canonical walk, which
-  `fast_decode_matches_slow` proves equivalent. Refill thresholds work the
-  same way. Only speed changes.
-- **Equivalent rewrites**, such as:
-  - `|` to `^` on disjoint bit fields;
+**What the 135 are.** Each was checked by hand, and none is a missing check:
+
+- **Match-finder heuristics** (most of the 46 in `lz77`): hash function, chain limits, lazy-match thresholds, run lengths, and the boundary between the word-at-a-time and byte-at-a-time comparison and copy. They change the compression ratio and speed, never validity: every candidate match is compared byte for byte and bounded by the window.
+- **Fast paths with a proven fallback** (most of `huffman` and `bitio`): the Huffman lookup table, the bit reader's refill and look-ahead thresholds. A wrong table entry or a skipped refill sends decoding down the canonical walk or the byte-at-a-time path. `fast_decode_matches_slow` and the bit-reader proofs show those give the same results.
+- **Size-only choices:** ties between block types, and run-length coding of code lengths at its thresholds. The encoder still emits a valid stream that decodes to the input; only its size can change, and the size bound is tested.
+- **Equivalent rewrites:**
+  - `|` to `^` on bit fields that do not overlap;
   - `<` to `<=` where equality gives the same result;
-  - array capacities;
+  - buffer capacities;
   - date branches for years before 1970, which the DOS range never reaches.
+- **Inert inputs:**
+  - platform-specific `default_os` arms;
+  - `byte_bitwise`'s register input, which the table builder only ever passes as zero;
+  - `vzip`'s `--no-verify`, which only switches off the run-time self-check.
 
-The rest are gaps, in order of priority.
+**How the gaps were closed.** The first run found the following; the second run, and mutant checks on each fix, confirm they are now caught:
 
-**Caught by nothing, and they matter:**
-
-1. **A stored block after a Huffman-coded block.**
-   - After Huffman decoding, the bit reader can hold whole input bytes. `read_aligned_bytes` must take them first.
-   - A mutant that skips them decodes real zlib output wrongly whenever compressible and incompressible data are mixed (a Huffman block followed by stored blocks). Neither the tests nor the proofs notice.
-   - `aligned_bytes_roundtrip` fills the reader exactly (`read_bits`), so its buffer never holds whole bytes, and the interop tests decode compressible data only.
-2. **Incomplete Huffman codes.**
-   - The decoder accepts exactly two kinds of incomplete code: a single one-bit code, and no distance codes at all.
-   - Nothing exercises this: mutants of `is_single_unit_code` and `coded_symbols`, and of the checks at `inflate.rs` 222–226, survive.
-   - A bug here would reject valid streams from other encoders, or accept invalid ones.
-3. **Length-limit repair when the code is under-subscribed** (`build_lengths`).
-   - This branch cannot be reached with the proofs' 5 symbols. The smallest trigger is 6 symbols at limit 3, with frequencies 1, 1, 2, 3, 5, 8.
-   - No test reaches it either. A mutant that shortens the wrong code produces an over-subscribed, invalid code.
-   - The `deflate`-compatible API compresses with `verify` off, so it would ship such streams.
-4. **DOS date validation.**
-   - `is_valid` is assumed by `dos_datetime_roundtrip` and asserted by `unix_time_always_valid`, but never compared with an independent definition.
-   - "Every year is a leap year" and "every date is valid" both survive, so `DosDateTime::new(2023, 2, 29, …)` could start succeeding.
-5. **A write error followed by `flush` or `finish`** in the `write` encoders.
-   - A failed send leaves output queued, and the next `flush` or `finish` must keep it.
-   - A mutant that drops it loses data, and the failing-writer test misses this because it only retries `write`.
-
-**Proved properties weaker than the code's job (the tests catch these):**
-
-6. **CRC-32 shares its loop with its specification.** `update_bitwise` uses the same `fold` helper, with the same inversions and loop, as `update`. A bug there changes both sides.
-7. **`from_unix_seconds` is only proved valid.** The proof shows its result is a *valid* date, not the *right* one.
-8. **`stored_bits` is only proved for one block.** It is checked for single-block lengths, so the multi-block term is never tested.
-9. **`validate_name` is proved sound, not complete.** Accepted names are safe, but over-rejection is not checked. That is the right direction for safety.
-
-**Code no CI proof executes (tests only):**
-
-10. These are covered only by the extended harnesses (not run in CI) or by tests:
-    - the encoder's entropy stage: `write_block`, `write_fixed`, `write_dynamic`, `write_tokens`, `plan_dynamic`;
-    - the decoder's Huffman-block loop (`codes`) and dynamic header (`read_dynamic_codes`);
-    - archive-level ZIP parsing and writing;
-    - the `write`, `compat` and `gzip_header` layers.
-
-**Lower risk, caught by nothing:**
-
-11. **ZIP reader:** rejection of multi-disk and ZIP64-marked archives.
-12. **ZIP writer:** the 4 GiB guards, which tests cannot reach.
-13. **Directory permissions:** directory Unix modes other than the default.
-14. **Interrupted writes:** retrying writes that fail with `Interrupted`.
-15. **Dropping a `GzEncoder`:** finishing the stream on drop.
-16. **Option semantics:** that `rle()` and `huffman_only()` behave as named. Deleting the RLE flag goes unnoticed.
-17. **Encoder size and memory:** block-type choice and the streaming encoder's history trimming. Their mutants change only output size or memory use, but no test pins either; for example, that output never exceeds the stored size.
-18. **Small surfaces:** gzip header enum mappings, `Display` text, and `vzip` options.
+1. **A stored block after a Huffman block.** New harnesses `aligned_bytes_after_lookahead_short` and `_long` cover a reader that has already buffered whole bytes of the stored data. A corpus entry of compressible, then random, then compressible data is decoded from every zlib level and strategy.
+2. **Incomplete Huffman codes.** `tests/incomplete_codes.rs` hand-builds dynamic blocks with a single one-bit code, no distance codes, and incomplete codes of every kind. Python's zlib confirms which are valid.
+3. **Length-limit repair.**
+   - Proved on its own by `limit_depths_keeps_code_complete` at six symbols, the fewest that reach its second half.
+   - Fibonacci-frequency tests cover alphabets of 2–40 symbols at every limit.
+   - The documented tie-breaking is pinned on Huffman-shaped examples.
+4. **DOS dates.**
+   - `is_valid_is_the_calendar` equates `is_valid` with an independent definition.
+   - `unix_time_converts_exactly` proves the conversion right, not just valid.
+   - Tests cover leap years and invalid dates.
+5. **Streaming writers.** Tests cover a deferred write error followed by `flush` or `finish` for all three encoders, `Interrupted` retries, and `GzEncoder` finishing on drop.
+6. **CRC-32.** Its specification is now a separate bit loop that shares nothing with the implementation.
+7. **Stored-block sizes.** `stored_cost_adds_up_across_blocks` covers any number of blocks.
+8. **ZIP names.** `validate_name_is_exactly_the_rule` proves names are accepted exactly when they meet the rule: no safe name is refused.
+9. **Encoder and decoder layers.**
+   - `fixed_tokens_have_the_rfc_layout` proves the fixed-Huffman encoder's bit layout for every token.
+   - A token round trip through the real decoder is in the extended set.
+   - Dynamic-block writing and reading, and archive-level ZIP code, remain covered by tests and the per-component proofs.
+10. **Smaller items.**
+    - ZIP size limits are proved exact; multi-disk and ZIP64 rejection and directory modes are tested.
+    - The `deflate`-compatible option and level mappings are pinned to `deflate`'s and zlib's tables.
+    - Tests now cover the output-size bound against stored blocks, the streaming memory bound, gzip header values and messages, and `vzip`'s options and reports.
 
 ## What is not proven
 
