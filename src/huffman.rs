@@ -192,11 +192,31 @@ fn build_lengths_in<const N: usize, const M: usize>(
     let mut depth = [0u32; N];
     huffman_depths::<N, M>(&weight, m, &mut depth);
 
+    limit_depths(&mut depth[..m], &weight[..m], limit)?;
+    for k in 0..m {
+        lengths[used[k] as usize] = depth[k] as u8;
+    }
+    Ok(())
+}
+
+/// Limits the depths of a complete code over `depth.len()` symbols to
+/// `limit` bits, keeping it complete (the repair step of [`build_lengths`]).
+/// Depths over the limit are clamped; then, while the code is
+/// over-subscribed, the least frequent of the longest codes below the limit
+/// is lengthened; then, while code space is unused, the most frequent of
+/// the longest codes is shortened. `weight` only breaks ties.
+///
+/// Requires 2 ≤ `depth.len()` ≤ 2^`limit` and `weight.len()` =
+/// `depth.len()`; then the result is a complete code within the limit
+/// (proved for every complete code of up to six symbols by
+/// `limit_depths_keeps_code_complete`).
+fn limit_depths(depth: &mut [u32], weight: &[u64], limit: usize) -> Result<(), HuffmanError> {
+    let m = depth.len();
     // Kraft sum in units of 2^-limit; a complete code sums to `full`.
     let limit32 = limit as u32;
     let full = 1u64 << limit;
     let mut kraft = 0u64;
-    for d in depth.iter_mut().take(m) {
+    for d in depth.iter_mut() {
         if *d > limit32 {
             *d = limit32;
         }
@@ -240,9 +260,6 @@ fn build_lengths_in<const N: usize, const M: usize>(
         let Some(p) = pick else { return Err(HuffmanError::LimitTooSmall) };
         kraft += 1u64 << (limit32 - depth[p]);
         depth[p] -= 1;
-    }
-    for k in 0..m {
-        lengths[used[k] as usize] = depth[k] as u8;
     }
     Ok(())
 }
@@ -694,6 +711,68 @@ mod tests {
     }
 
     #[test]
+    fn build_lengths_on_fibonacci_weights_every_size_and_limit() {
+        // Every alphabet size 2-40 and every feasible limit, with Fibonacci
+        // weights in increasing, decreasing and interleaved order. Small
+        // limits on these weights make the clamp overshoot, so the
+        // under-subscribed half of the repair runs (from 6 symbols at
+        // limit 3).
+        for n in 2..=40usize {
+            let mut fib = vec![0u32; n];
+            let (mut a, mut b) = (1u32, 1u32);
+            for f in fib.iter_mut() {
+                *f = a;
+                let c = a.saturating_add(b);
+                a = b;
+                b = c;
+            }
+            let rev: Vec<u32> = fib.iter().rev().copied().collect();
+            let mixed: Vec<u32> = (0..n).map(|i| fib[(i * 7) % n]).collect();
+            for freqs in [&fib, &rev, &mixed] {
+                for limit in 1..=MAX_CODE_LEN {
+                    if n > 1 << limit {
+                        continue;
+                    }
+                    let mut lengths = vec![0u8; n];
+                    build_lengths(freqs, limit, &mut lengths).unwrap();
+                    assert!(lengths.iter().all(|&l| l >= 1 && l as usize <= limit), "n {n} limit {limit}");
+                    assert!(is_complete(&lengths), "n {n} limit {limit}: {lengths:?}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn limit_depths_under_subscribed_example() {
+        // Depths of a Huffman tree over weights 1,1,2,3,5,8, limited to 3
+        // bits: clamping gives 3,3,3,3,2,1 (over-subscribed); lengthening
+        // the 1 overshoots; shortening one 3 completes the code.
+        let mut depth = [5u32, 5, 4, 3, 2, 1];
+        limit_depths(&mut depth, &[1, 1, 2, 3, 5, 8], 3).unwrap();
+        let lengths = depth.map(|d| d as u8);
+        assert!(is_complete(&lengths), "{depth:?}");
+        assert!(depth.iter().all(|&d| (1..=3).contains(&d)));
+    }
+
+    #[test]
+    fn limit_depths_picks_by_frequency() {
+        // Ties among the longest codes go by frequency: the least frequent
+        // is lengthened and the most frequent shortened, as documented.
+        // Clamping [1,2,3,4,5,5] to 3 bits gives [1,2,3,3,3,3]; lengthening
+        // the 2 and then the 1 overshoots, so one 3 is shortened: the most
+        // frequent (weight 5), not merely the last.
+        let mut d = [1u32, 2, 3, 4, 5, 5];
+        limit_depths(&mut d, &[8, 5, 3, 2, 1, 1], 3).unwrap();
+        assert_eq!(d, [2, 2, 3, 3, 3, 3]);
+        // Over-subscribed with a tie below the limit: [2,2,2,3,4,4] clamped
+        // to 3 bits is over-subscribed by one unit; of the three 2s, the
+        // least frequent (weight 1, in the middle) is lengthened.
+        let mut d = [2u32, 2, 2, 3, 4, 4];
+        limit_depths(&mut d, &[9, 1, 7, 3, 2, 2], 3).unwrap();
+        assert_eq!(d, [2, 3, 2, 3, 3, 3]);
+    }
+
+    #[test]
     fn build_lengths_full_litlen_alphabet() {
         let freqs: Vec<u32> = (0..286u32).map(|i| (i * 7919) % 1000 + 1).collect();
         let mut lengths = vec![0u8; 286];
@@ -757,8 +836,9 @@ mod proofs {
     /// The length builder always yields a complete code within the limit
     /// that codes every used symbol, for five symbols with frequencies
     /// 0-255 and any limit 3-15. A limit of 3 forces the clamp-and-repair
-    /// path. (`build_lengths` runs this same generic function with larger
-    /// scratch arrays.)
+    /// path; its under-subscribed half needs six symbols and is proved
+    /// separately (`limit_depths_keeps_code_complete`). (`build_lengths`
+    /// runs this same generic function with larger scratch arrays.)
     #[kani::proof]
     #[kani::stub(sort_by_weight, sort_by_weight_spec)]
     #[kani::unwind(11)]
@@ -811,6 +891,40 @@ mod proofs {
         }
         let mut lengths = [0u8; 5];
         assert_eq!(build_lengths_in::<5, 10>(&freqs, 2, &mut lengths), Err(HuffmanError::LimitTooSmall));
+    }
+
+    /// The length-limit repair on its own, for every complete code of 2-6
+    /// symbols, any weights and any feasible limit of 2-4
+    /// bits: the result is a complete code within the limit. Six symbols
+    /// at limit 3 reach the under-subscribed half of the repair (for
+    /// example depths 5,5,4,3,2,1), which five never do. The repair does
+    /// not depend on how the depths were built, so this covers it for the
+    /// builder too.
+    #[kani::proof]
+    #[kani::unwind(20)]
+    fn limit_depths_keeps_code_complete() {
+        let m: usize = kani::any_where(|&m: &usize| (2..=6).contains(&m));
+        // Any complete code: start from one leaf at depth 0 and split a
+        // chosen leaf in two, m - 1 times. Every code tree arises this way.
+        let mut depth = [0u32; 6];
+        let mut leaves = 1;
+        while leaves < m {
+            let i: usize = kani::any_where(|&i: &usize| i < leaves);
+            depth[i] += 1;
+            depth[leaves] = depth[i];
+            leaves += 1;
+        }
+        let w: [u8; 6] = kani::any();
+        let weight = w.map(u64::from);
+        let limit: usize = kani::any_where(|&l: &usize| (2..=4).contains(&l));
+        kani::assume(m <= 1 << limit);
+        assert!(limit_depths(&mut depth[..m], &weight[..m], limit).is_ok());
+        let mut sum = 0u32;
+        for k in 0..m {
+            assert!(depth[k] >= 1 && depth[k] as usize <= limit);
+            sum += 1 << (limit as u32 - depth[k]);
+        }
+        assert_eq!(sum, 1 << limit);
     }
 
     /// The heapsort behind the length builder sorts: for any weights and

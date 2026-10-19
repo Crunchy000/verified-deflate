@@ -318,6 +318,22 @@ fn dropping_an_encoder_finishes_the_stream() {
         e.write_all(&data).unwrap();
     }
     assert_eq!(unzlib(&out, &data), data);
+    let mut out = Vec::new();
+    {
+        let mut e = GzEncoder::new(&mut out, Compression::Default);
+        e.write_all(&data).unwrap();
+    }
+    assert_eq!(ungzip(&out, &data), data);
+}
+
+/// Checks the default 10-byte gzip header and the trailer, and returns the
+/// decoded body.
+fn ungzip(s: &[u8], data: &[u8]) -> Vec<u8> {
+    assert_eq!(&s[..4], &[0x1f, 0x8b, 8, 0]);
+    let n = s.len();
+    assert_eq!(&s[n - 8..n - 4], &deflate::crc32(data).to_le_bytes());
+    assert_eq!(&s[n - 4..], &(data.len() as u32).to_le_bytes());
+    deflate::decompress(&s[10..n - 8]).unwrap()
 }
 
 #[test]
@@ -413,4 +429,93 @@ fn rle_and_huffman_only_behave_as_named() {
     assert!(huff > 10_000, "huffman-only {huff}");
     assert!(stored.len() > runs.len());
     assert_eq!(deflate::decompress(&stored).unwrap(), runs);
+}
+
+/// A writer that fails on chosen calls (with a chosen error kind) and
+/// otherwise accepts at most `max` bytes per call.
+struct Faulty {
+    out: Vec<u8>,
+    calls: usize,
+    fails: fn(usize) -> Option<io::ErrorKind>,
+    max: usize,
+}
+
+impl Faulty {
+    fn new(fails: fn(usize) -> Option<io::ErrorKind>) -> Self {
+        Faulty { out: Vec::new(), calls: 0, fails, max: 1000 }
+    }
+}
+
+impl Write for Faulty {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        self.calls += 1;
+        if let Some(kind) = (self.fails)(self.calls) {
+            return Err(io::Error::new(kind, "injected"));
+        }
+        let n = buf.len().min(self.max);
+        self.out.extend_from_slice(&buf[..n]);
+        Ok(n)
+    }
+    fn flush(&mut self) -> io::Result<()> {
+        Ok(())
+    }
+}
+
+/// One compressor input chunk: writing this much produces output at once.
+const CHUNK: usize = 256 * 1024;
+
+fn chunk_data() -> Vec<u8> {
+    (0..CHUNK as u32).map(|i| (i % 251) as u8 ^ (i / 997) as u8).collect()
+}
+
+/// A `write` that fills a chunk produces output; when sending it fails,
+/// the error is deferred and the output stays queued. The `flush` or
+/// `finish` that follows must send it, not drop it.
+#[test]
+fn deferred_write_error_then_flush_or_finish_loses_nothing() {
+    let data = chunk_data();
+    // The raw encoder's first writer call sends compressed data; the zlib
+    // and gzip encoders send their header first, so fail their second call.
+    let first_fails: fn(usize) -> Option<io::ErrorKind> = |c| (c == 1).then_some(io::ErrorKind::Other);
+    let second_fails: fn(usize) -> Option<io::ErrorKind> = |c| (c == 2).then_some(io::ErrorKind::Other);
+    for flush_first in [true, false] {
+        let mut e = DeflateEncoder::new(Faulty::new(first_fails), Compression::Default);
+        assert_eq!(e.write(&data).unwrap(), CHUNK);
+        if flush_first {
+            e.flush().unwrap();
+        }
+        let w = e.finish().unwrap();
+        assert!(w.calls > 1);
+        assert_eq!(deflate::decompress(&w.out).unwrap(), data, "deflate, flush first: {flush_first}");
+
+        let mut e = ZlibEncoder::new(Faulty::new(second_fails), Compression::Default);
+        assert_eq!(e.write(&data).unwrap(), CHUNK);
+        if flush_first {
+            e.flush().unwrap();
+        }
+        let w = e.finish().unwrap();
+        assert_eq!(unzlib(&w.out, &data), data, "zlib, flush first: {flush_first}");
+
+        let mut e = GzEncoder::new(Faulty::new(second_fails), Compression::Default);
+        assert_eq!(e.write(&data).unwrap(), CHUNK);
+        if flush_first {
+            e.flush().unwrap();
+        }
+        let w = e.finish().unwrap();
+        assert_eq!(ungzip(&w.out, &data), data, "gzip, flush first: {flush_first}");
+    }
+}
+
+/// `Interrupted` from the writer is retried, never reported: `flush` and
+/// `finish` succeed even when every other write is interrupted.
+#[test]
+fn interrupted_writes_are_retried() {
+    let data = chunk_data().repeat(2);
+    let every_other: fn(usize) -> Option<io::ErrorKind> = |c| (c % 2 == 1).then_some(io::ErrorKind::Interrupted);
+    let mut e = DeflateEncoder::new(Faulty::new(every_other), Compression::Fast);
+    e.write_all(&data).unwrap();
+    e.flush().unwrap();
+    let w = e.finish().unwrap();
+    assert!(w.calls > 10);
+    assert_eq!(deflate::decompress(&w.out).unwrap(), data);
 }

@@ -324,11 +324,50 @@ mod tests {
 
     #[test]
     fn enum_values_round_trip() {
+        // RFC 1952 defines operating systems 0-13; gzip-header adds 14-19.
         for v in 0..=255u8 {
             let t = FileSystemType::from_u8(v);
-            assert!(t.as_u8() == v || t == FileSystemType::Unknown);
+            if v <= 19 || v == 255 {
+                assert_eq!(t.as_u8(), v);
+            } else {
+                assert_eq!(t, FileSystemType::Unknown);
+            }
             let x = ExtraFlags::from_u8(v);
-            assert!(x.as_u8() == v || x == ExtraFlags::Default);
+            if v == 2 || v == 4 {
+                assert_eq!(x.as_u8(), v);
+            } else {
+                assert_eq!(x, ExtraFlags::Default);
+            }
+        }
+        assert_eq!(FileSystemType::from_u8(3), FileSystemType::Unix);
+        assert_eq!(FileSystemType::from_u8(11), FileSystemType::NTFS);
+        assert_eq!(ExtraFlags::from_u8(2), ExtraFlags::MaximumCompression);
+        assert_eq!(ExtraFlags::from_u8(4), ExtraFlags::FastestCompression);
+    }
+
+    #[test]
+    fn descriptions_are_distinct() {
+        let mut seen = std::collections::HashSet::new();
+        for v in (0..=19u8).chain([255]) {
+            let d = FileSystemType::from_u8(v).to_string();
+            assert!(!d.is_empty() && seen.insert(d), "{v}");
+        }
+        for x in [ExtraFlags::Default, ExtraFlags::MaximumCompression, ExtraFlags::FastestCompression] {
+            let d = x.to_string();
+            assert!(!d.is_empty() && seen.insert(d));
+        }
+        assert_eq!(FileSystemType::Unix.to_string(), "Unix type system/Linux");
+    }
+
+    #[test]
+    fn extra_flags_and_default_os() {
+        let h = GzBuilder::new().xfl(ExtraFlags::FastestCompression).os(FileSystemType::Unix).into_header();
+        assert_eq!(h[8], 4);
+        let h = GzBuilder::new().into_header();
+        if cfg!(target_os = "linux") {
+            assert_eq!(h[9], FileSystemType::Unix.as_u8());
+        } else if cfg!(target_os = "macos") {
+            assert_eq!(h[9], FileSystemType::Apple.as_u8());
         }
     }
 }

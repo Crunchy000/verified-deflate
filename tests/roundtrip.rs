@@ -60,3 +60,26 @@ fn concatenated_streams_decode_one_at_a_time() {
     assert_eq!(d1.data, b"first stream first stream");
     assert_eq!(decompress(&both[d1.consumed..]).unwrap(), b"second");
 }
+
+/// Each block is the smallest of stored, fixed and dynamic, so output is
+/// never much larger than storing the input: five bytes per stored block
+/// and at most one padding byte per Huffman block on top of the data.
+#[test]
+fn never_much_larger_than_stored() {
+    let corpus = common::corpus();
+    let mut rng = Rng::new(9);
+    let mut inputs: Vec<Vec<u8>> = corpus.into_iter().map(|(_, d)| d).collect();
+    for _ in 0..20 {
+        inputs.push(generated(&mut rng));
+    }
+    for data in &inputs {
+        let len = data.len();
+        let bound = len
+            + 6 * (len / verified_deflate::deflate::BLOCK_TOKENS + 1)
+            + 5 * (len / verified_deflate::deflate::MAX_STORED_BLOCK + 1);
+        for level in 1..=9u8 {
+            let out = compress_with(data, &CompressOptions { level, strategy: Strategy::Auto, verify: false });
+            assert!(out.len() <= bound, "level {level}, {len} bytes: {} > {bound}", out.len());
+        }
+    }
+}

@@ -301,6 +301,35 @@ pub const fn reverse_bits(code: u16, len: u32) -> u16 {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn alignment_and_taking_bytes() {
+        let mut w = BitWriter::new();
+        assert!(w.is_byte_aligned());
+        w.write_bits(0b101, 3);
+        assert!(!w.is_byte_aligned());
+        w.write_bits(0xAB, 13);
+        assert!(w.is_byte_aligned());
+        w.write_bits(1, 1);
+        assert!(!w.is_byte_aligned());
+        // Taking whole bytes keeps pending bits and the position modulo 8.
+        let mut taken = w.take_bytes();
+        assert_eq!(w.bit_len() % 8, 1);
+        assert!(w.take_bytes().is_empty(), "nothing new to take");
+        w.write_bits(0x7F, 7);
+        taken.extend(w.finish());
+        let mut r = BitReader::new(&taken);
+        assert_eq!(r.read_bits(3), Ok(0b101));
+        assert_eq!(r.read_bits(13), Ok(0xAB));
+        assert_eq!(r.read_bits(1), Ok(1));
+        assert_eq!(r.read_bits(7), Ok(0x7F));
+        assert_eq!(r.bits_remaining(), 0);
+    }
+}
+
 #[cfg_attr(mutants, mutants::skip)] // proof code: the checker, not code under test
 #[cfg(kani)]
 mod proofs {
@@ -420,6 +449,39 @@ mod proofs {
         let mut r2 = BitReader::new(&bytes);
         let mut big = [0u8; 16];
         assert_eq!(r2.read_aligned_bytes(&mut big[..bytes.len() + 1]), Err(InflateError::UnexpectedEof));
+    }
+
+    /// The same framing when the reader has looked ahead first, as the
+    /// Huffman decoder does with `peek`: the look-ahead can load whole
+    /// bytes of the stored data into the accumulator, and
+    /// `read_aligned_bytes` must hand those out first. Covers payloads
+    /// shorter and longer than what is buffered, and both refill paths
+    /// (an 8-byte load and the zero-padded tail).
+    #[kani::proof]
+    #[kani::unwind(9)]
+    fn aligned_bytes_after_lookahead() {
+        let head: u32 = kani::any();
+        let head_len: u32 = kani::any();
+        kani::assume(head_len <= 20);
+        let payload: [u8; 6] = kani::any();
+        let n: usize = kani::any_where(|&n: &usize| n <= 6);
+        let tail: u32 = kani::any();
+        let look: u32 = kani::any_where(|&b: &u32| b <= 32);
+        let mut w = BitWriter::new();
+        w.write_bits(head, head_len);
+        w.write_aligned_bytes(&payload[..n]);
+        w.write_bits(tail, 5);
+        let bytes = w.finish();
+        let mut r = BitReader::new(&bytes);
+        let _ = r.peek(look);
+        assert_eq!(r.read_bits(head_len), Ok(head & mask(head_len)));
+        let _ = r.peek(look);
+        r.align_to_byte();
+        let mut out = [0u8; 6];
+        assert!(r.read_aligned_bytes(&mut out[..n]).is_ok());
+        assert_eq!(out[..n], payload[..n]);
+        assert_eq!(r.read_bits(5), Ok(tail & 31));
+        assert_eq!(r.bytes_consumed(), bytes.len());
     }
 
     /// `reverse_bits` reverses exactly the low `len` bits and is an involution.
