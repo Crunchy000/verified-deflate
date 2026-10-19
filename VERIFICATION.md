@@ -121,7 +121,7 @@ the zlib interop tests confirm the output is unchanged.
 | `reader_eof_is_exact` | Over 0–4 bytes of input, three reads of 0–32 bits each succeed exactly when enough bits remain, and otherwise return `UnexpectedEof`. |
 | `read_bits_matches_read_bit` | `read_bits(n)` equals `n` single-bit reads, at any bit offset 0–7, for n ≤ 16. |
 | `aligned_bytes_roundtrip` | Bits, padding, a byte-aligned payload, then more bits: all round-trip; `bytes_consumed` is exact; over-long reads are errors. |
-| `aligned_bytes_after_lookahead` | The same after the reader has looked ahead (as the Huffman decoder does), so whole bytes of the payload already sit in its buffer: they come out first and in order. This covers payloads of 0–6 bytes, shorter and longer than what is buffered, and both refill paths. This is the stored block that follows a Huffman block. |
+| `aligned_bytes_after_lookahead_short`, `aligned_bytes_after_lookahead_long` | The same after the reader has looked ahead (as the Huffman decoder does before the next block header), so whole bytes of the payload already sit in its buffer: they come out first and in order. A 3-byte payload takes the zero-padded refill and can be wholly buffered; a 9-byte payload is split by an 8-byte refill. This is the stored block that follows a Huffman block. |
 | `reverse_bits_is_reversal` | For every code of 1–15 bits, `reverse_bits` reverses exactly those bits and is an involution. |
 
 ### Adler-32 (`adler32`)

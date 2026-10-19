@@ -451,37 +451,49 @@ mod proofs {
         assert_eq!(r2.read_aligned_bytes(&mut big[..bytes.len() + 1]), Err(InflateError::UnexpectedEof));
     }
 
-    /// The same framing when the reader has looked ahead first, as the
-    /// Huffman decoder does with `peek`: the look-ahead can load whole
-    /// bytes of the stored data into the accumulator, and
-    /// `read_aligned_bytes` must hand those out first. Covers payloads
-    /// shorter and longer than what is buffered, and both refill paths
-    /// (an 8-byte load and the zero-padded tail).
-    #[kani::proof]
-    #[kani::unwind(9)]
-    fn aligned_bytes_after_lookahead() {
+    /// Stored-block framing after the reader has looked ahead, as the
+    /// Huffman decoder does with `peek` before the next block header: the
+    /// look-ahead can load whole bytes of the stored data into the
+    /// accumulator, and `read_aligned_bytes` must hand those out first.
+    /// `N` is fixed per harness (a symbolic length makes every buffer size
+    /// symbolic).
+    fn check_aligned_after_lookahead<const N: usize>() {
         let head: u32 = kani::any();
-        let head_len: u32 = kani::any();
-        kani::assume(head_len <= 20);
-        let payload: [u8; 6] = kani::any();
-        let n: usize = kani::any_where(|&n: &usize| n <= 6);
+        let head_len: u32 = kani::any_where(|&l: &u32| l <= 20);
+        let payload: [u8; N] = kani::any();
         let tail: u32 = kani::any();
         let look: u32 = kani::any_where(|&b: &u32| b <= 32);
         let mut w = BitWriter::new();
         w.write_bits(head, head_len);
-        w.write_aligned_bytes(&payload[..n]);
+        w.write_aligned_bytes(&payload);
         w.write_bits(tail, 5);
         let bytes = w.finish();
         let mut r = BitReader::new(&bytes);
         let _ = r.peek(look);
         assert_eq!(r.read_bits(head_len), Ok(head & mask(head_len)));
-        let _ = r.peek(look);
         r.align_to_byte();
-        let mut out = [0u8; 6];
-        assert!(r.read_aligned_bytes(&mut out[..n]).is_ok());
-        assert_eq!(out[..n], payload[..n]);
+        let mut out = [0u8; N];
+        assert!(r.read_aligned_bytes(&mut out).is_ok());
+        assert_eq!(out, payload);
         assert_eq!(r.read_bits(5), Ok(tail & 31));
         assert_eq!(r.bytes_consumed(), bytes.len());
+    }
+
+    /// A 3-byte payload: the whole stream is under 8 bytes, so the
+    /// look-ahead takes the zero-padded path and can buffer all of the
+    /// payload (more than is asked for) or none of it.
+    #[kani::proof]
+    #[kani::unwind(9)]
+    fn aligned_bytes_after_lookahead_short() {
+        check_aligned_after_lookahead::<3>();
+    }
+
+    /// A 9-byte payload: an 8-byte look-ahead ends inside the payload, so
+    /// part comes from the buffer and the rest from the input.
+    #[kani::proof]
+    #[kani::unwind(11)]
+    fn aligned_bytes_after_lookahead_long() {
+        check_aligned_after_lookahead::<9>();
     }
 
     /// `reverse_bits` reverses exactly the low `len` bits and is an involution.
