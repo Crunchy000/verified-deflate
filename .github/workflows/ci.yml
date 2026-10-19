@@ -27,6 +27,33 @@ on:
         type: boolean
         required: false
         default: false
+      assurance:
+        description: "Assurance mode: record which code each proof reaches (Kani coverage), run mutation testing against the proofs and the tests, and publish a report to ci-logs/assurance"
+        type: boolean
+        required: false
+        default: false
+      mutants_passes:
+        description: "Assurance mode: which mutation passes to run (comma-separated: proofs, tests)"
+        required: false
+        default: "proofs,tests"
+      mutants_shards:
+        description: "Assurance mode: only these mutation shards (comma-separated, 0-15); empty = all"
+        required: false
+        default: ""
+      reuse_run:
+        description: "Assurance mode: ids of earlier runs (comma-separated, highest precedence first) whose coverage and mutation results fill in whatever this run does not produce (waits for them to finish)"
+        required: false
+        default: ""
+      recheck_rest:
+        description: "With recheck: only re-verify the survivors of the previous re-check (ci-logs/assurance-recheck) against every harness that reaches them and that it did not try"
+        type: boolean
+        required: false
+        default: false
+      recheck:
+        description: "After an assurance run: verify with real Kani the mutants that proofs reach but sampling missed (from ci-logs/assurance); publishes to ci-logs/assurance-recheck. Set modules to 'none' to skip the normal proofs."
+        type: boolean
+        required: false
+        default: false
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -82,7 +109,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    timeout-minutes: 240
+    # Coverage instrumentation makes proofs slower, so assurance runs get
+    # the longest time a hosted runner allows.
+    timeout-minutes: ${{ github.event.inputs.assurance == 'true' && 355 || 240 }}
     strategy:
       fail-fast: false
       matrix:
@@ -148,6 +177,7 @@ jobs:
           KANI_SHARD_SKIP: ${{ matrix.skip }}
           KANI_EXTRA_FLAGS: ${{ matrix.flags }}
           KANI_EXTENDED: ${{ github.event.inputs.extended == 'true' && '1' || '0' }}
+          KANI_COVERAGE: ${{ github.event.inputs.assurance == 'true' && '1' || '0' }}
           GITHUB_TOKEN: ${{ github.token }}
           MODULE: ${{ matrix.module }}
           PART: ${{ matrix.part }}
@@ -159,3 +189,222 @@ jobs:
       - name: Report
         if: always() && steps.sel.outputs.run == 'true'
         run: python3 .github/scripts/kani_report.py kani-logs
+      - name: Keep coverage for the assurance report
+        if: always() && steps.sel.outputs.run == 'true' && github.event.inputs.assurance == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: kanicov-${{ strategy.job-index }}
+          path: kani-logs
+          if-no-files-found: warn
+
+  # Assurance mode only. Each mutant is a small deliberate bug (an operator
+  # swapped, a condition negated, a function body replaced by a constant).
+  # A mutant that no check notices marks code whose behaviour nothing pins
+  # down. Two passes:
+  #   proofs: the Kani harnesses run as randomised tests (kani-sample). A
+  #           mutant caught here is caught by the real proof too, because
+  #           sampling only finds genuine counterexamples. One missed here
+  #           may still be caught by the real proof, which checks every
+  #           input; the report lists those that the proofs reach.
+  #   tests:  the whole test suite, including the zlib and Info-ZIP interop.
+  mutants:
+    name: Mutants ${{ matrix.pass }} ${{ matrix.shard }}/16
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.assurance == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        pass: [proofs, tests]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    steps:
+      - name: Select
+        id: sel
+        env:
+          PASSES: ${{ github.event.inputs.mutants_passes || 'proofs,tests' }}
+          SHARDS: ${{ github.event.inputs.mutants_shards }}
+          PASS: ${{ matrix.pass }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          run=false
+          for p in ${PASSES//,/ }; do [ "$p" = "$PASS" ] && run=true; done
+          if [ -n "$SHARDS" ] && ! [[ ",${SHARDS// /}," == *",$SHARD,"* ]]; then run=false; fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v6
+        if: steps.sel.outputs.run == 'true'
+      - uses: dtolnay/rust-toolchain@stable
+        if: steps.sel.outputs.run == 'true'
+      - uses: taiki-e/install-action@v2
+        if: steps.sel.outputs.run == 'true'
+        with:
+          tool: cargo-mutants@27.1.0
+      - name: Install zip/unzip for interop tests
+        if: steps.sel.outputs.run == 'true' && matrix.pass == 'tests'
+        run: sudo apt-get install -y zip unzip
+      - name: Mutate and test
+        if: steps.sel.outputs.run == 'true'
+        env:
+          PASS: ${{ matrix.pass }}
+          SHARD: ${{ matrix.shard }}
+          SHARDS: "16"
+          KANI_SAMPLE_ITERS: "300000"
+        run: .github/scripts/run-and-report.sh "mutants-${{ matrix.pass }}-${{ matrix.shard }}" .github/scripts/mutants_shard.sh
+      - name: Keep outcomes for the assurance report
+        if: always() && steps.sel.outputs.run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutants-${{ matrix.pass }}-${{ matrix.shard }}
+          path: |
+            mutants-${{ matrix.pass }}-${{ matrix.shard }}/mutants.out/outcomes.json
+            mutants-${{ matrix.pass }}-${{ matrix.shard }}/mutants.out/*.txt
+          if-no-files-found: warn
+
+  assurance:
+    name: Assurance report
+    needs: [kani, mutants]
+    if: always() && github.event_name == 'workflow_dispatch' && github.event.inputs.assurance == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: kanicov-*
+          path: assurance-in/coverage
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: mutants-*
+          path: assurance-in/mutants
+      - name: Fill in from earlier runs (this run's results take precedence, then the runs in the order given)
+        if: github.event.inputs.reuse_run != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUNS: ${{ github.event.inputs.reuse_run }}
+        run: |
+          mkdir -p assurance-in
+          for run in ${RUNS//,/ }; do
+            until [ "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run" --jq .status)" = completed ]; do sleep 60; done
+            gh run download "$run" -R "$GITHUB_REPOSITORY" -p 'kanicov-*' -D "old-$run/coverage" || true
+            gh run download "$run" -R "$GITHUB_REPOSITORY" -p 'mutants-*' -D "old-$run/mutants" || true
+            # Harness tables are merged line by line (earlier lines win);
+            # every other file is taken only where none exists yet.
+            find "old-$run" \( -name status.tsv -o -name coverage-fallback.tsv \) | while read -r f; do
+              dst="assurance-in/${f#old-$run/}"
+              if [ -f "$dst" ]; then
+                awk -F'\t' 'FILENAME == ARGV[1] { seen[$1] = 1; next } !seen[$1]' "$dst" "$f" > "$f.new"
+                cat "$f.new" >> "$dst"
+              fi
+            done
+            cp -rn "old-$run/." assurance-in/
+          done
+      - name: Join coverage and mutants
+        run: python3 .github/scripts/assurance_report.py assurance-in assurance-out
+      - name: Publish to ci-logs/assurance
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          cat assurance-out/summary.md >> "$GITHUB_STEP_SUMMARY" || true
+          tmp=$(mktemp -d)
+          cp -r assurance-out/. "$tmp"/
+          mkdir -p "$tmp/inputs"
+          # Raw inputs too (outcomes and coverage, without the bulky logs),
+          # so the report can be recomputed offline.
+          (cd assurance-in && find . \( -name 'outcomes.json' -o -name '*.txt' -o -name '*_kaniraw.json' -o -name '*.tsv' \) -print0 \
+            | xargs -0 -I{} cp --parents {} "$tmp/inputs/")
+          cd "$tmp" && git init -q && git checkout -q -b logs && git add . \
+            && git -c user.name=ci -c user.email=ci@localhost commit -qm "Assurance report, run ${GITHUB_RUN_ID}" \
+            && git push -qf "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}" "logs:refs/heads/ci-logs/assurance"
+
+  # Second step of the assurance mode: mutants that a proof executes but
+  # that sampling did not catch, verified with real Kani (every input).
+  recheck:
+    name: Kani re-check of mutants ${{ matrix.shard }}/16
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.recheck == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    steps:
+      - uses: actions/checkout@v6
+      - name: Fetch the assurance report
+        run: |
+          git fetch -q --depth 1 origin ci-logs/assurance
+          mkdir -p assurance-dir && git archive FETCH_HEAD | tar -x -C assurance-dir
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Cache Kani
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/kani
+            ~/.cargo/bin/cargo-kani
+            ~/.kani
+            ~/.rustup/toolchains/nightly-*
+          key: kani-${{ env.KANI_VERSION }}-${{ runner.os }}
+      - name: Install Kani ${{ env.KANI_VERSION }}
+        run: |
+          if ! command -v cargo-kani >/dev/null || ! cargo kani --version | grep -q "$KANI_VERSION"; then
+            cargo install --locked kani-verifier --version "$KANI_VERSION"
+          fi
+          cargo kani setup
+      - name: Fetch the previous re-check
+        if: github.event.inputs.recheck_rest == 'true'
+        run: |
+          git fetch -q --depth 1 origin ci-logs/assurance-recheck
+          mkdir -p previous && git archive FETCH_HEAD | tar -x -C previous
+      - name: Verify each mutant
+        env:
+          RECHECK_PREVIOUS: ${{ github.event.inputs.recheck_rest == 'true' && 'previous/recheck.json' || '' }}
+          RECHECK_MAX_HARNESSES: ${{ github.event.inputs.recheck_rest == 'true' && '99' || '3' }}
+        run: python3 .github/scripts/kani_recheck.py run assurance-dir ${{ matrix.shard }} 16 recheck-${{ matrix.shard }}.jsonl
+      - name: Keep results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recheck-${{ matrix.shard }}
+          path: recheck-${{ matrix.shard }}.jsonl
+          if-no-files-found: warn
+
+  recheck-report:
+    name: Kani re-check report
+    needs: [recheck]
+    if: always() && github.event_name == 'workflow_dispatch' && github.event.inputs.recheck == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - name: Fetch the assurance report
+        run: |
+          git fetch -q --depth 1 origin ci-logs/assurance
+          mkdir -p assurance-dir && git archive FETCH_HEAD | tar -x -C assurance-dir
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: recheck-*
+          path: recheck-in
+      - name: Fetch the previous re-check
+        if: github.event.inputs.recheck_rest == 'true'
+        run: |
+          git fetch -q --depth 1 origin ci-logs/assurance-recheck
+          mkdir -p previous && git archive FETCH_HEAD | tar -x -C previous
+      - name: Merge
+        env:
+          RECHECK_PREVIOUS: ${{ github.event.inputs.recheck_rest == 'true' && 'previous/recheck.json' || '' }}
+        run: python3 .github/scripts/kani_recheck.py summarize assurance-dir recheck-in recheck-out
+      - name: Publish to ci-logs/assurance-recheck
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          cat recheck-out/recheck.md >> "$GITHUB_STEP_SUMMARY" || true
+          tmp=$(mktemp -d)
+          cp -r recheck-out/. "$tmp"/
+          cd "$tmp" && git init -q && git checkout -q -b logs && git add . \
+            && git -c user.name=ci -c user.email=ci@localhost commit -qm "Kani re-check, run ${GITHUB_RUN_ID}" \
+            && git push -qf "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}" "logs:refs/heads/ci-logs/assurance-recheck"

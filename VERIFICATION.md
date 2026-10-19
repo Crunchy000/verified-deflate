@@ -236,6 +236,152 @@ machine or further restructuring of the decoder.
 | `crc32::proofs::eight_byte_step_equals_table_steps` | The eight-byte CRC step lemma as a single query. CI proves it by linearity instead (see above). |
 | `crc32::proofs::four_byte_lanes_equal_table_steps` | Its four-byte half as a single query. |
 
+## Checking the proofs: coverage and mutation
+
+A proof only covers the code it executes, and only checks what its
+assertions say. Two measurements check both, in a manual run of the CI
+workflow with `assurance` set:
+
+- **Coverage.** Every harness runs with Kani's source coverage
+  (`--coverage -Z source-coverage`), which records, for each code region,
+  whether *some* input within the harness's bounds reaches it. The union
+  over all harnesses shows the functions no proof enters and the branches
+  no proof takes. An unreached region inside a proved function means the
+  bounds, the stubs or an assumption exclude it.
+- **Mutation.** cargo-mutants makes small deliberate bugs (swaps an
+  operator, negates a condition, replaces a function body with a constant)
+  and checks that something fails. It runs twice: against the harnesses
+  run as randomised tests (`kani-sample`) and against the whole test
+  suite. A mutant that the sampled harnesses catch also fails the real
+  proof, since sampling only finds genuine counterexamples.
+
+`.github/scripts/assurance_report.py` joins the two and classifies every
+mutant:
+
+| class | meaning |
+|---|---|
+| proved | the sampled proofs catch it |
+| proof-reach | a proof executes the code, but sampling did not catch the mutant |
+| tests-only | no proof executes the code; the tests catch the mutant |
+| unchecked | nothing catches it |
+
+A follow-up run with `recheck` set verifies every proof-reach mutant with
+real Kani, which checks all inputs where sampling tries some. A mutant
+that survives the real proofs marks a property that does not pin the
+behaviour down, or a change that has no observable effect (an equivalent
+mutant, such as a match-finder heuristic that only affects the
+compression ratio). The reports are published to the `ci-logs/assurance`
+and `ci-logs/assurance-recheck` branches.
+
+Proof code and the reference specifications the proofs compare against
+are marked `#[cfg_attr(mutants, mutants::skip)]`: they are the checker,
+not the code under test.
+
+To run it, dispatch the CI workflow:
+
+- With `assurance` set, a run takes about an hour on public runners: 12 Kani jobs with coverage, then 2 × 16 mutation shards.
+- Then dispatch again with `recheck` set (and `modules` set to `none`) for the real-Kani step.
+- `mutants_passes` and `mutants_shards` re-run part of the mutation; `reuse_run` merges results from earlier runs.
+
+Some details of the setup:
+
+- **Memory and file-size limits.** Mutated tests run under them, so a mutant that loops while allocating or writing fails its test instead of taking down the runner.
+- **Two Huffman harnesses** (`encode_then_decode_symbol` and `fast_decode_matches_slow`) exceed 14 GiB with coverage instrumentation. Their coverage is recorded in a second run without Kani's default checks, which do not affect what code is reached.
+
+### Results (October 2026)
+
+Of 1,903 mutants that compile (156 more do not):
+
+| caught by | mutants | share |
+|---|---:|---:|
+| the proofs | 1,203 | 63% |
+| only the tests | 403 | 21% |
+| nothing | 297 | 16% |
+
+Of the mutants caught by the proofs, 39 were missed by sampling and caught
+only by real Kani. The 59 mutants that a proof executes but does not
+catch, and that the tests do catch, mark properties weaker than the
+code's job. By file:
+
+| file | mutants | proofs | tests only | nothing |
+|---|---:|---:|---:|---:|
+| `adler32` | 23 | 20 | 2 | 1 |
+| `bitio` | 196 | 140 | 27 | 29 |
+| `crc32` | 81 | 77 | 4 | 0 |
+| `tables` | 58 | 56 | 0 | 2 |
+| `huffman` | 275 | 199 | 22 | 54 |
+| `lz77` | 281 | 200 | 27 | 54 |
+| `deflate` | 231 | 92 | 119 | 20 |
+| `inflate` | 107 | 80 | 25 | 2 |
+| `zip` | 440 | 339 | 48 | 53 |
+| `write`, `compat`, `gzip_header`, `error` | 149 | 0 | 92 | 57 |
+| `vzip` | 62 | 0 | 37 | 25 |
+
+Most of the 297 that nothing catches change nothing that matters:
+
+- **Match-finder heuristics** (most of the 54 in `lz77`): hash function,
+  chain limits, lazy-match thresholds, level table. They change the
+  compression ratio and speed; the proofs check that tokens are valid and
+  replay to the input, which any heuristic satisfies.
+- **The Huffman fast table and bit-reader refill.** A wrong or missing
+  table entry makes `decode` fall back to the canonical walk, which
+  `fast_decode_matches_slow` proves equivalent. Refill thresholds work the
+  same way. Only speed changes.
+- **Equivalent rewrites**, such as:
+  - `|` to `^` on disjoint bit fields;
+  - `<` to `<=` where equality gives the same result;
+  - array capacities;
+  - date branches for years before 1970, which the DOS range never reaches.
+
+The rest are gaps, in order of priority.
+
+**Caught by nothing, and they matter:**
+
+1. **A stored block after a Huffman-coded block.**
+   - After Huffman decoding, the bit reader can hold whole input bytes. `read_aligned_bytes` must take them first.
+   - A mutant that skips them decodes real zlib output wrongly whenever compressible and incompressible data are mixed (a Huffman block followed by stored blocks). Neither the tests nor the proofs notice.
+   - `aligned_bytes_roundtrip` fills the reader exactly (`read_bits`), so its buffer never holds whole bytes, and the interop tests decode compressible data only.
+2. **Incomplete Huffman codes.**
+   - The decoder accepts exactly two kinds of incomplete code: a single one-bit code, and no distance codes at all.
+   - Nothing exercises this: mutants of `is_single_unit_code` and `coded_symbols`, and of the checks at `inflate.rs` 222–226, survive.
+   - A bug here would reject valid streams from other encoders, or accept invalid ones.
+3. **Length-limit repair when the code is under-subscribed** (`build_lengths`).
+   - This branch cannot be reached with the proofs' 5 symbols. The smallest trigger is 6 symbols at limit 3, with frequencies 1, 1, 2, 3, 5, 8.
+   - No test reaches it either. A mutant that shortens the wrong code produces an over-subscribed, invalid code.
+   - The `deflate`-compatible API compresses with `verify` off, so it would ship such streams.
+4. **DOS date validation.**
+   - `is_valid` is assumed by `dos_datetime_roundtrip` and asserted by `unix_time_always_valid`, but never compared with an independent definition.
+   - "Every year is a leap year" and "every date is valid" both survive, so `DosDateTime::new(2023, 2, 29, …)` could start succeeding.
+5. **A write error followed by `flush` or `finish`** in the `write` encoders.
+   - A failed send leaves output queued, and the next `flush` or `finish` must keep it.
+   - A mutant that drops it loses data, and the failing-writer test misses this because it only retries `write`.
+
+**Proved properties weaker than the code's job (the tests catch these):**
+
+6. **CRC-32 shares its loop with its specification.** `update_bitwise` uses the same `fold` helper, with the same inversions and loop, as `update`. A bug there changes both sides.
+7. **`from_unix_seconds` is only proved valid.** The proof shows its result is a *valid* date, not the *right* one.
+8. **`stored_bits` is only proved for one block.** It is checked for single-block lengths, so the multi-block term is never tested.
+9. **`validate_name` is proved sound, not complete.** Accepted names are safe, but over-rejection is not checked. That is the right direction for safety.
+
+**Code no CI proof executes (tests only):**
+
+10. These are covered only by the extended harnesses (not run in CI) or by tests:
+    - the encoder's entropy stage: `write_block`, `write_fixed`, `write_dynamic`, `write_tokens`, `plan_dynamic`;
+    - the decoder's Huffman-block loop (`codes`) and dynamic header (`read_dynamic_codes`);
+    - archive-level ZIP parsing and writing;
+    - the `write`, `compat` and `gzip_header` layers.
+
+**Lower risk, caught by nothing:**
+
+11. **ZIP reader:** rejection of multi-disk and ZIP64-marked archives.
+12. **ZIP writer:** the 4 GiB guards, which tests cannot reach.
+13. **Directory permissions:** directory Unix modes other than the default.
+14. **Interrupted writes:** retrying writes that fail with `Interrupted`.
+15. **Dropping a `GzEncoder`:** finishing the stream on drop.
+16. **Option semantics:** that `rle()` and `huffman_only()` behave as named. Deleting the RLE flag goes unnoticed.
+17. **Encoder size and memory:** block-type choice and the streaming encoder's history trimming. Their mutants change only output size or memory use, but no test pins either; for example, that output never exceeds the stored size.
+18. **Small surfaces:** gzip header enum mappings, `Display` text, and `vzip` options.
+
 ## What is not proven
 
 The gaps, stated precisely:

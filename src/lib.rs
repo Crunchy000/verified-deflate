@@ -83,6 +83,7 @@ pub mod tables;
 pub mod write;
 pub mod zip;
 
+#[cfg_attr(mutants, mutants::skip)] // proof code: the checker, not code under test
 #[cfg(kani)]
 mod e2e;
 
