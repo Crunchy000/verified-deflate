@@ -58,6 +58,11 @@ compositionally rather than end to end.
 [VERIFICATION.md](VERIFICATION.md) lists every harness, its bounds, the
 modelling choices behind it, and what is **not** proven.
 
+The proofs are themselves checked. Kani's source coverage shows which code
+each proof reaches. Mutation testing plants about 1,900 small bugs; the
+proofs catch 63% of them and the tests a further 21%. VERIFICATION.md
+lists the gaps that remain.
+
 Two further checks run on top of the proofs. The test suite compares the
 engine against real zlib in both directions: zlib decodes every stream
 this crate produces, and this crate decodes about 1,400 zlib streams across
@@ -230,7 +235,7 @@ corrupted chain to produce an invalid match.
 | `src/zip.rs` | ZIP writer and reader |
 | `src/compat.rs`, `src/write.rs`, `src/gzip_header.rs` | The `deflate` crate's API: one-shot functions, streaming encoders, gzip headers |
 | `src/e2e.rs` | End-to-end Kani harnesses |
-| `.github/scripts/` | Per-harness Kani runner and report used by CI |
+| `.github/scripts/` | Per-harness Kani runner, coverage and mutation reports used by CI |
 | `src/bin/vzip.rs` | Command-line tool |
 | `tests/` | zlib, Info-ZIP and robustness tests |
 | `tools/deflate-upstream/` | Runs the `deflate` crate's own tests against this crate |
