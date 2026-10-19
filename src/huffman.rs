@@ -678,6 +678,15 @@ impl Decoder {
     }
 }
 
+/// Stub for [`Decoder::decode`] in harnesses whose codes are too large
+/// for the table lookup to be checked symbolically: the canonical walk
+/// alone. `fast_decode_matches_slow` proves the table changes nothing.
+#[cfg(kani)]
+#[cfg_attr(kani_sample, allow(dead_code))] // stubs are not applied when sampling
+pub(crate) fn decode_without_table(d: &Decoder, br: &mut BitReader<'_>) -> Result<u16, InflateError> {
+    d.decode_slow(br)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -810,10 +810,14 @@ mod proofs {
     /// (a length code with an extra bit) at distance 1 (an overlapping
     /// copy), written by `write_fixed` as the final block and read back by
     /// `decompress_with_limit`. This runs the decoder's Huffman-block loop
-    /// on real encoder output without the match finder.
+    /// on real encoder output without the match finder. The decoder's
+    /// lookup table is replaced by the canonical walk it is proved to
+    /// agree with (`huffman::proofs::fast_decode_matches_slow`): the
+    /// 288-symbol table is too large to check symbolically.
     #[kani::proof]
     #[kani::stub(crate::lz77::copy_within_buffer, crate::lz77::copy_within_buffer_ref)]
     #[kani::stub(crate::inflate::Output::grow, crate::inflate::grow_is_unreachable)]
+    #[kani::stub(crate::huffman::Decoder::decode, crate::huffman::decode_without_table)]
     #[kani::unwind(17)]
     fn fixed_block_tokens_roundtrip() {
         let a: u8 = kani::any();
@@ -825,24 +829,30 @@ mod proofs {
         assert_eq!(d.consumed, bytes.len());
     }
 
-    /// The size model also holds across block boundaries: for every block
-    /// size of 1-3 bytes and every length 0-7 (up to seven blocks), from
-    /// every starting bit offset. (Production uses 65,535-byte blocks; the
-    /// arithmetic is the same. The content does not affect the size, which
-    /// `stored_cost_is_exact` shows for any content.)
+    /// The size model adds up across block boundaries: from any bit
+    /// offset, `len` bytes cost one full block of `max` bytes plus the
+    /// rest from the byte-aligned position where that block ends, for any
+    /// length and block sizes of 1-4 bytes and 65,535 (production). With
+    /// `stored_cost_is_exact` (one block), this makes the model exact for
+    /// any number of blocks. The writer side: two one-byte blocks written
+    /// back to back take exactly the modelled bits.
     #[kani::proof]
-    #[kani::unwind(9)]
-    fn stored_cost_is_exact_across_blocks() {
-        let pre: u32 = kani::any_where(|&p: &u32| p < 8);
-        let data = [0u8; 7];
-        for max in 1..=3 {
-            for len in 0..=7 {
-                let mut w = BitWriter::with_capacity(32);
-                w.write_bits(0, pre);
-                write_stored_in(&mut w, &data[..len], true, max);
-                assert_eq!(w.bit_len() - u64::from(pre), stored_bits_in(u64::from(pre), len, max));
+    fn stored_cost_adds_up_across_blocks() {
+        let pos: u64 = kani::any_where(|&p: &u64| p < 1 << 40);
+        let len: usize = kani::any_where(|&l: &usize| l < 1 << 24);
+        let small: usize = kani::any_where(|&m: &usize| (1..=4).contains(&m));
+        for max in [small, MAX_STORED_BLOCK] {
+            if len > max {
+                let first = stored_bits_in(pos, max, max);
+                assert_eq!((pos + first) % 8, 0);
+                assert_eq!(stored_bits_in(pos, len, max), first + stored_bits_in(pos + first, len - max, max));
             }
         }
+        let pre: u32 = kani::any_where(|&p: &u32| p < 8);
+        let mut w = BitWriter::with_capacity(16);
+        w.write_bits(0, pre);
+        write_stored_in(&mut w, &[0, 0], true, 1);
+        assert_eq!(w.bit_len() - u64::from(pre), stored_bits_in(u64::from(pre), 2, 1));
     }
 
     /// The stored-block size model equals the bits actually written, from
