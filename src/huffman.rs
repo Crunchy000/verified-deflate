@@ -782,6 +782,19 @@ mod tests {
         let mut d = [2u32, 2, 2, 3, 4, 4];
         limit_depths(&mut d, &[9, 1, 7, 3, 2, 2], 3).unwrap();
         assert_eq!(d, [2, 3, 2, 3, 3, 3]);
+        // Huffman depths of real weights, where the choice changes the
+        // cost: lengthening the deepest code first gives 247 here, the
+        // shallowest 350.
+        let w = [8, 2, 6, 133, 22];
+        let mut d = [3u32, 4, 4, 1, 2];
+        limit_depths(&mut d, &w, 3).unwrap();
+        assert_eq!(d, [3, 3, 3, 1, 3]);
+        // Shortening the most frequent of the longest codes gives 492;
+        // any other of them, up to 559.
+        let w = [15, 4, 22, 95, 82, 5];
+        let mut d = [4u32, 5, 3, 1, 2, 5];
+        limit_depths(&mut d, &w, 3).unwrap();
+        assert_eq!(d, [3, 3, 3, 2, 2, 3]);
     }
 
     #[test]
