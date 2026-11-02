@@ -292,12 +292,13 @@ functions, so both are proved free of panics for all inputs.
   checks that there are 2 to 2^limit symbols and that the limit is at most
   15 before calling it. The lengths come from the Huffman tree, where every
   symbol is a leaf below the root, so each is at least 1.
-- **The functions were rewritten for Verus, not changed.** The name check
-  indexes the name directly rather than taking a subslice, and spells out
-  the drive-letter test (`is_ascii_alphabetic` has no Verus
-  specification). Before the change, the old and new versions were run on
-  39 million short names over the characters that matter, and agreed on
-  all of them.
+- **The functions were rewritten for Verus, not changed.** The repair
+  uses an index loop instead of an iterator and `match` instead of
+  `let … else`. The name check indexes the name directly rather than
+  taking a subslice, and spells out the drive-letter test
+  (`is_ascii_alphabetic` has no Verus specification). The old and new
+  name checks were run on 39 million short names over the characters
+  that matter, and agreed on all of them.
 
 ## Checking the proofs: coverage and mutation
 
