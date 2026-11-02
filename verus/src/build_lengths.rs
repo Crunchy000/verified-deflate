@@ -67,8 +67,8 @@ pub open spec fn kraft15(l: Seq<u8>) -> nat
 pub open spec fn good(f: Seq<u32>, l: Seq<u8>, limit: nat) -> bool {
     &&& l.len() == f.len()
     &&& forall|i: int| 0 <= i < l.len() ==> l[i] <= limit
-    &&& forall|i: int| 0 <= i < l.len() && f[i] != 0 ==> l[i] != 0
-    &&& used_count(f) >= 2 ==> forall|i: int| 0 <= i < l.len() && f[i] == 0 ==> l[i] == 0
+    &&& forall|i: int| #![trigger l[i]] 0 <= i < l.len() && f[i] != 0 ==> l[i] != 0
+    &&& used_count(f) >= 2 ==> forall|i: int| #![trigger l[i]] 0 <= i < l.len() && f[i] == 0 ==> l[i] == 0
     &&& kraft15(l) == p2(15)
 }
 
@@ -170,6 +170,8 @@ pub fn build_lengths(freqs: &[u32], limit: usize, lengths: &mut [u8]) -> (r: Res
 }
 
 #[verifier::loop_isolation(false)]
+#[verifier::spinoff_prover]
+#[verifier::rlimit(40)]
 fn build_lengths_in<const N: usize, const M: usize>(
     freqs: &[u32],
     limit: usize,
@@ -203,9 +205,10 @@ fn build_lengths_in<const N: usize, const M: usize>(
             m <= i, // @ghost
             m as nat == used_count(f.take(i as int)), // @ghost
             forall|j: int| 0 <= j < i ==> lengths@[j] == 0, // @ghost
-            forall|k: int| 0 <= k < m ==> (used@[k] as int) < i && f[used@[k] as int] != 0, // @ghost
-            forall|a: int, b: int| 0 <= a < b < m ==> used@[a] < used@[b], // @ghost
+            forall|k: int| #![trigger used@[k]] 0 <= k < m ==> (used@[k] as int) < i && f[used@[k] as int] != 0, // @ghost
+            forall|a: int, b: int| #![trigger used@[a], used@[b]] 0 <= a < b < m ==> used@[a] < used@[b], // @ghost
             forall|j: int| // @ghost
+                #![trigger used_count(f.take(j))] // @ghost
                 0 <= j < i && f[j] != 0 ==> used_count(f.take(j)) < m && used@[used_count(f.take(j)) as int] == j, // @ghost
     {
         proof { // @ghost-begin
@@ -274,7 +277,7 @@ fn build_lengths_in<const N: usize, const M: usize>(
             depth@.take(m as int) == d, // @ghost
             forall|j: int| 0 <= j < k ==> lengths@[used@[j] as int] == depth@[j] as u8, // @ghost
             forall|j: int| k <= j < m ==> lengths@[used@[j] as int] == 0, // @ghost
-            forall|i: int| 0 <= i < n && f[i] == 0 ==> lengths@[i] == 0, // @ghost
+            forall|i: int| #![trigger lengths@[i]] 0 <= i < n && f[i] == 0 ==> lengths@[i] == 0, // @ghost
             forall|i: int| 0 <= i < n ==> lengths@[i] <= limit, // @ghost
             kraft15(lengths@) == kraft_sum(d.take(k as int), 15), // @ghost
     {
