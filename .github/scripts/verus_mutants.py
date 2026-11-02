@@ -45,7 +45,7 @@ MUTANTS = [
     ("build_lengths.rs", "writes each length one too long",
      "lengths[used[k] as usize] = depth[k] as u8;", "lengths[used[k] as usize] = depth[k] as u8 + 1;"),
     ("build_lengths.rs", "merges until the queues are empty",
-     "while (m - leaf) + (next - merged) > 1 {", "while (m - leaf) + (next - merged) > 0 {"),
+     "while (m - leaf) + (next - merged) > 1\n", "while (m - leaf) + (next - merged) > 0\n"),
     ("build_lengths.rs", "gives a child its parent's depth",
      "depth[id] = depth[parent[id] as usize] + 1;", "depth[id] = depth[parent[id] as usize];"),
     ("build_lengths.rs", "compares a child past the end of the heap",
