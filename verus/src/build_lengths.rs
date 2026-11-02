@@ -238,7 +238,7 @@ fn build_lengths_in<const N: usize, const M: usize>(
         lengths[if s == 0 { 1 } else { 0 }] = 1;
         proof { // @ghost-begin
             assert(p2(15) == 2 * p2(14));
-            assert forall|i: int| 0 <= i < n && f[i] != 0 implies lengths@[i] != 0 by {
+            assert forall|i: int| #![trigger lengths@[i]] 0 <= i < n && f[i] != 0 implies lengths@[i] != 0 by {
                 assert(used@[used_count(f.take(i)) as int] == i);
             }
         } // @ghost-end
@@ -275,8 +275,8 @@ fn build_lengths_in<const N: usize, const M: usize>(
         invariant // @ghost
             lengths@.len() == n, // @ghost
             depth@.take(m as int) == d, // @ghost
-            forall|j: int| 0 <= j < k ==> lengths@[used@[j] as int] == depth@[j] as u8, // @ghost
-            forall|j: int| k <= j < m ==> lengths@[used@[j] as int] == 0, // @ghost
+            forall|j: int| #![trigger used@[j]] 0 <= j < k ==> lengths@[used@[j] as int] == depth@[j] as u8, // @ghost
+            forall|j: int| #![trigger used@[j]] k <= j < m ==> lengths@[used@[j] as int] == 0, // @ghost
             forall|i: int| #![trigger lengths@[i]] 0 <= i < n && f[i] == 0 ==> lengths@[i] == 0, // @ghost
             forall|i: int| 0 <= i < n ==> lengths@[i] <= limit, // @ghost
             kraft15(lengths@) == kraft_sum(d.take(k as int), 15), // @ghost
@@ -294,7 +294,7 @@ fn build_lengths_in<const N: usize, const M: usize>(
         lemma_kraft_scale(d, limit as nat, 15);
         lemma_p2_add((15 - limit) as nat, limit as nat);
         assert((15 - limit) as nat + limit as nat == 15);
-        assert forall|i: int| 0 <= i < n && f[i] != 0 implies lengths@[i] != 0 by {
+        assert forall|i: int| #![trigger lengths@[i]] 0 <= i < n && f[i] != 0 implies lengths@[i] != 0 by {
             let k = used_count(f.take(i)) as int;
             assert(d[k] == depth@[k]);
         }
