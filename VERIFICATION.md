@@ -263,8 +263,8 @@ machine or further restructuring of the decoder.
 Kani checks every input up to a size. [Verus] proves a property for every
 input, from loop invariants and lemmas that its SMT solver checks. Two
 functions whose Kani proofs stop at a bound are proved this way, in
-`verus/`, by `.github/workflows/verus.yml` on every push (the checks take
-seconds).
+`verus/`, by `.github/workflows/verus.yml` on every push. The proofs check
+in about 3 seconds, and the mutant check below in under a minute.
 
 | Function | Theorem |
 |---|---|
