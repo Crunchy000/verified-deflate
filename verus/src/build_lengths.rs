@@ -31,13 +31,13 @@ pub const MAX_SYMBOLS: usize = 288;
 const SMALL_ALPHABET: usize = 32;
 
 /// The number of used symbols (nonzero frequencies).
-pub open spec fn used(f: Seq<u32>) -> nat
+pub open spec fn used_count(f: Seq<u32>) -> nat
     decreases f.len(),
 {
     if f.len() == 0 {
         0
     } else {
-        used(f.drop_last()) + (if f.last() != 0 {
+        used_count(f.drop_last()) + (if f.last() != 0 {
             1nat
         } else {
             0nat
@@ -68,7 +68,7 @@ pub open spec fn good(f: Seq<u32>, l: Seq<u8>, limit: nat) -> bool {
     &&& l.len() == f.len()
     &&& forall|i: int| 0 <= i < l.len() ==> l[i] <= limit
     &&& forall|i: int| 0 <= i < l.len() && f[i] != 0 ==> l[i] != 0
-    &&& used(f) >= 2 ==> forall|i: int| 0 <= i < l.len() && f[i] == 0 ==> l[i] == 0
+    &&& used_count(f) >= 2 ==> forall|i: int| 0 <= i < l.len() && f[i] == 0 ==> l[i] == 0
     &&& kraft15(l) == p2(15)
 }
 
@@ -79,14 +79,14 @@ pub open spec fn can_build(f: Seq<u32>, lengths_len: nat, limit: nat, n_max: nat
     &&& f.len() == lengths_len
     &&& 2 <= f.len() <= n_max
     &&& 1 <= limit <= 15
-    &&& used(f) <= p2(limit)
+    &&& used_count(f) <= p2(limit)
 }
 
 proof fn lemma_used_take(f: Seq<u32>, i: int)
     requires
         0 <= i < f.len(),
     ensures
-        used(f.take(i + 1)) == used(f.take(i)) + (if f[i] != 0 {
+        used_count(f.take(i + 1)) == used_count(f.take(i)) + (if f[i] != 0 {
             1nat
         } else {
             0nat
@@ -201,12 +201,12 @@ fn build_lengths_in<const N: usize, const M: usize>(
         invariant // @ghost
             lengths@.len() == n, // @ghost
             m <= i, // @ghost
-            m as nat == used(f.take(i as int)), // @ghost
+            m as nat == used_count(f.take(i as int)), // @ghost
             forall|j: int| 0 <= j < i ==> lengths@[j] == 0, // @ghost
             forall|k: int| 0 <= k < m ==> (used@[k] as int) < i && f[used@[k] as int] != 0, // @ghost
             forall|a: int, b: int| 0 <= a < b < m ==> used@[a] < used@[b], // @ghost
             forall|j: int| // @ghost
-                0 <= j < i && f[j] != 0 ==> used(f.take(j)) < m && used@[used(f.take(j)) as int] == j, // @ghost
+                0 <= j < i && f[j] != 0 ==> used_count(f.take(j)) < m && used@[used_count(f.take(j)) as int] == j, // @ghost
     {
         proof { // @ghost-begin
             lemma_used_take(f, i as int);
@@ -236,7 +236,7 @@ fn build_lengths_in<const N: usize, const M: usize>(
         proof { // @ghost-begin
             assert(p2(15) == 2 * p2(14));
             assert forall|i: int| 0 <= i < n && f[i] != 0 implies lengths@[i] != 0 by {
-                assert(used@[used(f.take(i)) as int] == i);
+                assert(used@[used_count(f.take(i)) as int] == i);
             }
         } // @ghost-end
         return Ok(());
@@ -292,7 +292,7 @@ fn build_lengths_in<const N: usize, const M: usize>(
         lemma_p2_add((15 - limit) as nat, limit as nat);
         assert((15 - limit) as nat + limit as nat == 15);
         assert forall|i: int| 0 <= i < n && f[i] != 0 implies lengths@[i] != 0 by {
-            let k = used(f.take(i)) as int;
+            let k = used_count(f.take(i)) as int;
             assert(d[k] == depth@[k]);
         }
     } // @ghost-end
