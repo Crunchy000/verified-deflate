@@ -279,8 +279,120 @@ proof fn lemma_kraft_bound(d: Seq<u32>, limit: nat)
     }
 }
 
+/// With no code below the limit, every length is the limit and the sum is
+/// the symbol count.
+proof fn lemma_over_none(d: Seq<u32>, lim: nat)
+    requires
+        within(d, 1, lim),
+        forall|j: int| 0 <= j < d.len() ==> d[j] >= lim,
+    ensures
+        kraft_sum(d, lim) == d.len(),
+{
+    assert forall|j: int| 0 <= j < d.len() implies d[j] == lim by {}
+    lemma_kraft_all_at_limit(d, lim);
+}
+
+/// Lengthening a code below the limit by one bit frees half its share.
+proof fn lemma_over_step(d: Seq<u32>, p: int, lim: nat)
+    requires
+        lim <= 15,
+        0 <= p < d.len(),
+        within(d, 1, lim),
+        d[p] < lim,
+    ensures
+        within(d.update(p, (d[p] + 1) as u32), 1, lim),
+        p2((lim - d[p] - 1) as nat) >= 1,
+        kraft_sum(d, lim) >= p2((lim - d[p] - 1) as nat),
+        kraft_sum(d.update(p, (d[p] + 1) as u32), lim) + p2((lim - d[p] - 1) as nat) == kraft_sum(
+            d,
+            lim,
+        ),
+{
+    let h = (lim - d[p] - 1) as nat;
+    assert((lim - d[p]) as nat == h + 1);
+    assert(p2(h + 1) == 2 * p2(h));
+    lemma_p2_pos(h);
+    lemma_kraft_ge_term(d, p, lim);
+    lemma_kraft_update(d, p, (d[p] + 1) as u32, lim);
+    assert((lim - (d[p] + 1) as u32) as nat == h);
+    let e = d.update(p, (d[p] + 1) as u32);
+    assert forall|j: int| 0 <= j < e.len() implies 1 <= e[j] && e[j] <= lim by {
+        if j != p {
+            assert(e[j] == d[j]);
+        }
+    }
+}
+
+/// With no code longer than one bit and two or more symbols, the code is
+/// already full.
+proof fn lemma_under_none(d: Seq<u32>, lim: nat)
+    requires
+        lim >= 1,
+        d.len() >= 2,
+        within(d, 1, lim),
+        forall|j: int| 0 <= j < d.len() ==> d[j] <= 1,
+    ensures
+        kraft_sum(d, lim) >= p2(lim),
+{
+    assert forall|j: int| 0 <= j < d.len() implies d[j] == 1 by {}
+    lemma_kraft_all_one(d, lim);
+}
+
+/// Shortening a longest code by one bit adds its share u = 2^(limit-dm).
+/// The sum and the full code are both multiples of u, so while the code is
+/// short of full it stays short by at least u, and the step never
+/// overshoots.
+proof fn lemma_under_step(d: Seq<u32>, p: int, lim: nat)
+    requires
+        lim <= 15,
+        0 <= p < d.len(),
+        within(d, 1, lim),
+        d[p] > 1,
+        forall|j: int| 0 <= j < d.len() && d[j] > 1 ==> d[j] <= d[p],
+        kraft_sum(d, lim) < p2(lim),
+    ensures
+        within(d.update(p, (d[p] - 1) as u32), 1, lim),
+        p2((lim - d[p]) as nat) >= 1,
+        kraft_sum(d.update(p, (d[p] - 1) as u32), lim) == kraft_sum(d, lim) + p2(
+            (lim - d[p]) as nat,
+        ),
+        kraft_sum(d, lim) + p2((lim - d[p]) as nat) <= p2(lim),
+{
+    let dm = d[p] as nat;
+    let h = (lim - dm) as nat;
+    assert forall|j: int| 0 <= j < d.len() implies 0 <= d[j] && d[j] <= dm by {
+        if d[j] > 1 {
+        } else {
+        }
+    }
+    lemma_kraft_scale(d, dm, lim);
+    lemma_p2_add(h, dm);
+    assert(h + dm == lim);
+    let u = p2(h);
+    let a = kraft_sum(d, dm);
+    let b = p2(dm);
+    lemma_p2_pos(h);
+    assert(kraft_sum(d, lim) == u * a);
+    assert(p2(lim) == u * b);
+    assert(u * a + u <= u * b) by (nonlinear_arith)
+        requires
+            u >= 1,
+            u * a < u * b,
+    ;
+    lemma_kraft_update(d, p, (d[p] - 1) as u32, lim);
+    assert((lim - (d[p] - 1) as u32) as nat == h + 1);
+    assert(p2(h + 1) == 2 * p2(h));
+    let e = d.update(p, (d[p] - 1) as u32);
+    assert forall|j: int| 0 <= j < e.len() implies 1 <= e[j] && e[j] <= lim by {
+        if j != p {
+            assert(e[j] == d[j]);
+        }
+    }
+}
+
 #[allow(dead_code)]
 #[verifier::loop_isolation(false)]
+#[verifier::spinoff_prover]
 fn limit_depths(depth: &mut [u32], weight: &[u64], limit: usize) -> (result: Result<(), HuffmanError>)
     requires // @ghost
         1 <= limit <= 15, // @ghost
@@ -357,8 +469,7 @@ fn limit_depths(depth: &mut [u32], weight: &[u64], limit: usize) -> (result: Res
             // No code below the limit: every length is the limit, and the
             // sum is the symbol count, at most 2^limit. Not over-subscribed.
             if pick is None {
-                assert forall|j: int| 0 <= j < depth@.len() implies depth@[j] == lim by {}
-                lemma_kraft_all_at_limit(depth@, lim);
+                lemma_over_none(depth@, lim);
             }
         } // @ghost-end
         let p = match pick {
@@ -368,9 +479,7 @@ fn limit_depths(depth: &mut [u32], weight: &[u64], limit: usize) -> (result: Res
         let ghost before = depth@; // @ghost
         proof { // @ghost-begin
             lemma_shl((limit32 - depth@[p as int] - 1) as u32);
-            lemma_p2_pos((lim - depth@[p as int] - 1) as nat);
-            lemma_kraft_ge_term(depth@, p as int, lim);
-            lemma_kraft_update(depth@, p as int, (depth@[p as int] + 1) as u32, lim);
+            lemma_over_step(depth@, p as int, lim);
         } // @ghost-end
         kraft -= 1u64 << (limit32 - depth[p] - 1);
         depth[p] += 1;
@@ -407,8 +516,7 @@ fn limit_depths(depth: &mut [u32], weight: &[u64], limit: usize) -> (result: Res
         proof { // @ghost-begin
             // Every length 1 with two or more symbols is already full.
             if pick is None {
-                assert forall|j: int| 0 <= j < depth@.len() implies depth@[j] == 1 by {}
-                lemma_kraft_all_one(depth@, lim);
+                lemma_under_none(depth@, lim);
             }
         } // @ghost-end
         let p = match pick {
@@ -416,30 +524,9 @@ fn limit_depths(depth: &mut [u32], weight: &[u64], limit: usize) -> (result: Res
             None => return Err(HuffmanError::LimitTooSmall),
         };
         let ghost before = depth@; // @ghost
-        let ghost dm = depth@[p as int] as nat; // @ghost
         proof { // @ghost-begin
-            // The pick is a longest code: every length is at most dm, so
-            // the sum and the full code are multiples of u = 2^(limit-dm),
-            // and a deficit of at least one unit remains.
-            assert forall|j: int| 0 <= j < depth@.len() implies 0 <= depth@[j] && depth@[j] <= dm by {
-                if depth@[j] > 1 {
-                } else {
-                }
-            }
-            lemma_kraft_scale(depth@, dm, lim);
-            lemma_p2_add((lim - dm) as nat, dm);
-            assert((lim - dm) as nat + dm == lim);
-            let u = p2((lim - dm) as nat);
-            let a = kraft_sum(depth@, dm);
-            let b = p2(dm);
-            lemma_p2_pos((lim - dm) as nat);
-            assert(u * a + u <= u * b) by (nonlinear_arith)
-                requires
-                    u >= 1,
-                    u * a < u * b,
-            ;
             lemma_shl((limit32 - depth@[p as int]) as u32);
-            lemma_kraft_update(depth@, p as int, (depth@[p as int] - 1) as u32, lim);
+            lemma_under_step(depth@, p as int, lim);
         } // @ghost-end
         kraft += 1u64 << (limit32 - depth[p]);
         depth[p] -= 1;
