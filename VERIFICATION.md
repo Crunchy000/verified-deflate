@@ -3,11 +3,16 @@
 This crate's correctness argument has four layers, from strongest to
 weakest:
 
-1. **Kani proofs**: bounded model checking of the real code, for *every*
-   input up to the stated size. Each harness is a `#[kani::proof]` function
-   next to the code it checks. 66 harnesses run in CI on every push; 11
-   more are too large for CI runners and are gated behind the
-   `kani-extended` feature (see below).
+1. **Proofs**:
+   - **Kani**: bounded model checking of the real code, for *every* input
+     up to the stated size. Each harness is a `#[kani::proof]` function
+     next to the code it checks. 66 harnesses run in CI on every push; 11
+     more are too large for CI runners and are gated behind the
+     `kani-extended` feature (see below).
+   - **Verus**: deductive proofs for inputs of *every* size, of two
+     functions whose Kani proofs stop at a bound: the Huffman length-limit
+     repair and the ZIP entry-name check (see
+     [Verus proofs](#verus-proofs-inputs-of-every-size)).
 2. **Safe Rust**: `#![forbid(unsafe_code)]`, so memory safety comes from
    the compiler. Kani adds the absence of panics inside its bounds:
    out-of-bounds indexing, arithmetic overflow, failed `unwrap`, division
@@ -44,6 +49,15 @@ equivalence, take 7–10 minutes and peak at about 10.7 GiB. A manual run of the
 and harnesses (by name pattern), change the time limit, include the
 extended set, and publish each harness's log to a `ci-logs/*` branch as
 soon as it finishes.
+
+The Verus proofs use the Verus release pinned in
+`.github/workflows/verus.yml` (and the Rust toolchain that release names):
+
+```sh
+verus --crate-type=lib verus/src/lib.rs                        # the proofs
+python3 .github/scripts/verus_drift.py .                       # copies match the library
+python3 .github/scripts/verus_mutants.py "$(command -v verus)" .  # planted bugs fail
+```
 
 Without Kani, the harnesses can still be compiled and *sampled* with
 random inputs. This is a smoke test, not a proof; see `tools/kani-sample`.
@@ -161,7 +175,7 @@ the zlib interop tests confirm the output is unchanged.
 | `build_lengths_full_range_frequencies` | Same for any `u32` frequencies over 3 symbols and any limit 2–15. |
 | `build_lengths_tight_limit` | Same for 4 symbols in 2 bits, where every skewed distribution needs repair. |
 | `build_lengths_rejects_impossible_limit` | Five used symbols with a 2-bit limit are refused rather than mis-coded. |
-| `limit_depths_keeps_code_complete` | The length-limit repair on its own, for every complete code of six symbols, weights 0–3 (they only break ties) and limits of 3 and 4 bits: the result is a complete code within the limit. Six symbols are the fewest that reach the under-subscribed half of the repair (for example depths 5,5,4,3,2,1 at limit 3). Five never do, so the builder harnesses above do not cover it. |
+| `limit_depths_keeps_code_complete` | The length-limit repair on its own, for every complete code of six symbols, weights 0–3 (they only break ties) and limits of 3 and 4 bits: the result is a complete code within the limit. Six symbols are the fewest that reach the under-subscribed half of the repair (for example depths 5,5,4,3,2,1 at limit 3). Five never do, so the builder harnesses above do not cover it. Verus proves the repair for any number of symbols ([below](#verus-proofs-inputs-of-every-size)). |
 | `decoder_new_never_panics` | For any lengths (0–255) over 8 symbols, the decoder builder never panics. It accepts exactly the lengths whose Kraft sum is ≤ 1 and reports completeness exactly. |
 | `encode_then_decode_symbol` | For any valid lengths over 6 symbols and any coded symbol, packing its canonical code as the encoder does and decoding returns that symbol. Exactly its length is consumed. |
 | `decode_arbitrary_bits` | Decoding arbitrary bits with any accepted lengths never panics, and only yields symbols that have codes. |
@@ -216,7 +230,7 @@ the zlib interop tests confirm the output is unchanged.
 | `is_valid_is_the_calendar` | For every value of every field, `is_valid` is exactly "in the DOS range and a real calendar date". This is stated without `is_leap` or `days_in_month`: converting the date to a day number and back gives the same date. |
 | `unix_time_always_valid` | Every `i64` Unix time maps to a valid DOS timestamp. |
 | `unix_time_converts_exactly` | Every `i64` Unix time in the DOS range converts to the right time, the input rounded down to an even second, and every other time clamps to the nearer end. |
-| `validate_name_is_exactly_the_rule` | For every byte string of 0–8 bytes, a name is accepted exactly when it meets a rule stated position by position. It must be non-empty, have no backslash or NUL, have every `/` follow a non-`/` byte, have no `.` or `..` component, and not start with a drive letter. Accepted names cannot escape the extraction directory, and no safe name is refused. |
+| `validate_name_is_exactly_the_rule` | For every byte string of 0–8 bytes, a name is accepted exactly when it meets a rule stated position by position. It must be non-empty, have no backslash or NUL, have every `/` follow a non-`/` byte, have no `.` or `..` component, and not start with a drive letter. Accepted names cannot escape the extraction directory, and no safe name is refused. Verus proves the same for names of every length ([below](#verus-proofs-inputs-of-every-size)). |
 
 ### End to end (`e2e`)
 
@@ -243,6 +257,47 @@ machine or further restructuring of the decoder.
 | `huffman::proofs::fast_decode_matches_slow_wide` | The table-driven decoder equals the bit-by-bit one for 5 symbols of up to 9 bits and 0–2 bytes of input. |
 | `crc32::proofs::eight_byte_step_equals_table_steps` | The eight-byte CRC step lemma as a single query. CI proves it by linearity instead (see above). |
 | `crc32::proofs::four_byte_lanes_equal_table_steps` | Its four-byte half as a single query. |
+
+## Verus proofs: inputs of every size
+
+Kani checks every input up to a size. [Verus] proves a property for every
+input, from loop invariants and lemmas that its SMT solver checks. Two
+functions whose Kani proofs stop at a bound are proved this way, in
+`verus/`, by `.github/workflows/verus.yml` on every push (the checks take
+seconds).
+
+| Function | Theorem |
+|---|---|
+| `huffman::limit_depths` (`verus/src/limit_depths.rs`) | For any number of symbols from 2 to 2^limit, any lengths of at least 1 (whether or not they form a complete code), any weights and any limit of 1–15 bits, the repair returns `Ok` and leaves a complete prefix code (Kraft sum exactly 1) whose lengths are all within 1..=limit. Kani checks complete codes of six symbols. |
+| `zip::name_is_safe`, behind `validate_name` (`verus/src/name_is_safe.rs`) | For byte strings of every length, a name is accepted exactly when it meets the position-by-position rule of `validate_name_is_exactly_the_rule`, plus the 65,535-byte limit. Kani checks names of up to 8 bytes. |
+
+Verus also checks every index and every arithmetic operation in these
+functions, so both are proved free of panics for all inputs.
+
+- **The proofs are about a copy, checked to be the library's code.**
+  Verus verifies code written inside its `verus!` macro and needs its own
+  toolchain, while the library has no dependencies and builds on stable
+  Rust 1.83. So the proofs live in a separate crate, with a copy of each
+  function. `.github/scripts/verus_drift.py` checks in CI that each copy,
+  with its proof lines (marked `// @ghost`) removed, is the library's
+  function token for token. Comments and layout may differ; code may not.
+  `verus/copies.txt` lists the pairs.
+- **The proofs reject bugs.** `.github/scripts/verus_mutants.py` plants 13
+  one-line bugs in the copies, one at a time, and checks that each makes
+  verification fail. They include clamping one past the limit, a wrong
+  shift, stopping one unit short of a full code, accepting NUL or `..`,
+  and refusing a directory name. A specification that pinned nothing down,
+  or a precondition that could never hold, would let them through.
+- **The repair's preconditions hold where it is called.** `build_lengths`
+  checks that there are 2 to 2^limit symbols and that the limit is at most
+  15 before calling it. The lengths come from the Huffman tree, where every
+  symbol is a leaf below the root, so each is at least 1.
+- **The functions were rewritten for Verus, not changed.** The name check
+  indexes the name directly rather than taking a subslice, and spells out
+  the drive-letter test (`is_ascii_alphabetic` has no Verus
+  specification). Before the change, the old and new versions were run on
+  39 million short names over the characters that matter, and agreed on
+  all of them.
 
 ## Checking the proofs: coverage and mutation
 
@@ -370,11 +425,12 @@ harness timed out. By file, after:
 
 The gaps, stated precisely:
 
-- **Everything is bounded.** The proofs cover all inputs *up to the sizes
-  above*. The exceptions are a few harnesses that hold for all values:
-  CRC steps, the code tables, and the ZIP bounds lemmas. The code is
-  written over slices of any length, so the same code paths run on large
-  inputs. Large inputs are covered by tests, not proofs.
+- **Almost everything is bounded.** The Kani proofs cover all inputs *up
+  to the sizes above*. The exceptions are a few harnesses that hold for
+  all values (CRC steps, the code tables, and the ZIP bounds lemmas) and
+  the two Verus proofs. The code is written over slices of any length, so
+  the same code paths run on large inputs. Large inputs are covered by
+  tests, not proofs.
 - **The decoder on arbitrary streams is proven piecewise in CI.** The
   pieces are Huffman decoding on arbitrary bits, code construction from
   arbitrary lengths, code-length expansion, the LZ77 copy, stored blocks,
@@ -387,15 +443,19 @@ The gaps, stated precisely:
   - A literal of any value followed by a match round-trips through the real decoder in the extended set: the fixed-Huffman decoder is too large to check symbolically on a CI runner.
   - Round trips that include the match finder, and whole-archive round trips, are in the extended set. In CI they are covered compositionally: tokenizer validity, code tables, Huffman encode and decode, bit I/O.
   - Dynamic-Huffman blocks need more unrolling than a model checker handles at DEFLATE's alphabet sizes. They are covered by the length builder and run-length proofs on small alphabets, zlib interop, and `verify` at run time.
-- **Huffman construction is proven on alphabets of 3–6 symbols**, not on
-  DEFLATE's 19, 30 and 286.
-  - The length-limit repair is proven on its own for every complete code of up to 6 symbols, which reaches both of its loops.
-  - Its argument does not depend on the alphabet size, and tests exercise it with Fibonacci frequencies on alphabets of 2–40 symbols at every limit.
+- **Huffman tree construction is proven on alphabets of 3–6 symbols**,
+  not on DEFLATE's 19, 30 and 286.
+  - The length-limit repair that follows it is proven by Verus for any number of symbols.
+  - Tests exercise the whole builder with Fibonacci frequencies, which give the deepest trees, on alphabets of 2–40 symbols at every limit.
 - **Compression ratio and speed** are not correctness properties and are
   not verified.
 - **The `vzip` command-line tool** is not verified. It is a thin layer over
   the library, and extraction refuses names that fail `validate_name`.
 - **The trusted base** includes the Rust compiler and standard library,
-  Kani and its CBMC back end, and the harnesses themselves. A harness that
-  asserts the wrong thing proves the wrong thing, so review them as you
-  would a specification.
+  Kani and its CBMC back end, Verus with its Z3 solver and `vstd`
+  library, the drift check that ties each Verus copy to the library, and
+  the harnesses and Verus specifications themselves. A harness or
+  specification that asserts the wrong thing proves the wrong thing, so
+  review them as you would a specification.
+
+[Verus]: https://github.com/verus-lang/verus

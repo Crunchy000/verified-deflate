@@ -2,8 +2,8 @@
 
 A DEFLATE ([RFC 1951]) compressor and decompressor with ZIP archive
 support, in safe Rust with no dependencies. Its key properties are proven
-with the [Kani] model checker, and it is cross-checked against the
-reference zlib and Info-ZIP.
+with the [Kani] model checker, two of them for inputs of every size with
+[Verus], and it is cross-checked against the reference zlib and Info-ZIP.
 
 - **Complete DEFLATE**: stored, fixed-Huffman and dynamic-Huffman blocks,
   hash-chain LZ77 with lazy matching, levels 0–9. Each block uses whichever
@@ -57,6 +57,18 @@ bounds. Dynamic-Huffman blocks are covered
 compositionally rather than end to end.
 [VERIFICATION.md](VERIFICATION.md) lists every harness, its bounds, the
 modelling choices behind it, and what is **not** proven.
+
+Two functions are also proved for inputs of every size, not just up to a
+bound, with the deductive verifier [Verus] (in `verus/`, run in CI on
+every push):
+
+- The Huffman length-limit repair always returns a complete code within
+  the limit, for any number of symbols.
+- ZIP name validation accepts exactly the names that meet its rule, for
+  names of any length.
+
+CI checks that each verified copy is the library's code token for token,
+and that 13 planted bugs each make verification fail.
 
 The proofs are themselves checked. Kani's source coverage shows which code
 each proof reaches. Mutation testing plants about 1,900 small bugs; the
@@ -237,7 +249,8 @@ corrupted chain to produce an invalid match.
 | `src/zip.rs` | ZIP writer and reader |
 | `src/compat.rs`, `src/write.rs`, `src/gzip_header.rs` | The `deflate` crate's API: one-shot functions, streaming encoders, gzip headers |
 | `src/e2e.rs` | End-to-end Kani harnesses |
-| `.github/scripts/` | Per-harness Kani runner, coverage and mutation reports used by CI |
+| `verus/` | Verus proofs, over copies of library functions |
+| `.github/scripts/` | Per-harness Kani runner, coverage and mutation reports, Verus copy and mutant checks, used by CI |
 | `src/bin/vzip.rs` | Command-line tool |
 | `tests/` | zlib, Info-ZIP and robustness tests |
 | `tools/deflate-upstream/` | Runs the `deflate` crate's own tests against this crate |
@@ -249,4 +262,5 @@ MIT
 
 [RFC 1951]: https://www.rfc-editor.org/rfc/rfc1951
 [Kani]: https://github.com/model-checking/kani
+[Verus]: https://github.com/verus-lang/verus
 [`deflate`]: https://docs.rs/deflate/1.0.0
