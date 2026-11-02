@@ -248,6 +248,13 @@ proof fn lemma_kraft_scale(d: Seq<u32>, dm: nat, limit: nat)
         let a = kraft_sum(s, dm);
         let b = p2((dm - x) as nat);
         assert(u * a + u * b == u * (a + b)) by (nonlinear_arith);
+        assert(u * (a + b) >= 0) by (nonlinear_arith)
+            requires
+                u >= 0,
+                a + b >= 0,
+        ;
+    } else {
+        assert(p2((limit - dm) as nat) * 0 == 0) by (nonlinear_arith);
     }
 }
 
