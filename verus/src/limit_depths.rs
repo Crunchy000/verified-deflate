@@ -13,9 +13,12 @@ use vstd::prelude::*;
 
 verus! {
 
-/// The production `HuffmanError`; `limit_depths` can only return this
-/// variant.
+/// The production `HuffmanError`.
 pub enum HuffmanError {
+    CodeTooLong,
+    OverSubscribed,
+    TooManySymbols,
+    LengthMismatch,
     LimitTooSmall,
 }
 
@@ -66,7 +69,7 @@ pub open spec fn under_pick(d: Seq<u32>, k: int, pick: Option<usize>) -> bool {
     }
 }
 
-proof fn lemma_p2_pos(n: nat)
+pub(crate) proof fn lemma_p2_pos(n: nat)
     ensures
         p2(n) >= 1,
     decreases n,
@@ -76,7 +79,7 @@ proof fn lemma_p2_pos(n: nat)
     }
 }
 
-proof fn lemma_p2_mono(a: nat, b: nat)
+pub(crate) proof fn lemma_p2_mono(a: nat, b: nat)
     requires
         a <= b,
     ensures
@@ -88,14 +91,14 @@ proof fn lemma_p2_mono(a: nat, b: nat)
     }
 }
 
-proof fn lemma_p2_15()
+pub(crate) proof fn lemma_p2_15()
     ensures
         p2(15) == 32768,
 {
     reveal_with_fuel(p2, 16);
 }
 
-proof fn lemma_p2_add(a: nat, b: nat)
+pub(crate) proof fn lemma_p2_add(a: nat, b: nat)
     ensures
         p2(a + b) == p2(a) * p2(b),
     decreases b,
@@ -113,7 +116,7 @@ proof fn lemma_p2_add(a: nat, b: nat)
 }
 
 /// `1 << s` is 2^s.
-proof fn lemma_shl(s: u32)
+pub(crate) proof fn lemma_shl(s: u32)
     requires
         s < 63,
     ensures
@@ -133,7 +136,7 @@ proof fn lemma_shl(s: u32)
     }
 }
 
-proof fn lemma_kraft_take(d: Seq<u32>, i: int, limit: nat)
+pub(crate) proof fn lemma_kraft_take(d: Seq<u32>, i: int, limit: nat)
     requires
         0 <= i < d.len(),
     ensures
@@ -226,7 +229,7 @@ proof fn lemma_kraft_all_one(d: Seq<u32>, limit: nat)
 
 /// With every length at most `dm`, every share is a multiple of the share
 /// of a length-`dm` code, and so is the sum.
-proof fn lemma_kraft_scale(d: Seq<u32>, dm: nat, limit: nat)
+pub(crate) proof fn lemma_kraft_scale(d: Seq<u32>, dm: nat, limit: nat)
     requires
         dm <= limit,
         within(d, 0, dm),
@@ -393,7 +396,7 @@ proof fn lemma_under_step(d: Seq<u32>, p: int, lim: nat)
 #[allow(dead_code)]
 #[verifier::loop_isolation(false)]
 #[verifier::spinoff_prover]
-fn limit_depths(depth: &mut [u32], weight: &[u64], limit: usize) -> (result: Result<(), HuffmanError>)
+pub(crate) fn limit_depths(depth: &mut [u32], weight: &[u64], limit: usize) -> (result: Result<(), HuffmanError>)
     requires // @ghost
         1 <= limit <= 15, // @ghost
         2 <= old(depth)@.len() <= p2(limit as nat), // @ghost

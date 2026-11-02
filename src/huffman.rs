@@ -273,7 +273,8 @@ fn limit_depths(depth: &mut [u32], weight: &[u64], limit: usize) -> Result<(), H
     Ok(())
 }
 
-/// Depth of each leaf in a Huffman tree over `weights[..m]` (`2 <= m <= N`).
+/// Depth of each leaf in a Huffman tree over `weights[..m]` (requires
+/// `2 <= m <= N` and `M >= 2 * N`).
 ///
 /// The two-queue method: leaves sorted by weight form one queue, merged
 /// nodes (created in non-decreasing weight order) form the other, and each
@@ -281,14 +282,16 @@ fn limit_depths(depth: &mut [u32], weight: &[u64], limit: usize) -> Result<(), H
 /// linear. Nodes `0..m` are the leaves; each merge creates the next node
 /// id, larger than both children's, so the root is the last node and
 /// depths can be filled in by walking ids downwards.
+///
+/// Every depth is at least 1, for any number of symbols (proved by Verus,
+/// `verus/src/build_lengths.rs`).
+// Explicit loops rather than `copy_from_slice`: a copy of symbolic length
+// is far more expensive for the model checker.
+#[allow(clippy::manual_memcpy)]
 fn huffman_depths<const N: usize, const M: usize>(weights: &[u64; N], m: usize, depths: &mut [u32; N]) {
-    debug_assert!((2..=N).contains(&m) && M >= 2 * N);
     let mut order = [0u16; N];
     let mut w = [0u64; M];
     let mut parent = [0u16; M];
-    // Explicit loops rather than `copy_from_slice`: a copy of symbolic
-    // length is far more expensive for the model checker.
-    #[allow(clippy::manual_memcpy)]
     for i in 0..m {
         order[i] = i as u16;
         w[i] = weights[i];
@@ -312,9 +315,6 @@ fn huffman_depths<const N: usize, const M: usize>(weights: &[u64; N], m: usize, 
         id -= 1;
         depth[id] = depth[parent[id] as usize] + 1;
     }
-    // An explicit loop rather than `copy_from_slice`: a copy of symbolic
-    // length is far more expensive for the model checker.
-    #[allow(clippy::manual_memcpy)]
     for i in 0..m {
         depths[i] = depth[i];
     }

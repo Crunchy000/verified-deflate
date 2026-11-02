@@ -5,3 +5,10 @@
 # <library file>  <function>  <verus file>
 src/huffman.rs  limit_depths  verus/src/limit_depths.rs
 src/zip.rs      name_is_safe  verus/src/name_is_safe.rs
+src/huffman.rs  build_lengths    verus/src/build_lengths.rs
+src/huffman.rs  build_lengths_in verus/src/build_lengths.rs
+src/huffman.rs  huffman_depths   verus/src/build_lengths.rs
+src/huffman.rs  take_lightest    verus/src/build_lengths.rs
+src/huffman.rs  sort_by_weight   verus/src/build_lengths.rs
+src/huffman.rs  heavier          verus/src/build_lengths.rs
+src/huffman.rs  sift_down        verus/src/build_lengths.rs
