@@ -2,6 +2,11 @@ name: CI
 
 on:
   push:
+    # Changes to the Verus proofs alone are checked by verus.yml.
+    paths-ignore:
+      - "verus/**"
+      - ".github/workflows/verus.yml"
+      - ".github/scripts/verus_*"
   pull_request:
   workflow_dispatch:
     inputs:

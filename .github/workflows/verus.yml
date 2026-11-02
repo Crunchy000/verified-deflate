@@ -1,0 +1,104 @@
+name: Verus
+
+# Deductive proofs (verus/): properties of library functions for inputs of
+# every size, where the Kani harnesses check up to a bound. Each verified
+# function is a copy of the library's; the drift check makes sure it still
+# is.
+
+on:
+  push:
+    paths:
+      - "verus/**"
+      - "src/**"
+      - ".github/workflows/verus.yml"
+      - ".github/scripts/verus_*"
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Verus release tag (empty = the pinned one)"
+        required: false
+        default: ""
+
+concurrency:
+  group: verus-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The Verus binary release the proofs are checked with.
+  VERUS_RELEASE: ${{ github.event.inputs.release || 'latest' }}
+
+jobs:
+  verus:
+    name: Verus proofs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - name: The verified copies are the library's code
+        run: .github/scripts/run-and-report.sh verus-drift python3 -I .github/scripts/verus_drift.py .
+      - name: Resolve the Verus release
+        id: rel
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$VERUS_RELEASE" = latest ]; then
+            tag=$(gh release view --repo verus-lang/verus --json tagName -q .tagName)
+          else
+            tag="$VERUS_RELEASE"
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "Verus release: $tag" >> "$GITHUB_STEP_SUMMARY"
+      - name: Cache Verus and its toolchain
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/verus
+            ~/.rustup/toolchains/*-x86_64-unknown-linux-gnu
+            ~/.rustup/update-hashes
+          key: verus-${{ steps.rel.outputs.tag }}-${{ runner.os }}
+      - name: Install Verus ${{ steps.rel.outputs.tag }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.rel.outputs.tag }}
+        run: |
+          if [ ! -x ~/verus/verus ]; then
+            d=$(mktemp -d)
+            gh release download "$TAG" --repo verus-lang/verus --pattern '*x86-linux.zip' --dir "$d"
+            unzip -q "$d"/*.zip -d "$d"
+            mv "$d"/verus-x86-linux ~/verus
+          fi
+          # Verus names the Rust toolchain it needs when it is missing.
+          out=$(~/verus/verus --version 2>&1 || true)
+          echo "$out"
+          tc=$(printf '%s\n' "$out" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+-x86_64-unknown-linux-gnu' | head -n1 || true)
+          if [ -n "$tc" ]; then
+            rustup toolchain install --profile minimal "$tc"
+          fi
+          ~/verus/verus --version
+      - name: Verify
+        run: |
+          set -o pipefail
+          mkdir -p verus-logs
+          ~/verus/verus --crate-type=lib verus/src/lib.rs --expand-errors 2>&1 | tee verus-logs/verify.log
+      - name: Report
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          log=verus-logs/verify.log
+          [ -f "$log" ] || exit 0
+          grep -E "verification results::" "$log" >> "$GITHUB_STEP_SUMMARY" || true
+          if grep -qE "^error|verification results::.* [1-9][0-9]* errors" "$log"; then
+            body="$(grep -v '^\s*$' "$log" | head -n 120)"
+            body="${body//'%'/'%25'}"; body="${body//$'\r'/'%0D'}"; body="${body//$'\n'/'%0A'}"
+            echo "::error title=Verus::${body}"
+          fi
+          # The full log, readable without downloading artifacts.
+          tmp=$(mktemp -d)
+          cp "$log" "$tmp"/
+          cd "$tmp" && git init -q && git checkout -q -b logs && git add . \
+            && git -c user.name=ci -c user.email=ci@localhost commit -qm "Verus log, run ${GITHUB_RUN_ID}" \
+            && git push -qf "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}" "logs:refs/heads/ci-logs/verus" \
+            || echo "log publish failed"

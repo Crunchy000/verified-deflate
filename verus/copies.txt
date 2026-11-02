@@ -1,0 +1,6 @@
+# Library functions whose copies under verus/ are verified by Verus.
+# CI (.github/scripts/verus_drift.py) checks that each copy, without its
+# proof lines, is the library function token for token.
+#
+# <library file>  <function>  <verus file>
+src/huffman.rs  limit_depths  verus/src/limit_depths.rs

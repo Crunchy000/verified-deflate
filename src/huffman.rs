@@ -206,26 +206,29 @@ fn build_lengths_in<const N: usize, const M: usize>(
 /// is lengthened; then, while code space is unused, the most frequent of
 /// the longest codes is shortened. `weight` only breaks ties.
 ///
-/// Requires 2 ≤ `depth.len()` ≤ 2^`limit` and `weight.len()` =
-/// `depth.len()`; then the result is a complete code within the limit
-/// (proved for every complete code of up to six symbols by
-/// `limit_depths_keeps_code_complete`).
+/// Requires 2 ≤ `depth.len()` ≤ 2^`limit`, `limit` ≤ 15, depths of at
+/// least 1 and `weight.len()` = `depth.len()`; then the result is a
+/// complete code within the limit. Verus proves this for any number of
+/// symbols (`verus/src/limit_depths.rs`, which holds a copy of this
+/// function that CI checks is identical), and Kani for every complete
+/// code of six symbols (`limit_depths_keeps_code_complete`).
+#[allow(clippy::needless_range_loop)] // index loops, as the Verus copy needs
 fn limit_depths(depth: &mut [u32], weight: &[u64], limit: usize) -> Result<(), HuffmanError> {
     let m = depth.len();
     // Kraft sum in units of 2^-limit; a complete code sums to `full`.
     let limit32 = limit as u32;
-    let full = 1u64 << limit;
+    let full = 1u64 << limit32;
     let mut kraft = 0u64;
-    for d in depth.iter_mut() {
-        if *d > limit32 {
-            *d = limit32;
+    for i in 0..m {
+        if depth[i] > limit32 {
+            depth[i] = limit32;
         }
-        kraft += 1u64 << (limit32 - *d);
+        kraft += 1u64 << (limit32 - depth[i]);
     }
     // Over-subscribed: lengthen the least frequent of the longest codes
     // that are still below the limit. Each step frees 2^-(len+1).
     while kraft > full {
-        let mut pick = None;
+        let mut pick: Option<usize> = None;
         for k in 0..m {
             if depth[k] < limit32 {
                 let better = match pick {
@@ -237,7 +240,10 @@ fn limit_depths(depth: &mut [u32], weight: &[u64], limit: usize) -> Result<(), H
                 }
             }
         }
-        let Some(p) = pick else { return Err(HuffmanError::LimitTooSmall) };
+        let p = match pick {
+            Some(p) => p,
+            None => return Err(HuffmanError::LimitTooSmall),
+        };
         kraft -= 1u64 << (limit32 - depth[p] - 1);
         depth[p] += 1;
     }
@@ -245,7 +251,7 @@ fn limit_depths(depth: &mut [u32], weight: &[u64], limit: usize) -> Result<(), H
     // The deficit is a multiple of that code's share, so this lands
     // exactly on a complete code.
     while kraft < full {
-        let mut pick = None;
+        let mut pick: Option<usize> = None;
         for k in 0..m {
             if depth[k] > 1 {
                 let better = match pick {
@@ -257,7 +263,10 @@ fn limit_depths(depth: &mut [u32], weight: &[u64], limit: usize) -> Result<(), H
                 }
             }
         }
-        let Some(p) = pick else { return Err(HuffmanError::LimitTooSmall) };
+        let p = match pick {
+            Some(p) => p,
+            None => return Err(HuffmanError::LimitTooSmall),
+        };
         kraft += 1u64 << (limit32 - depth[p]);
         depth[p] -= 1;
     }
