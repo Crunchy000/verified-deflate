@@ -311,7 +311,7 @@ fn limit_depths(depth: &mut [u32], weight: &[u64], limit: usize) -> (result: Res
         }
         proof { // @ghost-begin
             assert(depth@.take(i as int) =~= before.take(i as int));
-            lemma_shl(limit32 - depth@[i as int]);
+            lemma_shl((limit32 - depth@[i as int]) as u32);
             lemma_p2_mono((lim - depth@[i as int]) as nat, 15);
             lemma_kraft_take(depth@, i as int, lim);
         } // @ghost-end
@@ -360,7 +360,7 @@ fn limit_depths(depth: &mut [u32], weight: &[u64], limit: usize) -> (result: Res
         };
         let ghost before = depth@; // @ghost
         proof { // @ghost-begin
-            lemma_shl(limit32 - depth@[p as int] - 1);
+            lemma_shl((limit32 - depth@[p as int] - 1) as u32);
             lemma_p2_pos((lim - depth@[p as int] - 1) as nat);
             lemma_kraft_ge_term(depth@, p as int, lim);
             lemma_kraft_update(depth@, p as int, (depth@[p as int] + 1) as u32, lim);
@@ -431,7 +431,7 @@ fn limit_depths(depth: &mut [u32], weight: &[u64], limit: usize) -> (result: Res
                     u >= 1,
                     u * a < u * b,
             ;
-            lemma_shl(limit32 - depth@[p as int]);
+            lemma_shl((limit32 - depth@[p as int]) as u32);
             lemma_kraft_update(depth@, p as int, (depth@[p as int] - 1) as u32, lim);
         } // @ghost-end
         kraft += 1u64 << (limit32 - depth[p]);
