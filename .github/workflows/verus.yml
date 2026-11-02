@@ -26,7 +26,7 @@ concurrency:
 
 env:
   # The Verus binary release the proofs are checked with.
-  VERUS_RELEASE: ${{ github.event.inputs.release || 'latest' }}
+  VERUS_RELEASE: ${{ github.event.inputs.release || 'release/0.2026.11.02.8bf68ee' }}
 
 jobs:
   verus:

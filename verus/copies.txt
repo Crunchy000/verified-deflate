@@ -4,3 +4,4 @@
 #
 # <library file>  <function>  <verus file>
 src/huffman.rs  limit_depths  verus/src/limit_depths.rs
+src/zip.rs      name_is_safe  verus/src/name_is_safe.rs
