@@ -3,7 +3,7 @@ name: Verus
 # Deductive proofs (verus/): properties of library functions for inputs of
 # every size, where the Kani harnesses check up to a bound. Each verified
 # function is a copy of the library's; the drift check makes sure it still
-# is.
+# is, and the mutant check that the proofs reject broken versions of it.
 
 on:
   push:
@@ -82,6 +82,14 @@ jobs:
           set -o pipefail
           mkdir -p verus-logs
           ~/verus/verus --crate-type=lib verus/src/lib.rs --expand-errors 2>&1 | tee verus-logs/verify.log
+      - name: Broken copies fail verification
+        # Bugs the theorems should rule out, planted one at a time in the
+        # verified copies; each must make verification fail.
+        run: |
+          set -o pipefail
+          .github/scripts/run-and-report.sh verus-mutants \
+            python3 -I .github/scripts/verus_mutants.py "$HOME/verus/verus" . | tee verus-logs/mutants.log
+          tail -n 1 verus-logs/mutants.log >> "$GITHUB_STEP_SUMMARY"
       - name: Report
         if: always()
         env:
@@ -97,7 +105,7 @@ jobs:
           fi
           # The full log, readable without downloading artifacts.
           tmp=$(mktemp -d)
-          cp "$log" "$tmp"/
+          cp verus-logs/* "$tmp"/
           cd "$tmp" && git init -q && git checkout -q -b logs && git add . \
             && git -c user.name=ci -c user.email=ci@localhost commit -qm "Verus log, run ${GITHUB_RUN_ID}" \
             && git push -qf "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}" "logs:refs/heads/ci-logs/verus" \
