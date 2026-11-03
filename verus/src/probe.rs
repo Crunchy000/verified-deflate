@@ -17,10 +17,6 @@ pub assume_specification[ u32::div_ceil ](x: u32, rhs: u32) -> (r: u32)
         r as int == (x as int + rhs as int - 1) / (rhs as int),
 ;
 
-pub assume_specification[ u64::from_le_bytes ](bytes: [u8; 8]) -> u64;
-
-pub assume_specification[ u64::to_le_bytes ](x: u64) -> [u8; 8];
-
 pub assume_specification[ u16::reverse_bits ](x: u16) -> u16;
 
 pub assume_specification<T: Clone>[ <[T]>::fill ](s: &mut [T], value: T)
@@ -73,8 +69,8 @@ fn p3(pos: usize, rem: usize, len: usize) -> Result<usize, E> {
 
 fn p4(x: u32, y: u64, z: u16, s: &mut [u8]) -> u64 {
     let a = x.div_ceil(8);
-    let b = u64::from_le_bytes([1, 2, 3, 4, 5, 6, 7, 8]);
-    let c = y.to_le_bytes();
+    let b = y;
+    let c = [1u8, 2];
     let d = z.reverse_bits();
     s.fill(7);
     b ^ (c[0] as u64) ^ (d as u64) ^ (a as u64)
