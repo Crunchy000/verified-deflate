@@ -491,7 +491,8 @@ impl Decoder {
                             FAST_SIZE == 1024, // @ghost
                             1 <= l <= fb, // @ghost
                             2 <= (1usize << l) as nat <= 1024, // @ghost
-                        decreases (1usize << fb) - idx, // @ghost
+                            idx <= 2048, // @ghost
+                        decreases 2048 - idx, // @ghost
                     {
                         self.fast[idx] = ((l as u16) << 12) | s as u16;
                         idx += 1 << l;

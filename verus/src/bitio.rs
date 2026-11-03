@@ -45,10 +45,19 @@ proof fn lemma_mask(x: u64, n: u32)
     lemma_shl(n);
 }
 
+/// A slice's length fits a `usize`.
+pub proof fn lemma_slice_len<T>(s: &[T])
+    ensures
+        s@.len() <= usize::MAX,
+{
+    assert(s@.len() == s.len());
+}
+
 impl<'a> BitReader<'a> {
     /// At most 64 bits are buffered, and they came from bytes already
     /// loaded.
     pub closed spec fn wf(&self) -> bool {
+        &&& self.data@.len() <= usize::MAX
         &&& self.pos <= self.data@.len()
         &&& self.nbits <= 64
         &&& self.nbits <= 8 * self.pos
@@ -79,6 +88,9 @@ impl<'a> BitReader<'a> {
             r.wf(), // @ghost
             r.input_len() == data@.len(), // @ghost
     {
+        proof { // @ghost-begin
+            lemma_slice_len(data);
+        } // @ghost-end
         Self { data, pos: 0, acc: 0, nbits: 0 }
     }
 
@@ -113,6 +125,7 @@ impl<'a> BitReader<'a> {
                 1 <= need <= 4, // @ghost
                 8 * (need - 1) < n - nbits0 <= 8 * need, // @ghost
                 need <= self.data@.len() - self.pos, // @ghost
+                self.data@.len() <= usize::MAX, // @ghost
                 self.nbits == nbits0 + 8 * (if j < need { j } else { need }), // @ghost
             decreases 4 - j, // @ghost
         {

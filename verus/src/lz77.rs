@@ -3,6 +3,7 @@
 //! that reaches back no further than the data written, and any length that
 //! fits the buffer.
 
+use crate::bitio::lemma_slice_len;
 use vstd::prelude::*;
 
 verus! {
@@ -15,6 +16,9 @@ pub fn copy_within_buffer(buf: &mut [u8], pos: usize, dist: usize, len: usize)
     ensures // @ghost
         final(buf)@.len() == old(buf)@.len(), // @ghost
 {
+    proof { // @ghost-begin
+        lemma_slice_len(buf);
+    } // @ghost-end
     let src = pos - dist;
     if dist == 1 {
         let b = buf[src];
@@ -55,6 +59,7 @@ pub fn copy_within_buffer(buf: &mut [u8], pos: usize, dist: usize, len: usize)
             src + dist == pos, // @ghost
             1 <= dist, // @ghost
             pos + len <= buf@.len(), // @ghost
+            buf@.len() <= usize::MAX, // @ghost
         decreases len - copied, // @ghost
     {
         let avail = dist + copied;
@@ -70,6 +75,9 @@ fn word8(buf: &[u8], i: usize) -> [u8; 8]
     requires // @ghost
         i + 8 <= buf@.len(), // @ghost
 {
+    proof { // @ghost-begin
+        lemma_slice_len(buf);
+    } // @ghost-end
     let w = &buf[i..i + 8];
     [w[0], w[1], w[2], w[3], w[4], w[5], w[6], w[7]]
 }
@@ -80,6 +88,9 @@ fn word4(buf: &[u8], i: usize) -> [u8; 4]
     requires // @ghost
         i + 4 <= buf@.len(), // @ghost
 {
+    proof { // @ghost-begin
+        lemma_slice_len(buf);
+    } // @ghost-end
     let w = &buf[i..i + 4];
     [w[0], w[1], w[2], w[3]]
 }
