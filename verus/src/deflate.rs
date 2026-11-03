@@ -570,7 +570,7 @@ impl BlockStats {
     spec fn wf(&self) -> bool {
         &&& forall|k: int| 0 <= k < 286 ==> #[trigger] self.lit@[k] <= 16385
         &&& forall|k: int| 0 <= k < 30 ==> #[trigger] self.dist@[k] <= 16384
-        &&& self.extra_bits <= 18 * 16384
+        &&& self.extra_bits <= 294912
     }
 
     fn new(tokens: &[Token]) -> (r: Self)
@@ -624,11 +624,11 @@ impl BlockStats {
             invariant // @ghost
                 self.wf(), // @ghost
                 forall|k: int| 0 <= k < 286 ==> #[trigger] lit_len@[k] <= 15, // @ghost
-                bits <= 18 * 16384 + i * (16385 * 15), // @ghost
+                bits <= 294912 + 245775 * i, // @ghost
         {
             let (f, l) = (u64::from(self.lit[i]), u64::from(lit_len[i]));
             proof { // @ghost-begin
-                assert(f * l <= 16385 * 15) by (nonlinear_arith)
+                assert(f * l <= 245775) by (nonlinear_arith)
                     requires
                         f <= 16385,
                         l <= 15,
@@ -640,11 +640,11 @@ impl BlockStats {
             invariant // @ghost
                 self.wf(), // @ghost
                 forall|k: int| 0 <= k < 30 ==> #[trigger] dist_len@[k] <= 15, // @ghost
-                bits <= 18 * 16384 + 286 * (16385 * 15) + i * (16384 * 15), // @ghost
+                bits <= 70586562 + 245760 * i, // @ghost
         {
             let (f, l) = (u64::from(self.dist[i]), u64::from(dist_len[i]));
             proof { // @ghost-begin
-                assert(f * l <= 16384 * 15) by (nonlinear_arith)
+                assert(f * l <= 245760) by (nonlinear_arith)
                     requires
                         f <= 16384,
                         l <= 15,
