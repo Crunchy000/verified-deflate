@@ -147,8 +147,10 @@ def check(verus, root, mutant):
         # Only the mutated module needs verifying: the change is to
         # executable code, so the specifications other modules rely on
         # are the same.
+        # A higher resource limit than the proofs need, so that a mutant
+        # fails on the property it breaks rather than by running out.
         run = subprocess.run([verus, "--crate-type=lib", str(work / "src" / "lib.rs"),
-                              "--verify-module", Path(name).stem],
+                              "--verify-module", Path(name).stem, "--rlimit", "60"],
                              capture_output=True, text=True)
         out = run.stdout + run.stderr
         if run.returncode == 0:
