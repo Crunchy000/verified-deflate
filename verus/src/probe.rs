@@ -82,9 +82,14 @@ pub struct D {
 }
 
 impl D {
-    pub const EMPTY: Self = Self { v: [0; 4], n: 1 };
+    pub exec const EMPTY: Self
+        ensures
+            Self::EMPTY.wf(),
+    {
+        Self { v: [0; 4], n: 1 }
+    }
 
-    pub open spec fn wf(&self) -> bool {
+    pub closed spec fn wf(&self) -> bool {
         self.n <= 10
     }
 
@@ -115,9 +120,13 @@ pub struct R<'a> {
 }
 
 impl<'a> R<'a> {
+    pub closed spec fn bytes(&self) -> Seq<u8> {
+        self.data@
+    }
+
     pub fn read(&mut self, out: &mut [u8]) -> (r: Result<(), E>)
         ensures
-            final(self).data == old(self).data,
+            final(self).bytes() == old(self).bytes(),
     {
         let b = *self.data.get(self.pos).ok_or(E::A)?;
         if out.len() > 0 {
