@@ -4,6 +4,10 @@
 //! [`BLOCK_TOKENS`] tokens. For each chunk the encoder computes the exact
 //! size of a stored, a fixed-Huffman and a dynamic-Huffman block and writes
 //! the smallest (or the one forced by [`Strategy`]).
+//!
+//! Verus proves (`verus/src/deflate.rs`) that compression returns without
+//! panicking for every input, level and strategy, and so does every sequence
+//! of calls to the streaming encoder.
 
 // Index loops rather than iterators, as the Verus copies in `verus/` need.
 #![allow(clippy::needless_range_loop)]
