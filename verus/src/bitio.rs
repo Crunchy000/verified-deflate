@@ -27,18 +27,18 @@ proof fn lemma_mask(x: u64, n: u32)
         n <= 32,
     ensures
         (1u64 << n) >= 1,
-        (x & ((1u64 << n) - 1)) <= 0xffff_ffff,
-        ((x & ((1u64 << n) - 1)) as nat) < p2(n as nat),
+        (x & (((1u64 << n) - 1) as u64)) <= 0xffff_ffff,
+        ((x & (((1u64 << n) - 1) as u64)) as nat) < p2(n as nat),
 {
     assert((1u64 << n) >= 1) by (bit_vector)
         requires
             n <= 32,
     ;
-    assert((x & ((1u64 << n) - 1)) < (1u64 << n)) by (bit_vector)
+    assert((x & (((1u64 << n) - 1) as u64)) < (1u64 << n)) by (bit_vector)
         requires
             n <= 32,
     ;
-    assert((x & ((1u64 << n) - 1)) <= 0xffff_ffff) by (bit_vector)
+    assert((x & (((1u64 << n) - 1) as u64)) <= 0xffff_ffff) by (bit_vector)
         requires
             n <= 32,
     ;
