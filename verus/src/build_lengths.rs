@@ -136,7 +136,7 @@ proof fn lemma_kraft15_set(l: Seq<u8>, i: int, v: u8)
 }
 
 /// `1 << s` is 2^s.
-proof fn lemma_shl_usize(s: usize)
+pub(crate) proof fn lemma_shl_usize(s: usize)
     requires
         s <= 15,
     ensures

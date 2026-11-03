@@ -146,7 +146,7 @@ impl<'a> BitReader<'a> {
         let room = ((64 - self.nbits) / 8) as usize;
         // `wrapping_add`: a range that wraps is empty, so `get` fails.
         if let Some(c) = self.data.get(self.pos..self.pos.wrapping_add(8)) {
-            let w = u64::from_le_bytes([c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7]]);
+            let w = le_word([c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7]]);
             let w = if room == 8 { w } else { w & ((1u64 << (room * 8)) - 1) };
             self.acc |= w << self.nbits;
             self.pos += room;
@@ -237,7 +237,7 @@ impl<'a> BitReader<'a> {
         // Whole bytes already sitting in the accumulator (at most 8) come first.
         let buffered = (self.nbits / 8) as usize;
         let k = if len < buffered { len } else { buffered };
-        let acc = self.acc.to_le_bytes();
+        let acc = le_bytes(self.acc);
         out[..k].copy_from_slice(&acc[..k]);
         if k == 8 {
             self.acc = 0;
@@ -282,7 +282,20 @@ fn padded_word(rest: &[u8], k: usize) -> u64 {
         }
         i += 1;
     }
+    le_word(b)
+}
+
+/// `u64::from_le_bytes`. A function of its own so that the Verus proofs can
+/// take it as given (Verus has no specification for it; it cannot panic).
+#[inline(always)]
+fn le_word(b: [u8; 8]) -> u64 {
     u64::from_le_bytes(b)
+}
+
+/// `u64::to_le_bytes`, likewise.
+#[inline(always)]
+fn le_bytes(w: u64) -> [u8; 8] {
+    w.to_le_bytes()
 }
 
 /// Reverses the low `len` bits of `code` (`len` ≤ 16); higher bits must be zero.

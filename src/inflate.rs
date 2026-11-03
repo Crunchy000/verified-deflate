@@ -69,12 +69,15 @@ const MAX_INITIAL_CAPACITY: usize = 1 << 26;
 
 const FIXED_LIT: Decoder = match Decoder::new(&fixed_litlen_lengths()) {
     Ok(d) => d,
-    Err(_) => panic!("fixed literal/length code is invalid"),
+    Err(_) => Decoder::EMPTY,
 };
 const FIXED_DIST: Decoder = match Decoder::new(&FIXED_DIST_LENGTHS) {
     Ok(d) => d,
-    Err(_) => panic!("fixed distance code is invalid"),
+    Err(_) => Decoder::EMPTY,
 };
+// The fixed codes are valid, so the fallbacks above are never taken:
+// checked when the crate is compiled.
+const _: () = assert!(Decoder::new(&fixed_litlen_lengths()).is_ok() && Decoder::new(&FIXED_DIST_LENGTHS).is_ok());
 
 /// The decoder's output: a zero-filled buffer written by index and grown
 /// by doubling when needed. Writing by index (rather than `Vec::push`)
