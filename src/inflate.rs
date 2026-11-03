@@ -4,8 +4,9 @@
 //! The decoder is strict in the same places zlib is: over-subscribed codes
 //! are always rejected, and incomplete codes are only accepted for a single
 //! one-bit code (or an empty distance code). Every malformed input yields an
-//! [`InflateError`]; the Kani harnesses check that no input of the
-//! verified sizes can make it panic, and that the output limit holds.
+//! [`InflateError`]. Verus proves (`verus/src/inflate.rs`) that for every
+//! input of every length the decoder returns, never panics, and keeps to
+//! the output limit; Kani checks its parts in more detail on small inputs.
 
 use crate::bitio::BitReader;
 use crate::error::InflateError;

@@ -5,7 +5,7 @@ use core::fmt;
 /// Why a DEFLATE stream could not be decoded.
 ///
 /// Every malformed input maps to one of these variants; the decoder never
-/// panics on bad data (this is one of the properties checked with Kani).
+/// panics on bad data (proved by Verus for every input).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[non_exhaustive]
 pub enum InflateError {
