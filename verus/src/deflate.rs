@@ -482,6 +482,15 @@ fn stored_bits_in(bit_pos: u64, len: usize, max: usize) -> u64
         len <= 0xffff_ffff, // @ghost
         max >= 1, // @ghost
 {
+    proof { // @ghost-begin
+        if len >= 1 {
+            assert(1 <= (len + max - 1) / max <= len) by (nonlinear_arith)
+                requires
+                    len >= 1,
+                    max >= 1,
+            ;
+        }
+    } // @ghost-end
     let chunks = if len == 0 { 1 } else { len.div_ceil(max) } as u64;
     let first_pad = (8 - (bit_pos % 8 + 3) % 8) % 8;
     3 + first_pad + 32 + (chunks - 1) * (3 + 5 + 32) + 8 * len as u64
@@ -522,6 +531,10 @@ fn write_tokens<const L: usize, const D: usize>(
         invariant // @ghost
             w.wf(), // @ghost
             all_valid(tokens@), // @ghost
+            lit.wf(), // @ghost
+            dist.wf(), // @ghost
+            L >= 286, // @ghost
+            D >= 30, // @ghost
             forall|k: int| 0 <= k < 29 ==> #[trigger] LENGTH_EXTRA@[k] <= 5, // @ghost
             forall|k: int| 0 <= k < 30 ==> #[trigger] DIST_EXTRA@[k] <= 13, // @ghost
     {
@@ -610,12 +623,12 @@ impl BlockStats {
                 bits <= 18 * 16384 + i * (16385 * 15), // @ghost
         {
             proof { // @ghost-begin
-                let a = self.lit@[i as int] as int;
-                let b = lit_len@[i as int] as int;
+                let a = self.lit@[i as int] as u64;
+                let b = lit_len@[i as int] as u64;
                 assert(a * b <= 16385 * 15) by (nonlinear_arith)
                     requires
-                        0 <= a <= 16385,
-                        0 <= b <= 15,
+                        a <= 16385,
+                        b <= 15,
                 ;
             } // @ghost-end
             bits += u64::from(self.lit[i]) * u64::from(lit_len[i]);
@@ -627,12 +640,12 @@ impl BlockStats {
                 bits <= 18 * 16384 + 286 * (16385 * 15) + i * (16384 * 15), // @ghost
         {
             proof { // @ghost-begin
-                let a = self.dist@[i as int] as int;
-                let b = dist_len@[i as int] as int;
+                let a = self.dist@[i as int] as u64;
+                let b = dist_len@[i as int] as u64;
                 assert(a * b <= 16384 * 15) by (nonlinear_arith)
                     requires
-                        0 <= a <= 16384,
-                        0 <= b <= 15,
+                        a <= 16384,
+                        b <= 15,
                 ;
             } // @ghost-end
             bits += u64::from(self.dist[i]) * u64::from(dist_len[i]);
@@ -722,6 +735,7 @@ fn emit_run(v: u8, run: usize, out: &mut [ClToken], n: &mut usize)
         while r >= 11
             invariant // @ghost
                 out@.len() == old(out)@.len(), // @ghost
+                *old(n) + run <= old(out)@.len(), // @ghost
                 *old(n) <= *n, // @ghost
                 *n + r <= *old(n) + run, // @ghost
                 r == run && *n == *old(n) || *n > *old(n), // @ghost
@@ -739,6 +753,7 @@ fn emit_run(v: u8, run: usize, out: &mut [ClToken], n: &mut usize)
         while r > 0
             invariant // @ghost
                 out@.len() == old(out)@.len(), // @ghost
+                *old(n) + run <= old(out)@.len(), // @ghost
                 *old(n) <= *n, // @ghost
                 *n + r <= *old(n) + run, // @ghost
                 r == run && *n == *old(n) || *n > *old(n), // @ghost
@@ -754,6 +769,7 @@ fn emit_run(v: u8, run: usize, out: &mut [ClToken], n: &mut usize)
         while r >= 3
             invariant // @ghost
                 out@.len() == old(out)@.len(), // @ghost
+                *old(n) + run <= old(out)@.len(), // @ghost
                 *old(n) < *n, // @ghost
                 *n + r <= *old(n) + run, // @ghost
                 cl_ok(out@, *n as int), // @ghost
@@ -766,6 +782,7 @@ fn emit_run(v: u8, run: usize, out: &mut [ClToken], n: &mut usize)
         while r > 0
             invariant // @ghost
                 out@.len() == old(out)@.len(), // @ghost
+                *old(n) + run <= old(out)@.len(), // @ghost
                 *old(n) < *n, // @ghost
                 *n + r <= *old(n) + run, // @ghost
                 v <= 15, // @ghost

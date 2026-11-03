@@ -177,6 +177,7 @@ impl Matcher {
             lemma_shl_usize32(hash_bits);
             lemma_p2_le_32768(window_bits as nat);
             crate::limit_depths::lemma_p2_mono(1, window_bits as nat);
+            assert(p2(0) == 1);
             assert(p2(1) == 2);
         } // @ghost-end
         let window = 1usize << window_bits;
@@ -377,6 +378,7 @@ impl Matcher {
             invariant // @ghost
                 longer_than <= best_len <= max_len <= 258, // @ghost
                 longer_than < max_len, // @ghost
+                data@.len() <= isize::MAX, // @ghost
                 pos + max_len <= data@.len(), // @ghost
                 cur@.len() == max_len, // @ghost
                 max_dist <= pos, // @ghost
@@ -424,6 +426,9 @@ impl Matcher {
             final(self).wf(), // @ghost
             tokenized(data@.len(), start as nat, old(out)@.len(), final(out)@, r), // @ghost
     {
+        proof { // @ghost-begin
+            axiom_byte_slice_len(data);
+        } // @ghost-end
         if self.cfg.rle {
             return tokenize_runs(data, start, out);
         }
@@ -435,6 +440,7 @@ impl Matcher {
                     out@.len() == old(out)@.len(), // @ghost
                     n <= out@.len(), // @ghost
                     start + n <= data@.len(), // @ghost
+                    data@.len() <= isize::MAX, // @ghost
                     forall|j: int| 0 <= j < i ==> valid(#[trigger] out@[j]), // @ghost
             {
                 out[i] = Token::Literal(data[start + i]);
@@ -456,6 +462,7 @@ impl Matcher {
                 !self.cfg.rle, // @ghost
                 out@.len() == max_tokens == old(out)@.len(), // @ghost
                 n == data@.len(), // @ghost
+                n <= isize::MAX, // @ghost
                 start <= pos <= next <= n, // @ghost
                 emitted <= max_tokens, // @ghost
                 emitted <= next - start, // @ghost
