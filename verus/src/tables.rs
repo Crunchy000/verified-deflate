@@ -39,7 +39,7 @@ pub const DIST_EXTRA: [u8; 30] =
 pub const CODELEN_ORDER: [usize; NUM_CODELEN] = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15];
 
 /// Code lengths of the fixed distance code.
-pub const FIXED_DIST_LENGTHS: [u8; 32] = [5; 32];
+pub exec const FIXED_DIST_LENGTHS: [u8; 32] = [5; 32];
 
 /// The bounds of the table entries.
 pub proof fn lemma_tables()

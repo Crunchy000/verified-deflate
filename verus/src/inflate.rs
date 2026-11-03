@@ -368,6 +368,11 @@ fn read_dynamic_codes(
     }
 
     // Every entry of lengths[..total] is written below before it is read.
+    proof { // @ghost-begin
+        assert forall|k: nat| k <= 7 implies #[trigger] p2(k) <= 128 by {
+            lemma_p2_mono(k, 7);
+        }
+    } // @ghost-end
     let total = nlen + ndist;
     let mut idx = 0;
     while idx < total
@@ -379,13 +384,10 @@ fn read_dynamic_codes(
             lit.wf(), // @ghost
             dist.wf(), // @ghost
             idx <= total <= 316, // @ghost
-            p2(7) == 128, // @ghost
+            forall|k: nat| k <= 7 ==> #[trigger] p2(k) <= 128, // @ghost
         decreases total - idx, // @ghost
     {
         let sym = clcode.decode(br)? as u8;
-        proof { // @ghost-begin
-            lemma_p2_mono(codelen_extra_bits(sym) as nat, 7);
-        } // @ghost-end
         let extra = br.read_bits(codelen_extra_bits(sym))?;
         expand_code_length(sym, extra, &mut lengths[..total], &mut idx)?;
     }
