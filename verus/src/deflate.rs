@@ -684,7 +684,7 @@ pub(crate) fn rle_code_lengths(lengths: &[u8], out: &mut [ClToken]) -> (r: usize
             out@.len() == old(out)@.len() >= lengths@.len(), // @ghost
             forall|k: int| 0 <= k < lengths@.len() ==> #[trigger] lengths@[k] <= 15, // @ghost
             value <= 15, // @ghost
-            n + run <= i, // @ghost
+            run + n <= i, // @ghost
             i > 0 ==> run >= 1, // @ghost
             cl_ok(out@, n as int), // @ghost
     {
