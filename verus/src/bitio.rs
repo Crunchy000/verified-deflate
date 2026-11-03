@@ -122,6 +122,7 @@ impl<'a> BitReader<'a> {
                 self.data == old(self).data, // @ghost
                 self.pos == old(self).pos, // @ghost
                 nbits0 == old(self).nbits, // @ghost
+                nbits0 < n <= 32, // @ghost
                 1 <= need <= 4, // @ghost
                 8 * (need - 1) < n - nbits0 <= 8 * need, // @ghost
                 need <= self.data@.len() - self.pos, // @ghost
