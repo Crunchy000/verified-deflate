@@ -15,3 +15,4 @@
 pub mod build_lengths;
 pub mod limit_depths;
 pub mod name_is_safe;
+pub mod probe;

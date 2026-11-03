@@ -528,20 +528,21 @@ impl Canonical {
     pub fn decode(&self, br: &mut BitReader<'_>) -> Result<u16, InflateError> {
         // Invariant at each step: first <= code, first is the smallest
         // canonical code of the current length, and index is the position
-        // of that code in `symbol`.
+        // of that code in `symbol`. (Plain arithmetic rather than shifts
+        // and ors, which compile the same, so that Verus can bound it.)
         let mut code: u32 = 0;
         let mut first: u32 = 0;
         let mut index: u32 = 0;
         macro_rules! step {
             ($len:expr) => {
-                code |= br.read_bit()?;
+                code += br.read_bit()?;
                 let count = u32::from(self.count[$len]);
                 if code < first + count {
                     return Ok(self.symbol[(index + (code - first)) as usize]);
                 }
                 index += count;
-                first = (first + count) << 1;
-                code <<= 1;
+                first = (first + count) * 2;
+                code *= 2;
             };
         }
         step!(1);
@@ -624,7 +625,7 @@ impl Decoder {
         let mut code = 0u32;
         let mut len = 1;
         while len <= MAX_CODE_LEN {
-            code = (code + count[len - 1] as u32) << 1;
+            code = (code + count[len - 1] as u32) * 2;
             next[len] = code;
             len += 1;
         }

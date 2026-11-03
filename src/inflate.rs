@@ -52,8 +52,7 @@ pub fn decompress_with_limit(input: &[u8], max_output: usize) -> Result<Decompre
             1 => codes(&mut st.br, &mut st.out, &FIXED_LIT, &FIXED_DIST)?,
             2 => {
                 read_dynamic_codes(&mut st.br, &mut st.lit, &mut st.dist, &mut st.lengths)?;
-                let State { br, out, lit, dist, .. } = &mut st;
-                codes(br, out, lit, dist)?;
+                codes(&mut st.br, &mut st.out, &st.lit, &st.dist)?;
             }
             _ => return Err(InflateError::InvalidBlockType),
         }
@@ -146,7 +145,7 @@ impl State<'_> {
         let len = len as usize;
         self.out.reserve(len)?;
         let start = self.out.len;
-        self.br.read_aligned_bytes(&mut self.out.buf[start..start + len])?;
+        self.br.read_aligned_bytes(&mut self.out.buf.as_mut_slice()[start..start + len])?;
         self.out.len += len;
         Ok(())
     }
@@ -184,6 +183,7 @@ fn codes(br: &mut BitReader<'_>, out: &mut Output, lit: &Decoder, dist: &Decoder
 }
 
 /// Reads a dynamic block header (§3.2.7) and builds its two decoders.
+#[allow(clippy::needless_range_loop)] // an index loop, as the Verus copy needs
 fn read_dynamic_codes(
     br: &mut BitReader<'_>,
     lit: &mut Decoder,
@@ -197,8 +197,8 @@ fn read_dynamic_codes(
         return Err(InflateError::TooManyCodes);
     }
     let mut cl = [0u8; NUM_CODELEN];
-    for &sym in &CODELEN_ORDER[..ncode] {
-        cl[sym] = br.read_bits(3)? as u8;
+    for i in 0..ncode {
+        cl[CODELEN_ORDER[i]] = br.read_bits(3)? as u8;
     }
     let mut clcode = Decoder::EMPTY;
     clcode.rebuild(&cl).map_err(|_| InflateError::InvalidCodeLengthCode)?;

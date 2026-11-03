@@ -118,8 +118,7 @@ impl<'a> BitReader<'a> {
         // 1..=4 bytes; the loop below has a constant bound so that Kani
         // unrolls it exactly four times.
         let need = (n - self.nbits).div_ceil(8) as usize;
-        let end = self.pos + need;
-        if end > self.data.len() {
+        if need > self.data.len() - self.pos {
             return Err(InflateError::UnexpectedEof);
         }
         let mut j = 0;
@@ -130,7 +129,7 @@ impl<'a> BitReader<'a> {
             }
             j += 1;
         }
-        self.pos = end;
+        self.pos += need;
         Ok(())
     }
 
@@ -145,7 +144,8 @@ impl<'a> BitReader<'a> {
         }
         // Whole bytes that fit: 1..=8.
         let room = ((64 - self.nbits) / 8) as usize;
-        if let Some(c) = self.data.get(self.pos..self.pos + 8) {
+        // `wrapping_add`: a range that wraps is empty, so `get` fails.
+        if let Some(c) = self.data.get(self.pos..self.pos.wrapping_add(8)) {
             let w = u64::from_le_bytes([c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7]]);
             let w = if room == 8 { w } else { w & ((1u64 << (room * 8)) - 1) };
             self.acc |= w << self.nbits;
