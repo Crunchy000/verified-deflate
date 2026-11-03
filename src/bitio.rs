@@ -11,7 +11,7 @@ use crate::error::InflateError;
 /// Accumulates bits LSB-first into a byte vector.
 ///
 /// Invariant (checked by the Kani harnesses below): between calls fewer than
-/// eight bits are pending, and no pending bit above `nbits` is set.
+/// 32 bits are pending, and no pending bit above `nbits` is set.
 #[derive(Debug, Default, Clone)]
 pub struct BitWriter {
     out: Vec<u8>,
@@ -22,7 +22,7 @@ pub struct BitWriter {
 impl BitWriter {
     /// Creates an empty writer.
     pub fn new() -> Self {
-        Self::default()
+        Self { out: Vec::new(), acc: 0, nbits: 0 }
     }
 
     /// Creates an empty writer whose buffer can hold `bytes` bytes without reallocating.
@@ -43,15 +43,17 @@ impl BitWriter {
         self.nbits += n;
         // Flush in whole 4-byte words: a fixed-size copy, and no loop.
         if self.nbits >= 32 {
-            self.out.extend_from_slice(&(self.acc as u32).to_le_bytes());
+            self.out.extend_from_slice(&le_bytes32(self.acc as u32));
             self.acc >>= 32;
             self.nbits -= 32;
         }
     }
 
-    /// Total number of bits written so far.
+    /// Total number of bits written so far (modulo 2^64, which keeps its
+    /// value modulo 8, all the encoder's size model uses, exact for any
+    /// output size).
     pub fn bit_len(&self) -> u64 {
-        (self.out.len() as u64) * 8 + u64::from(self.nbits)
+        (self.out.len() as u64).wrapping_mul(8).wrapping_add(u64::from(self.nbits))
     }
 
     /// True when the next bit would start a new byte.
@@ -64,7 +66,7 @@ impl BitWriter {
     pub fn pad_to_byte(&mut self) {
         if self.nbits > 0 {
             let k = self.nbits.div_ceil(8) as usize;
-            self.out.extend_from_slice(&self.acc.to_le_bytes()[..k]);
+            self.out.extend_from_slice(&le_bytes(self.acc)[..k]);
             self.acc = 0;
             self.nbits = 0;
         }
@@ -81,7 +83,9 @@ impl BitWriter {
     /// counts from the bytes taken; its value modulo 8, which is all the
     /// block-size model uses, is unchanged.
     pub fn take_bytes(&mut self) -> Vec<u8> {
-        std::mem::take(&mut self.out)
+        let mut out = Vec::new();
+        core::mem::swap(&mut out, &mut self.out);
+        out
     }
 
     /// Pads to a byte boundary and returns the bytes written.
@@ -295,6 +299,12 @@ fn le_word(b: [u8; 8]) -> u64 {
 /// `u64::to_le_bytes`, likewise.
 #[inline(always)]
 fn le_bytes(w: u64) -> [u8; 8] {
+    w.to_le_bytes()
+}
+
+/// `u32::to_le_bytes`, likewise.
+#[inline(always)]
+fn le_bytes32(w: u32) -> [u8; 4] {
     w.to_le_bytes()
 }
 

@@ -350,6 +350,127 @@ impl<'a> BitReader<'a> {
     }
 }
 
+/// Accumulates bits LSB-first into a byte vector.
+pub struct BitWriter {
+    out: Vec<u8>,
+    acc: u64,
+    nbits: u32,
+}
+
+impl BitWriter {
+    /// Fewer than 32 bits are pending between calls.
+    pub closed spec fn wf(&self) -> bool {
+        self.nbits < 32
+    }
+
+    /// Creates an empty writer.
+    pub fn new() -> (r: Self)
+        ensures // @ghost
+            r.wf(), // @ghost
+    {
+        Self { out: Vec::new(), acc: 0, nbits: 0 }
+    }
+
+    /// Creates an empty writer whose buffer can hold `bytes` bytes without reallocating.
+    pub fn with_capacity(bytes: usize) -> (r: Self)
+        ensures // @ghost
+            r.wf(), // @ghost
+    {
+        Self { out: Vec::with_capacity(bytes), acc: 0, nbits: 0 }
+    }
+
+    /// Appends the low `n` bits of `value`, least-significant bit first.
+    #[inline]
+    pub fn write_bits(&mut self, value: u32, n: u32)
+        requires // @ghost
+            old(self).wf(), // @ghost
+            n <= 32, // @ghost
+        ensures // @ghost
+            final(self).wf(), // @ghost
+    {
+        debug_assert!(n <= 32, "write_bits: n = {n} exceeds 32");
+        let n = if n > 32 { 32 } else { n };
+        proof { // @ghost-begin
+            lemma_mask(0, n);
+        } // @ghost-end
+        let masked = u64::from(value) & ((1u64 << n) - 1);
+        // Fewer than 32 bits are pending, so this fits in the accumulator.
+        self.acc |= masked << self.nbits;
+        self.nbits += n;
+        // Flush in whole 4-byte words: a fixed-size copy, and no loop.
+        if self.nbits >= 32 {
+            self.out.extend_from_slice(&le_bytes32(self.acc as u32));
+            self.acc >>= 32;
+            self.nbits -= 32;
+        }
+    }
+
+    /// Total number of bits written so far (modulo 2^64).
+    pub fn bit_len(&self) -> u64 {
+        (self.out.len() as u64).wrapping_mul(8).wrapping_add(u64::from(self.nbits))
+    }
+
+    /// True when the next bit would start a new byte.
+    pub fn is_byte_aligned(&self) -> bool {
+        self.nbits % 8 == 0
+    }
+
+    /// Fills the rest of the current byte with zero bits (and writes out
+    /// all pending bits).
+    pub fn pad_to_byte(&mut self)
+        requires // @ghost
+            old(self).wf(), // @ghost
+        ensures // @ghost
+            final(self).wf(), // @ghost
+    {
+        if self.nbits > 0 {
+            let k = self.nbits.div_ceil(8) as usize;
+            self.out.extend_from_slice(&le_bytes(self.acc)[..k]);
+            self.acc = 0;
+            self.nbits = 0;
+        }
+    }
+
+    /// Pads to a byte boundary, then appends `bytes` verbatim.
+    pub fn write_aligned_bytes(&mut self, bytes: &[u8])
+        requires // @ghost
+            old(self).wf(), // @ghost
+        ensures // @ghost
+            final(self).wf(), // @ghost
+    {
+        self.pad_to_byte();
+        self.out.extend_from_slice(bytes);
+    }
+
+    /// Takes the whole bytes written so far.
+    pub fn take_bytes(&mut self) -> Vec<u8>
+        requires // @ghost
+            old(self).wf(), // @ghost
+        ensures // @ghost
+            final(self).wf(), // @ghost
+    {
+        let mut out = Vec::new();
+        core::mem::swap(&mut out, &mut self.out);
+        out
+    }
+
+    /// Pads to a byte boundary and returns the bytes written.
+    pub fn finish(mut self) -> Vec<u8>
+        requires // @ghost
+            self.wf(), // @ghost
+    {
+        self.pad_to_byte();
+        self.out
+    }
+}
+
+/// `u32::to_le_bytes`, taken as given (see `le_word`).
+#[verifier::external_body]
+#[inline(always)]
+fn le_bytes32(w: u32) -> [u8; 4] {
+    w.to_le_bytes()
+}
+
 /// The first `k` (at most 7) bytes of `rest` as a little-endian word,
 /// zero-padded.
 #[cold]

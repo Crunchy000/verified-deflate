@@ -382,10 +382,10 @@ pub(crate) fn common_prefix(x: &[u8], y: &[u8]) -> usize {
     let max = if x.len() < y.len() { x.len() } else { y.len() };
     let mut n = 0;
     while n + 8 <= max {
-        let (Some(a), Some(b)) = (x[n..].first_chunk::<8>(), y[n..].first_chunk::<8>()) else {
+        let (Some(a), Some(b)) = (word_at(x, n), word_at(y, n)) else {
             break;
         };
-        let diff = u64::from_le_bytes(*a) ^ u64::from_le_bytes(*b);
+        let diff = a ^ b;
         if diff != 0 {
             return n + (diff.trailing_zeros() / 8) as usize;
         }
@@ -395,6 +395,15 @@ pub(crate) fn common_prefix(x: &[u8], y: &[u8]) -> usize {
         n += 1;
     }
     n
+}
+
+/// The little-endian word at `s[i..i + 8]`, if there are eight bytes there
+/// (`i <= s.len()`). A function of its own so that the Verus proofs can
+/// take it as given: Verus has no specification for `first_chunk` or
+/// `from_le_bytes`, neither of which can panic.
+#[inline(always)]
+fn word_at(s: &[u8], i: usize) -> Option<u64> {
+    s[i..].first_chunk::<8>().map(|a| u64::from_le_bytes(*a))
 }
 
 /// Reference version of [`common_prefix`]: a plain byte loop.
