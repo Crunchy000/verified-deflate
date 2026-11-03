@@ -349,7 +349,9 @@ pub(crate) fn stored_bits(bit_pos: u64, len: usize) -> u64 {
 fn stored_bits_in(bit_pos: u64, len: usize, max: usize) -> u64 {
     let chunks = if len == 0 { 1 } else { len.div_ceil(max) } as u64;
     let first_pad = (8 - (bit_pos % 8 + 3) % 8) % 8;
-    3 + first_pad + 32 + (chunks - 1) * (3 + 5 + 32) + 8 * len as u64
+    // Each further block: 3 header bits, up to 5 bits of padding (the
+    // header starts byte-aligned after a stored block), and LEN and NLEN.
+    3 + first_pad + 32 + (chunks - 1) * 40 + 8 * len as u64
 }
 
 fn write_fixed(w: &mut BitWriter, tokens: &[Token], last: bool) {
@@ -412,10 +414,12 @@ impl BlockStats {
     fn body_bits(&self, lit_len: &[u8; NUM_LITLEN], dist_len: &[u8; NUM_DIST]) -> u64 {
         let mut bits = self.extra_bits;
         for i in 0..NUM_LITLEN {
-            bits += u64::from(self.lit[i]) * u64::from(lit_len[i]);
+            let (f, l) = (u64::from(self.lit[i]), u64::from(lit_len[i]));
+            bits += f * l;
         }
         for i in 0..NUM_DIST {
-            bits += u64::from(self.dist[i]) * u64::from(dist_len[i]);
+            let (f, l) = (u64::from(self.dist[i]), u64::from(dist_len[i]));
+            bits += f * l;
         }
         bits
     }

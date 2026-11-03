@@ -495,7 +495,9 @@ fn stored_bits_in(bit_pos: u64, len: usize, max: usize) -> u64
     } // @ghost-end
     let chunks = if len == 0 { 1 } else { len.div_ceil(max) } as u64;
     let first_pad = (8 - (bit_pos % 8 + 3) % 8) % 8;
-    3 + first_pad + 32 + (chunks - 1) * (3 + 5 + 32) + 8 * len as u64
+    // Each further block: 3 header bits, up to 5 bits of padding (the
+    // header starts byte-aligned after a stored block), and LEN and NLEN.
+    3 + first_pad + 32 + (chunks - 1) * 40 + 8 * len as u64
 }
 
 fn write_fixed(w: &mut BitWriter, tokens: &[Token], last: bool)
@@ -624,16 +626,15 @@ impl BlockStats {
                 forall|k: int| 0 <= k < 286 ==> #[trigger] lit_len@[k] <= 15, // @ghost
                 bits <= 18 * 16384 + i * (16385 * 15), // @ghost
         {
+            let (f, l) = (u64::from(self.lit[i]), u64::from(lit_len[i]));
             proof { // @ghost-begin
-                let a = self.lit@[i as int] as u64;
-                let b = lit_len@[i as int] as u64;
-                assert(a * b <= 16385 * 15) by (nonlinear_arith)
+                assert(f * l <= 16385 * 15) by (nonlinear_arith)
                     requires
-                        a <= 16385,
-                        b <= 15,
+                        f <= 16385,
+                        l <= 15,
                 ;
             } // @ghost-end
-            bits += u64::from(self.lit[i]) * u64::from(lit_len[i]);
+            bits += f * l;
         }
         for i in 0..NUM_DIST
             invariant // @ghost
@@ -641,16 +642,15 @@ impl BlockStats {
                 forall|k: int| 0 <= k < 30 ==> #[trigger] dist_len@[k] <= 15, // @ghost
                 bits <= 18 * 16384 + 286 * (16385 * 15) + i * (16384 * 15), // @ghost
         {
+            let (f, l) = (u64::from(self.dist[i]), u64::from(dist_len[i]));
             proof { // @ghost-begin
-                let a = self.dist@[i as int] as u64;
-                let b = dist_len@[i as int] as u64;
-                assert(a * b <= 16384 * 15) by (nonlinear_arith)
+                assert(f * l <= 16384 * 15) by (nonlinear_arith)
                     requires
-                        a <= 16384,
-                        b <= 15,
+                        f <= 16384,
+                        l <= 15,
                 ;
             } // @ghost-end
-            bits += u64::from(self.dist[i]) * u64::from(dist_len[i]);
+            bits += f * l;
         }
         bits
     }
