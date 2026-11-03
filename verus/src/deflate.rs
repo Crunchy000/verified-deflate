@@ -484,10 +484,12 @@ fn stored_bits_in(bit_pos: u64, len: usize, max: usize) -> u64
 {
     proof { // @ghost-begin
         if len >= 1 {
-            assert(1 <= (len + max - 1) / max <= len) by (nonlinear_arith)
+            let l = len as int;
+            let m = max as int;
+            assert(1 <= (l + m - 1) / m <= l) by (nonlinear_arith)
                 requires
-                    len >= 1,
-                    max >= 1,
+                    l >= 1,
+                    m >= 1,
             ;
         }
     } // @ghost-end
