@@ -662,7 +662,7 @@ pub(crate) struct ClToken {
 }
 
 /// Code-length tokens: every symbol is 0-18.
-pub open spec fn cl_ok(t: Seq<ClToken>, n: int) -> bool {
+pub(crate) open spec fn cl_ok(t: Seq<ClToken>, n: int) -> bool {
     forall|j: int| 0 <= j < n ==> #[trigger] t[j].sym <= 18
 }
 
