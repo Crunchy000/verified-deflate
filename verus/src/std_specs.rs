@@ -2,6 +2,7 @@
 //! specify, and one fact about Rust slices. These are trusted: each states
 //! no more than the documented behaviour (none of the functions can panic).
 
+use std::borrow::Cow;
 use vstd::prelude::*;
 
 verus! {
@@ -45,5 +46,27 @@ pub assume_specification<T: Clone>[ <[T]>::fill ](s: &mut [T], value: T)
     ensures
         final(s)@.len() == old(s)@.len(),
 ;
+
+/// `split_first_chunk` splits off the first `N` elements when there are at
+/// least `N`.
+pub assume_specification<T, const N: usize>[ <[T]>::split_first_chunk::<N> ](s: &[T]) -> (r: Option<(&[T; N], &[T])>)
+    ensures
+        match r {
+            Some((_, tail)) => s@.len() >= N && tail@.len() == s@.len() - N,
+            None => s@.len() < N,
+        },
+;
+
+/// `to_vec` copies the slice.
+pub assume_specification<T: Clone>[ <[T]>::to_vec ](s: &[T]) -> (v: Vec<T>)
+    ensures
+        v@.len() == s@.len(),
+;
+
+/// Decoding UTF-8 with invalid sequences replaced; total.
+pub assume_specification<'a>[ String::from_utf8_lossy ](v: &'a [u8]) -> Cow<'a, str>;
+
+/// Taking ownership of a `Cow`; total.
+pub assume_specification<'a, B: ?Sized + ToOwned>[ Cow::<'a, B>::into_owned ](c: Cow<'a, B>) -> <B as ToOwned>::Owned;
 
 } // verus!

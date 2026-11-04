@@ -16,7 +16,7 @@ layout do not matter.
 The pairs to check are listed in verus/copies.txt, one per line:
     <production file> <item> <verus file>
 where <item> is a function (`name`), a method (`Type::name`, looked up in
-the `impl` block for `Type`), or a type or constant (`struct:Name`,
+the `impl` blocks for `Type`), or a type or constant (`struct:Name`,
 `enum:Name`, `const:NAME`, `const:Type::NAME`, `static:NAME`). A method of a
 trait impl is looked up as `Type::name` too. Attributes and visibility
 before an item are not compared. A constant that Verus needs as
@@ -104,8 +104,10 @@ def block_end(toks, j):
     raise ValueError("unbalanced braces")
 
 
-def impl_range(toks, ty):
-    """(start, end) token range of the inherent `impl` block for `ty`."""
+def impl_ranges(toks, ty):
+    """(start, end) token ranges of the `impl` blocks for `ty`, inherent or
+    trait impls, in order."""
+    out = []
     for i, t in enumerate(toks):
         if t != "impl":
             continue
@@ -124,27 +126,31 @@ def impl_range(toks, ty):
         while toks[k] != "{":
             k += 1
         if self_ty == ty:
-            return k, block_end(toks, k)
-    raise ValueError(f"impl {ty} not found")
+            out.append((k, block_end(toks, k)))
+    if not out:
+        raise ValueError(f"impl {ty} not found")
+    return out
 
 
-def scope(toks, name):
+def scopes(toks, name):
+    """The token ranges to look for `name` in: the whole file, or for
+    `Type::name` each `impl` block for `Type`."""
     if "::" in name:
         ty, name = name.split("::")
-        a, b = impl_range(toks, ty)
-        return toks[a:b + 1], name
-    return toks, name
+        return [toks[a:b + 1] for a, b in impl_ranges(toks, ty)], name
+    return [toks], name
 
 
 def function(toks, name):
     """Tokens of `fn name` from `fn` to the brace closing its body."""
-    toks, name = scope(toks, name)
-    for i in range(len(toks) - 1):
-        if toks[i] == "fn" and toks[i + 1] == name:
-            j = i
-            while toks[j] != "{":
-                j += 1
-            return toks[i:block_end(toks, j) + 1]
+    blocks, name = scopes(toks, name)
+    for toks in blocks:
+        for i in range(len(toks) - 1):
+            if toks[i] == "fn" and toks[i + 1] == name:
+                j = i
+                while toks[j] != "{":
+                    j += 1
+                return toks[i:block_end(toks, j) + 1]
     raise ValueError(f"fn {name} not found")
 
 
@@ -162,22 +168,23 @@ def type_item(toks, kind, name):
 def const_item(toks, name, keyword="const"):
     """Tokens of `const NAME: T = value;` (or `static`), reading the Verus
     form `exec const NAME: T { value }` as the same thing."""
-    toks, name = scope(toks, name)
-    for i in range(len(toks) - 1):
-        if toks[i] == keyword and toks[i + 1] == name and (i == 0 or toks[i - 1] != "fn"):
-            j, depth = i, 0
-            while depth or toks[j] not in ("=", "{"):
-                depth += OPEN.get(toks[j], 0)
-                j += 1
-            if toks[j] == "=":
-                k, depth = j, 0
-                while depth or toks[k] != ";":
-                    depth += OPEN.get(toks[k], 0)
-                    k += 1
-                return toks[i:k + 1]
-            k = block_end(toks, j)
-            return toks[i:j] + ["="] + toks[j + 1:k] + [";"]
-    raise ValueError(f"const {name} not found")
+    blocks, name = scopes(toks, name)
+    for toks in blocks:
+        for i in range(len(toks) - 1):
+            if toks[i] == keyword and toks[i + 1] == name and (i == 0 or toks[i - 1] != "fn"):
+                j, depth = i, 0
+                while depth or toks[j] not in ("=", "{"):
+                    depth += OPEN.get(toks[j], 0)
+                    j += 1
+                if toks[j] == "=":
+                    k, depth = j, 0
+                    while depth or toks[k] != ";":
+                        depth += OPEN.get(toks[k], 0)
+                        k += 1
+                    return toks[i:k + 1]
+                k = block_end(toks, j)
+                return toks[i:j] + ["="] + toks[j + 1:k] + [";"]
+    raise ValueError(f"{keyword} {name} not found")
 
 
 def item(toks, spec):

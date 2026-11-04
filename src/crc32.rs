@@ -65,24 +65,20 @@ fn lanes(x: u32, k: usize) -> u32 {
         ^ TABLES[k][(x >> 24) as usize]
 }
 
+/// The little-endian word in `b[i..i + 4]`.
+#[inline(always)]
+fn word(b: &[u8; 8], i: usize) -> u32 {
+    u32::from(b[i]) | (u32::from(b[i + 1]) << 8) | (u32::from(b[i + 2]) << 16) | (u32::from(b[i + 3]) << 24)
+}
+
 /// Processes eight bytes at once: equal to eight [`byte_table`] steps. The
 /// register meets the first four bytes; each byte's contribution is then
 /// looked up in the table for the number of bytes that follow it.
 #[inline(always)]
 fn step8(crc: u32, b: &[u8; 8]) -> u32 {
-    let x = crc ^ u32::from_le_bytes([b[0], b[1], b[2], b[3]]);
-    let y = u32::from_le_bytes([b[4], b[5], b[6], b[7]]);
+    let x = crc ^ word(b, 0);
+    let y = word(b, 4);
     lanes(x, 4) ^ lanes(y, 0)
-}
-
-/// The shared loop: pre- and post-inversion around a per-byte step.
-#[inline]
-fn fold(crc: u32, data: &[u8], step: impl Fn(u32, u8) -> u32) -> u32 {
-    let mut c = !crc;
-    for &b in data {
-        c = step(c, b);
-    }
-    !c
 }
 
 /// Continues a CRC-32 computation: `update(crc32(a), b) == crc32(a ++ b)`.
@@ -93,8 +89,10 @@ pub fn update(crc: u32, data: &[u8]) -> u32 {
         c = step8(c, chunk);
         rest = tail;
     }
-    // `fold` inverts on entry and exit; undo the entry inversion.
-    fold(!c, rest, byte_table)
+    for &b in rest {
+        c = byte_table(c, b);
+    }
+    !c
 }
 
 /// Bit-at-a-time definition of [`update`]: the register starts inverted,
