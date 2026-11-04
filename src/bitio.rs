@@ -76,6 +76,14 @@ impl BitWriter {
         self.out.extend_from_slice(bytes);
     }
 
+    /// Takes the whole bytes written so far, leaving any partial byte (up
+    /// to 31 pending bits) in the writer. [`bit_len`](Self::bit_len) then
+    /// counts from the bytes taken; its value modulo 8, which is all the
+    /// block-size model uses, is unchanged.
+    pub fn take_bytes(&mut self) -> Vec<u8> {
+        std::mem::take(&mut self.out)
+    }
+
     /// Pads to a byte boundary and returns the bytes written.
     pub fn finish(mut self) -> Vec<u8> {
         self.pad_to_byte();

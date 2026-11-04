@@ -1,0 +1,13 @@
+# A stand-in for the few miniz_oxide functions the `deflate` crate's tests
+# call (to decompress what they compress), implemented with this crate, so
+# that the tests run without downloading miniz_oxide.
+[package]
+name = "miniz_oxide"
+version = "0.5.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+verified-deflate = { path = "../../.." }
+
+[workspace]
