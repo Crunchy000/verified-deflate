@@ -475,4 +475,101 @@ fn sift_down(idx: &mut [u16], mut root: usize, end: usize, w: &[u64])
     }
 }
 
+/// Assigns canonical Huffman codes to `lengths` (RFC 1951 §3.2.2).
+pub const fn canonical_codes(lengths: &[u8], codes: &mut [u16]) -> (r: Result<(), HuffmanError>)
+    requires // @ghost
+        lengths@.len() <= 288, // @ghost
+    ensures // @ghost
+        final(codes)@.len() == old(codes)@.len(), // @ghost
+        r is Ok ==> lengths@.len() == old(codes)@.len(), // @ghost
+        r is Ok ==> forall|i: int| 0 <= i < lengths@.len() ==> #[trigger] lengths@[i] <= 15, // @ghost
+{
+    if lengths.len() != codes.len() {
+        return Err(HuffmanError::LengthMismatch);
+    }
+    let mut bl_count = [0u32; MAX_CODE_LEN + 1];
+    let mut i = 0;
+    while i < lengths.len()
+        invariant // @ghost
+            i <= lengths@.len() <= 288, // @ghost
+            bl_count@[0] == 0, // @ghost
+            forall|l: int| 0 <= l < 16 ==> #[trigger] bl_count@[l] <= i, // @ghost
+            forall|j: int| 0 <= j < i ==> #[trigger] lengths@[j] <= 15, // @ghost
+        decreases lengths@.len() - i, // @ghost
+    {
+        let l = lengths[i] as usize;
+        if l > MAX_CODE_LEN {
+            return Err(HuffmanError::CodeTooLong);
+        }
+        if l > 0 {
+            bl_count[l] += 1;
+        }
+        i += 1;
+    }
+    proof { // @ghost-begin
+        crate::huffman_decode::lemma_p2_10();
+    } // @ghost-end
+    // Kraft check: `left` is the unused code space at each depth.
+    let mut left: i64 = 1;
+    let mut bits = 1;
+    while bits <= MAX_CODE_LEN
+        invariant // @ghost
+            1 <= bits <= 16, // @ghost
+            0 <= left <= p2((bits - 1) as nat), // @ghost
+            p2(15) == 32768, // @ghost
+            forall|l: int| 0 <= l < 16 ==> #[trigger] bl_count@[l] <= 288, // @ghost
+        decreases 16 - bits, // @ghost
+    {
+        proof { // @ghost-begin
+            crate::limit_depths::lemma_p2_mono((bits - 1) as nat, 15);
+        } // @ghost-end
+        left = left * 2 - bl_count[bits] as i64;
+        if left < 0 {
+            return Err(HuffmanError::OverSubscribed);
+        }
+        bits += 1;
+    }
+    // Step 2 of the RFC algorithm: smallest code of each length.
+    let mut next = [0u32; MAX_CODE_LEN + 1];
+    let mut code = 0u32;
+    bits = 1;
+    while bits <= MAX_CODE_LEN
+        invariant // @ghost
+            1 <= bits <= 16, // @ghost
+            p2(15) == 32768, // @ghost
+            code <= 576 * (p2((bits - 1) as nat) - 1), // @ghost
+            forall|l: int| 0 <= l < 16 ==> #[trigger] bl_count@[l] <= 288, // @ghost
+            forall|l: int| 0 <= l < 16 ==> #[trigger] next@[l] <= 576 * 32768, // @ghost
+        decreases 16 - bits, // @ghost
+    {
+        proof { // @ghost-begin
+            crate::limit_depths::lemma_p2_mono(bits as nat, 15);
+            crate::limit_depths::lemma_p2_pos((bits - 1) as nat);
+        } // @ghost-end
+        code = (code + bl_count[bits - 1]) * 2;
+        next[bits] = code;
+        bits += 1;
+    }
+    // Step 3: consecutive codes within each length, in symbol order.
+    i = 0;
+    while i < lengths.len()
+        invariant // @ghost
+            i <= lengths@.len() <= 288, // @ghost
+            codes@.len() == lengths@.len() == old(codes)@.len(), // @ghost
+            forall|j: int| 0 <= j < lengths@.len() ==> #[trigger] lengths@[j] <= 15, // @ghost
+            forall|l: int| 0 <= l < 16 ==> #[trigger] next@[l] <= 576 * 32768 + i, // @ghost
+        decreases lengths@.len() - i, // @ghost
+    {
+        let l = lengths[i] as usize;
+        if l != 0 {
+            codes[i] = next[l] as u16;
+            next[l] += 1;
+        } else {
+            codes[i] = 0;
+        }
+        i += 1;
+    }
+    Ok(())
+}
+
 } // verus!

@@ -10,11 +10,13 @@ weakest:
      more are too large for CI runners and are gated behind the
      `kani-extended` feature (see below).
    - **Verus**: deductive proofs for inputs of *every* size, where Kani's
-     proofs stop at a bound. The decoder returns on every input, never
-     panics and never exceeds its output limit. The Huffman code-length
-     builder makes a complete code within the limit for any alphabet. The
-     ZIP entry-name check accepts exactly the safe names. See
-     [Verus proofs](#verus-proofs-inputs-of-every-size).
+     proofs stop at a bound:
+     - The decoder returns on every input, never panics and never exceeds its output limit.
+     - The encoder returns on every input, level and strategy, and never panics. So does the streaming encoder.
+     - The Huffman code-length builder makes a complete code within the limit for any alphabet.
+     - The ZIP entry-name check accepts exactly the safe names.
+
+     See [Verus proofs](#verus-proofs-inputs-of-every-size).
 2. **Safe Rust**: `#![forbid(unsafe_code)]`, so memory safety comes from
    the compiler. Kani adds the absence of panics inside its bounds:
    out-of-bounds indexing, arithmetic overflow, failed `unwrap`, division
@@ -265,12 +267,13 @@ machine or further restructuring of the decoder.
 Kani checks every input up to a size. [Verus] proves a property for every
 input, from loop invariants and lemmas that its SMT solver checks. The
 proofs are in `verus/` and run in `.github/workflows/verus.yml` on every
-push. They check in about 12 seconds, and the mutant check below in about
-two minutes.
+push. They check in about 16 seconds, and the mutant check below in about
+three minutes.
 
 | Code | Theorem | Kani's bound |
 |---|---|---|
 | The decoder: `decompress_with_limit` and `decompress`, with the bit reader, both Huffman decoders, the match copy and the tables (`verus/src/inflate.rs`, `bitio.rs`, `huffman_decode.rs`, `lz77.rs`, `tables.rs`) | For **every input of every length** and every output limit, the decoder returns: it never panics, and every loop terminates. On success the output is no longer than the limit, and the bytes consumed are within the input. Building a Huffman decoder from any code lengths at all leaves it well-formed, so decoding with it is always in bounds. | 2 bytes (5 for a fixed block), extended set only |
+| The encoder: `compress`, `compress_with` (with `verify` on or off) and the streaming `StreamEncoder` behind the `write` encoders, with the match finder, the block writers, the bit writer, canonical codes and the code lookups (`verus/src/deflate.rs`, `lz77.rs`, `bitio.rs`, `build_lengths.rs`, `tables.rs`) | For **every input of every length**, every level and every strategy, compression returns: it never panics, and every loop terminates. The same holds for any sequence of calls to the streaming encoder. Along the way, the tokenizer is proved to emit only matches DEFLATE can express (length 3–258, distance 1–32768), and the code lookups to return codes whose base is at most the value coded. | 3–6 bytes, end to end in the extended set |
 | The code-length builder: `huffman::build_lengths` with the tree, the heapsort and the length-limit repair (`verus/src/build_lengths.rs`, `limit_depths.rs`) | For **any alphabet** (DEFLATE's 19, 30 and 286 symbols included), any frequencies and any limit, the build succeeds exactly when it can: 2 or more symbols, a limit of 1–15 and no more used symbols than codes of that length. Then the lengths form a complete prefix code (Kraft sum exactly 1, the library's `is_complete`) within the limit, and the symbols with codes are exactly the used ones (symbols 0 and 1 when fewer than two are used). It never panics. | 3–6 symbols |
 | ZIP names: `zip::name_is_safe`, behind `validate_name` (`verus/src/name_is_safe.rs`) | For byte strings of every length, a name is accepted exactly when it meets the position-by-position rule of `validate_name_is_exactly_the_rule`, plus the 65,535-byte limit. | 8 bytes |
 
@@ -278,11 +281,10 @@ Verus checks every index, every arithmetic operation, every shift and every
 `debug_assert!`, and requires every loop to terminate. It allows either a
 32-bit or a 64-bit `usize`, so the proofs hold for both.
 
-What is *not* claimed: the decoder's output is not proved to be the
-stream's contents (that is the Kani round trips and zlib interop tests),
-and the builder is not proved to make the *shortest* code (its heapsort is
-proved to sort only up to 5 entries, by Kani). Any complete code within the
-limit is a valid DEFLATE code.
+What is *not* claimed:
+- That the decoder's output is the stream's contents, or that the encoder's output decodes to its input. Those rest on the Kani round trips, zlib interop, and the encoder's `verify` option.
+- That the builder makes the *shortest* code. Its heapsort is proved to sort only up to 5 entries, by Kani, and any complete code within the limit is a valid DEFLATE code.
+- That memory never runs out. `vstd` models growing a `Vec` as always succeeding, so an allocation failure, or a buffer passing `isize::MAX` bytes (which needs an input that large), is outside the proofs. The decoder's output limit bounds its allocations.
 
 - **The proofs are about a copy, checked to be the library's code.**
   Verus verifies code written inside its `verus!` macro and needs its own
@@ -290,10 +292,11 @@ limit is a valid DEFLATE code.
   Rust 1.83. So the proofs live in a separate crate, with a copy of the
   code. `.github/scripts/verus_drift.py` checks in CI that each copy, with
   its proof lines (marked `// @ghost`) removed, is the library's code token
-  for token. That covers 80 functions, methods, types and constants.
+  for token. That covers 167 functions, methods, types, constants and
+  statics.
   Comments and layout may differ; code may not. `verus/copies.txt` lists
   the pairs.
-- **The proofs reject bugs.** `.github/scripts/verus_mutants.py` plants 35
+- **The proofs reject bugs.** `.github/scripts/verus_mutants.py` plants 52
   one-line bugs in the copies, one at a time, and checks that each makes
   verification fail. Examples:
   - reading a byte past the end of the input;
@@ -301,32 +304,47 @@ limit is a valid DEFLATE code.
   - copying a match without making room for it;
   - accepting 289 code lengths;
   - ignoring the output limit;
+  - finding matches of 259 bytes, or one byte before the start of the data;
+  - hashing one bit too wide for the hash table;
+  - an encoder loop that never sees its last block, and so never ends;
   - stopping one unit short of a full code;
   - accepting NUL or `..` in a name.
 
   A specification that pinned nothing down, or a precondition that could
   never hold, would let them through.
-- **What is taken as given.** `verus/src/std_specs.rs` states three
-  standard-library facts Verus lacks: `u32::div_ceil` rounds up, and
-  `u16::reverse_bits` and `<[T]>::fill` return (the latter keeping the
-  length). The byte-order conversions `u64::from_le_bytes` and `to_le_bytes`
-  sit in two one-line helpers whose bodies are not verified. None of these
-  can panic.
-- **The fixed-code decoders.** They are constants built at compile time.
-  The library falls back to an empty decoder if building one fails, so the
-  constants cannot panic, and a compile-time assertion checks that the
-  fallback is never taken.
+- **What is taken as given.** `verus/src/std_specs.rs` states the facts
+  Verus lacks:
+  - `div_ceil` rounds up;
+  - `u32::from(bool)` is 0 or 1;
+  - `u16::reverse_bits` and `<[T]>::fill` return, the latter keeping the length;
+  - a byte slice has at most `isize::MAX` elements, which Rust guarantees.
+
+  The byte-order loads and stores (`from_le_bytes`, `to_le_bytes`,
+  `first_chunk`) sit in four one-line helpers whose bodies are not
+  verified. None of these can panic.
+- **The fixed codes.** The fixed-Huffman decoders and encoder tables are
+  constants built at compile time. The library falls back to an empty table
+  if building one fails, so the constants cannot panic, and compile-time
+  assertions check that the fallbacks are never taken.
 - **The code was rewritten for Verus, not changed.** The rewrites:
   - The length-limit repair and the code-length reader use index loops.
   - The name check indexes the name rather than taking a subslice, and spells out the drive-letter test.
   - The bit-by-bit Huffman walk uses `+` and `* 2` where it used `|` and `<<`, on values whose low bit is zero, so the results are the same.
   - The bit reader compares against the bytes left rather than computing an end position, and uses `wrapping_add` (what release builds did) for its 8-byte window.
-  - The byte-order conversions moved into the two helpers.
-  - `debug_assert!`s, closures and `?` stay as they were.
+  - The byte-order conversions moved into the helpers.
+  - The encoder:
+    - uses index loops instead of iterator chains (`zip`, `map`, `sum`, `rposition`, `chunks`);
+    - calls a helper instead of a closure that captured mutable state;
+    - names the factors of its size products, and writes the stored-block overhead as 40 bits rather than 3 + 5 + 32;
+    - computes the bit position modulo 2^64, which leaves its value modulo 8, all the size model uses, unchanged;
+    - keeps its history window with `copy_within` and `truncate` instead of `drain`.
+  - `debug_assert!`s and `?` stay as they were.
 
-  The old and new name checks agreed on 39 million short names, and the
-  test suite and Kani harnesses pass unchanged. Decompression speed on the
-  benchmark corpora is unchanged, within the noise of repeated runs.
+  Evidence that behaviour is unchanged:
+  - The old and new name checks agreed on 39 million short names.
+  - The old and new encoders produce byte-identical output on 1,200 combinations of corpus, input size, level, strategy and `verify`.
+  - The test suite and Kani harnesses pass unchanged.
+  - Compression and decompression speed on the benchmark corpora are unchanged, within the noise of repeated runs.
 
 ## Checking the proofs: coverage and mutation
 
@@ -457,10 +475,9 @@ The gaps, stated precisely:
 - **Most properties are bounded.** The Kani proofs cover all inputs *up
   to the sizes above*. Some hold for all inputs:
   - a few Kani harnesses that cover all values: CRC steps, the code tables and the ZIP bounds lemmas;
-  - the Verus proofs: decoder safety and termination, the code-length builder, and name validation.
+  - the Verus proofs: decoder and encoder safety and termination, the code-length builder, and name validation.
 
-  Everything else, the encoder's own safety on large inputs included, is
-  covered on large inputs by tests, not proofs. The code is written over
+  Everything else is covered on large inputs by tests, not proofs. The code is written over
   slices of any length, so the same code paths run on large inputs.
 - **The decoder's output is proven correct only piecewise.** Verus proves
   that it returns on every input without panicking, within its output

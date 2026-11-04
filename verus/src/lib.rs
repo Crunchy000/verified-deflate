@@ -13,6 +13,9 @@
 //! - `inflate`, with `bitio`, `huffman_decode`, `lz77`, `tables` and
 //!   `error`: the decoder returns on every input, without panicking, and
 //!   its output stays within the caller's limit.
+//! - `deflate`, with `lz77`, `bitio`, `build_lengths` and `tables`: the
+//!   encoder returns on every input, level and strategy, without
+//!   panicking, and so does the streaming encoder.
 //! - `std_specs`: the few standard-library functions taken as given.
 //!
 //! Run with the Verus release named in `.github/workflows/verus.yml`:
@@ -23,6 +26,7 @@
 
 pub mod bitio;
 pub mod build_lengths;
+pub mod deflate;
 pub mod error;
 pub mod huffman_decode;
 pub mod inflate;

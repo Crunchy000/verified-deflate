@@ -4,6 +4,13 @@
 //! [`BLOCK_TOKENS`] tokens. For each chunk the encoder computes the exact
 //! size of a stored, a fixed-Huffman and a dynamic-Huffman block and writes
 //! the smallest (or the one forced by [`Strategy`]).
+//!
+//! Verus proves (`verus/src/deflate.rs`) that compression returns without
+//! panicking for every input, level and strategy, and so does every sequence
+//! of calls to the streaming encoder.
+
+// Index loops rather than iterators, as the Verus copies in `verus/` need.
+#![allow(clippy::needless_range_loop)]
 
 use crate::bitio::{reverse_bits, BitWriter};
 use crate::huffman::{build_lengths, canonical_codes, HuffmanError, MAX_CODE_LEN};
@@ -67,7 +74,7 @@ pub fn compress(data: &[u8], level: u8) -> Vec<u8> {
 pub fn compress_with(data: &[u8], opts: &CompressOptions) -> Vec<u8> {
     let out = encode(data, opts);
     if opts.verify {
-        let ok = matches!(decompress_with_limit(&out, data.len()), Ok(ref d) if d.data == data);
+        let ok = matches!(decompress_with_limit(&out, data.len()), Ok(ref d) if d.data.as_slice() == data);
         if !ok {
             let mut w = BitWriter::with_capacity(data.len() + data.len() / MAX_STORED_BLOCK * 5 + 5);
             write_stored(&mut w, data, true);
@@ -202,7 +209,8 @@ impl StreamEncoder {
         }
         // Keep the last window of input as history.
         if len > WINDOW {
-            self.buf.drain(..len - WINDOW);
+            self.buf.copy_within(len - WINDOW.., 0);
+            self.buf.truncate(WINDOW);
         }
         self.hist = self.buf.len();
     }
@@ -265,12 +273,15 @@ impl<const N: usize> CodeTable<N> {
 
 pub(crate) const FIXED_LIT: CodeTable<288> = match CodeTable::from_lengths(fixed_litlen_lengths()) {
     Ok(t) => t,
-    Err(_) => panic!("fixed literal/length code is invalid"),
+    Err(_) => CodeTable { code: [0; 288], len: [0; 288] },
 };
 pub(crate) const FIXED_DIST: CodeTable<32> = match CodeTable::from_lengths(FIXED_DIST_LENGTHS) {
     Ok(t) => t,
-    Err(_) => panic!("fixed distance code is invalid"),
+    Err(_) => CodeTable { code: [0; 32], len: [0; 32] },
 };
+// The fixed codes are valid, so the fallbacks above are never taken:
+// checked when the crate is compiled.
+const _: () = assert!(FIXED_LIT.len[0] == 8 && FIXED_DIST.len[0] == 5);
 
 fn write_block(w: &mut BitWriter, tokens: &[Token], span: &[u8], last: bool, strategy: Strategy) {
     match strategy {
@@ -288,7 +299,10 @@ fn write_block(w: &mut BitWriter, tokens: &[Token], span: &[u8], last: bool, str
             }
             let fixed = stats.fixed_bits();
             let stored = stored_bits(w.bit_len(), span.len());
-            let dynamic = plan.as_ref().map_or(u64::MAX, |p| p.bits);
+            let dynamic = match &plan {
+                Some(p) => p.bits,
+                None => u64::MAX,
+            };
             match plan {
                 Some(p) if dynamic < fixed && dynamic < stored => write_dynamic(w, tokens, &p, last),
                 _ if fixed <= stored => write_fixed(w, tokens, last),
@@ -311,10 +325,11 @@ fn write_stored_in(w: &mut BitWriter, data: &[u8], last: bool, max: usize) {
         write_stored_chunk(w, data, last);
         return;
     }
-    let mut chunks = data.chunks(max).peekable();
-    while let Some(chunk) = chunks.next() {
-        let is_last = last && chunks.peek().is_none();
-        write_stored_chunk(w, chunk, is_last);
+    let mut start = 0;
+    while start < data.len() {
+        let end = if data.len() - start > max { start + max } else { data.len() };
+        write_stored_chunk(w, &data[start..end], last && end == data.len());
+        start = end;
     }
 }
 
@@ -337,8 +352,10 @@ pub(crate) fn stored_bits(bit_pos: u64, len: usize) -> u64 {
 /// [`stored_bits`] for blocks of at most `max` bytes.
 fn stored_bits_in(bit_pos: u64, len: usize, max: usize) -> u64 {
     let chunks = if len == 0 { 1 } else { len.div_ceil(max) } as u64;
-    let first_pad = (8 - (bit_pos + 3) % 8) % 8;
-    3 + first_pad + 32 + (chunks - 1) * (3 + 5 + 32) + 8 * len as u64
+    let first_pad = (8 - (bit_pos % 8 + 3) % 8) % 8;
+    // Each further block: 3 header bits, up to 5 bits of padding (the
+    // header starts byte-aligned after a stored block), and LEN and NLEN.
+    3 + first_pad + 32 + (chunks - 1) * 40 + 8 * len as u64
 }
 
 fn write_fixed(w: &mut BitWriter, tokens: &[Token], last: bool) {
@@ -353,8 +370,8 @@ fn write_tokens<const L: usize, const D: usize>(
     lit: &CodeTable<L>,
     dist: &CodeTable<D>,
 ) {
-    for t in tokens {
-        match *t {
+    for i in 0..tokens.len() {
+        match tokens[i] {
             Token::Literal(b) => lit.put(w, b as usize),
             Token::Match { len, dist: d } => {
                 let (len, d) = (len as usize, d as usize);
@@ -380,8 +397,8 @@ struct BlockStats {
 impl BlockStats {
     fn new(tokens: &[Token]) -> Self {
         let mut s = Self { lit: [0; NUM_LITLEN], dist: [0; NUM_DIST], extra_bits: 0 };
-        for t in tokens {
-            match *t {
+        for i in 0..tokens.len() {
+            match tokens[i] {
                 Token::Literal(b) => s.lit[b as usize] += 1,
                 Token::Match { len, dist } => {
                     let lc = length_code(len as usize);
@@ -398,14 +415,25 @@ impl BlockStats {
     }
 
     /// Bits for the block body (symbols, extra bits, end-of-block).
-    fn body_bits(&self, lit_len: &[u8], dist_len: &[u8]) -> u64 {
-        let lit: u64 = self.lit.iter().zip(lit_len).map(|(&f, &l)| u64::from(f) * u64::from(l)).sum();
-        let dist: u64 = self.dist.iter().zip(dist_len).map(|(&f, &l)| u64::from(f) * u64::from(l)).sum();
-        lit + dist + self.extra_bits
+    fn body_bits(&self, lit_len: &[u8; NUM_LITLEN], dist_len: &[u8; NUM_DIST]) -> u64 {
+        let mut bits = self.extra_bits;
+        for i in 0..NUM_LITLEN {
+            let (f, l) = (u64::from(self.lit[i]), u64::from(lit_len[i]));
+            bits += f * l;
+        }
+        for i in 0..NUM_DIST {
+            let (f, l) = (u64::from(self.dist[i]), u64::from(dist_len[i]));
+            bits += f * l;
+        }
+        bits
     }
 
     fn fixed_bits(&self) -> u64 {
-        3 + self.body_bits(&FIXED_LIT.len, &FIXED_DIST.len)
+        let mut dist_len = [0u8; NUM_DIST];
+        dist_len.copy_from_slice(&FIXED_DIST.len[..NUM_DIST]);
+        let mut lit_len = [0u8; NUM_LITLEN];
+        lit_len.copy_from_slice(&FIXED_LIT.len[..NUM_LITLEN]);
+        3 + self.body_bits(&lit_len, &dist_len)
     }
 }
 
@@ -427,7 +455,8 @@ pub(crate) fn rle_code_lengths(lengths: &[u8], out: &mut [ClToken]) -> usize {
     let mut n = 0;
     let mut value = 0u8;
     let mut run = 0usize;
-    for &v in lengths {
+    for i in 0..lengths.len() {
+        let v = lengths[i];
         if run > 0 && v == value {
             run += 1;
             continue;
@@ -447,38 +476,41 @@ pub(crate) fn rle_code_lengths(lengths: &[u8], out: &mut [ClToken]) -> usize {
 /// Emits a run of `run` (at least one) copies of the code length `v` at
 /// `out[*n..]`, advancing `*n`.
 fn emit_run(v: u8, run: usize, out: &mut [ClToken], n: &mut usize) {
-    let mut put = |sym: u8, extra: u8| {
-        out[*n] = ClToken { sym, extra };
-        *n += 1;
-    };
     if v == 0 {
         let mut r = run;
         while r >= 11 {
             let k = if r < 138 { r } else { 138 };
-            put(18, (k - 11) as u8);
+            put_cl(out, n, 18, (k - 11) as u8);
             r -= k;
         }
         if r >= 3 {
-            put(17, (r - 3) as u8);
+            put_cl(out, n, 17, (r - 3) as u8);
             r = 0;
         }
         while r > 0 {
-            put(0, 0);
+            put_cl(out, n, 0, 0);
             r -= 1;
         }
     } else {
-        put(v, 0);
+        put_cl(out, n, v, 0);
         let mut r = run - 1;
         while r >= 3 {
             let k = if r < 6 { r } else { 6 };
-            put(16, (k - 3) as u8);
+            put_cl(out, n, 16, (k - 3) as u8);
             r -= k;
         }
         while r > 0 {
-            put(v, 0);
+            put_cl(out, n, v, 0);
             r -= 1;
         }
     }
+}
+
+/// Writes one code-length token at `out[*n]`, advancing `*n`.
+#[inline]
+fn put_cl(out: &mut [ClToken], n: &mut usize, sym: u8, extra: u8) {
+    out[*n] = ClToken { sym, extra };
+    *n += 1;
 }
 
 /// Everything needed to write one dynamic block, plus its exact size.
@@ -494,8 +526,16 @@ struct DynamicPlan {
     bits: u64,
 }
 
+/// Index of the last nonzero entry of `l`, or 0 if there is none.
 fn last_nonzero(l: &[u8]) -> usize {
-    l.iter().rposition(|&x| x != 0).unwrap_or(0)
+    let mut i = l.len();
+    while i > 0 {
+        i -= 1;
+        if l[i] != 0 {
+            return i;
+        }
+    }
+    0
 }
 
 fn plan_dynamic(stats: &BlockStats) -> Option<DynamicPlan> {
@@ -511,16 +551,22 @@ fn plan_dynamic(stats: &BlockStats) -> Option<DynamicPlan> {
     let mut cl_tokens = [ClToken { sym: 0, extra: 0 }; NUM_LITLEN + NUM_DIST];
     let cl_count = rle_code_lengths(&all[..hlit + hdist], &mut cl_tokens);
     let mut cl_freq = [0u32; NUM_CODELEN];
-    for t in &cl_tokens[..cl_count] {
-        cl_freq[t.sym as usize] += 1;
+    for i in 0..cl_count {
+        cl_freq[cl_tokens[i].sym as usize] += 1;
     }
     let mut cl_len = [0u8; NUM_CODELEN];
     build_lengths(&cl_freq, MAX_CODELEN_LEN, &mut cl_len).ok()?;
-    let hclen = CODELEN_ORDER.iter().rposition(|&s| cl_len[s] != 0).map_or(0, |i| i + 1).max(4);
-    let cl_bits: u64 = cl_tokens[..cl_count]
-        .iter()
-        .map(|t| u64::from(cl_len[t.sym as usize]) + u64::from(codelen_extra_bits(t.sym)))
-        .sum();
+    // Code lengths sent: up to the last nonzero one in transmission order,
+    // and at least four.
+    let mut hclen = NUM_CODELEN;
+    while hclen > 4 && cl_len[CODELEN_ORDER[hclen - 1]] == 0 {
+        hclen -= 1;
+    }
+    let mut cl_bits = 0u64;
+    for i in 0..cl_count {
+        let t = cl_tokens[i];
+        cl_bits += u64::from(cl_len[t.sym as usize]) + u64::from(codelen_extra_bits(t.sym));
+    }
     let bits = 3 + 5 + 5 + 4 + 3 * hclen as u64 + cl_bits + stats.body_bits(&lit_len, &dist_len);
     Some(DynamicPlan {
         lit: CodeTable::from_lengths(lit_len).ok()?,
@@ -540,10 +586,11 @@ fn write_dynamic(w: &mut BitWriter, tokens: &[Token], p: &DynamicPlan, last: boo
     w.write_bits((p.hlit - 257) as u32, 5);
     w.write_bits((p.hdist - 1) as u32, 5);
     w.write_bits((p.hclen - 4) as u32, 4);
-    for &sym in &CODELEN_ORDER[..p.hclen] {
-        w.write_bits(u32::from(p.codelen.len[sym]), 3);
+    for i in 0..p.hclen {
+        w.write_bits(u32::from(p.codelen.len[CODELEN_ORDER[i]]), 3);
     }
-    for t in &p.cl_tokens[..p.cl_count] {
+    for i in 0..p.cl_count {
+        let t = p.cl_tokens[i];
         p.codelen.put(w, t.sym as usize);
         w.write_bits(u32::from(t.extra), codelen_extra_bits(t.sym));
     }

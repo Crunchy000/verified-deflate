@@ -17,9 +17,11 @@ The pairs to check are listed in verus/copies.txt, one per line:
     <production file> <item> <verus file>
 where <item> is a function (`name`), a method (`Type::name`, looked up in
 the `impl` block for `Type`), or a type or constant (`struct:Name`,
-`enum:Name`, `const:NAME`, `const:Type::NAME`). Attributes and visibility
+`enum:Name`, `const:NAME`, `const:Type::NAME`, `static:NAME`). A method of a
+trait impl is looked up as `Type::name` too. Attributes and visibility
 before an item are not compared. A constant that Verus needs as
-`exec const NAME: T ensures ... { body }` counts as `const NAME: T = body;`.
+`exec const NAME: T ensures ... { body }` counts as `const NAME: T = body;`,
+and likewise for `exec static`.
 
 usage: verus_drift.py [repository root]
 """
@@ -115,14 +117,14 @@ def impl_range(toks, ty):
                 j += 1
                 if depth == 0:
                     break
-        if toks[j] == ty:
-            k = j
-            while toks[k] != "{":
-                if toks[k] == "for":
-                    break
-                k += 1
-            if toks[k] == "{":
-                return k, block_end(toks, k)
+        k = j
+        while toks[k] not in ("{", "for"):
+            k += 1
+        self_ty = toks[k + 1] if toks[k] == "for" else toks[j]
+        while toks[k] != "{":
+            k += 1
+        if self_ty == ty:
+            return k, block_end(toks, k)
     raise ValueError(f"impl {ty} not found")
 
 
@@ -157,12 +159,12 @@ def type_item(toks, kind, name):
     raise ValueError(f"{kind} {name} not found")
 
 
-def const_item(toks, name):
-    """Tokens of `const NAME: T = value;`, reading the Verus form
-    `exec const NAME: T { value }` as the same thing."""
+def const_item(toks, name, keyword="const"):
+    """Tokens of `const NAME: T = value;` (or `static`), reading the Verus
+    form `exec const NAME: T { value }` as the same thing."""
     toks, name = scope(toks, name)
     for i in range(len(toks) - 1):
-        if toks[i] == "const" and toks[i + 1] == name and (i == 0 or toks[i - 1] != "fn"):
+        if toks[i] == keyword and toks[i + 1] == name and (i == 0 or toks[i - 1] != "fn"):
             j, depth = i, 0
             while depth or toks[j] not in ("=", "{"):
                 depth += OPEN.get(toks[j], 0)
@@ -184,8 +186,8 @@ def item(toks, spec):
         kind = ""
     if kind in ("struct", "enum"):
         return type_item(toks, kind, name)
-    if kind == "const":
-        return const_item(toks, name)
+    if kind in ("const", "static"):
+        return const_item(toks, name, kind)
     return function(toks, spec)
 
 
@@ -199,7 +201,7 @@ def main(root):
     for prod_file, name, verus_file in pairs:
         prod = item(tokens(open(os.path.join(root, prod_file)).read()), name)
         copy_toks = unname_return(tokens(strip_ghost(open(os.path.join(root, verus_file)).read())))
-        copy = item([t for i, t in enumerate(copy_toks) if not (t == "exec" and copy_toks[i + 1:i + 2] == ["const"])], name)
+        copy = item([t for i, t in enumerate(copy_toks) if not (t == "exec" and copy_toks[i + 1:i + 2] in (["const"], ["static"]))], name)
         if prod == copy:
             print(f"ok      {name}: {verus_file} matches {prod_file} ({len(prod)} tokens)")
             continue

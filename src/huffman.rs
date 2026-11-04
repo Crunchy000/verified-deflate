@@ -93,7 +93,7 @@ pub const fn canonical_codes(lengths: &[u8], codes: &mut [u16]) -> Result<(), Hu
     let mut code = 0u32;
     bits = 1;
     while bits <= MAX_CODE_LEN {
-        code = (code + bl_count[bits - 1]) << 1;
+        code = (code + bl_count[bits - 1]) * 2;
         next[bits] = code;
         bits += 1;
     }

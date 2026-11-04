@@ -5,6 +5,15 @@ use vstd::prelude::*;
 
 verus! {
 
+/// Shortest match DEFLATE can express.
+pub const MIN_MATCH: usize = 3;
+
+/// Longest match DEFLATE can express.
+pub const MAX_MATCH: usize = 258;
+
+/// Largest match distance DEFLATE can express.
+pub const MAX_DISTANCE: usize = 32768;
+
 /// Literal/length symbol that ends a block.
 pub const END_OF_BLOCK: usize = 256;
 
@@ -49,7 +58,12 @@ pub proof fn lemma_tables()
         forall|i: int| 0 <= i < 30 ==> 1 <= #[trigger] DIST_BASE@[i] <= 24577,
         forall|i: int| 0 <= i < 30 ==> #[trigger] DIST_EXTRA@[i] <= 13,
         forall|i: int| 0 <= i < 19 ==> #[trigger] CODELEN_ORDER@[i] < 19,
+        LENGTH_BASE@[0] == 3,
+        LENGTH_BASE@[28] == 258,
+        DIST_BASE@[0] == 1,
 {
+    assert(LENGTH_BASE@ =~= seq![3u16, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258]);
+    assert(DIST_BASE@ =~= seq![1u16, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577]);
     assert forall|i: int| 0 <= i < 29 implies #[trigger] LENGTH_BASE@[i] <= 258 && LENGTH_EXTRA@[i] <= 5 by {
         assert(LENGTH_BASE@ =~= seq![3u16, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258]);
         assert(LENGTH_EXTRA@ =~= seq![0u8, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0]);
@@ -98,6 +112,162 @@ pub const fn fixed_litlen_lengths() -> [u8; 288] {
         i += 1;
     }
     l
+}
+
+/// `LEN_CODE[len - 3]` is the length-code index (0..=28) for `len`.
+exec static LEN_CODE: [u8; 256]
+    ensures // @ghost
+        forall|i: int| // @ghost
+            0 <= i < 256 ==> #[trigger] LEN_CODE@[i] < 29 && LENGTH_BASE@[LEN_CODE@[i] as int] <= i + 3, // @ghost
+{
+    build_len_code()
+}
+
+/// zlib-style two-level distance lookup.
+exec static DIST_CODE: [u8; 512]
+    ensures // @ghost
+        forall|i: int| 0 <= i < 512 ==> #[trigger] DIST_CODE@[i] < 30, // @ghost
+        forall|i: int| 0 <= i < 256 ==> #[trigger] DIST_BASE@[DIST_CODE@[i] as int] <= i + 1, // @ghost
+        forall|i: int| // @ghost
+            0 <= i < 256 ==> #[trigger] DIST_BASE@[DIST_CODE@[256 + i] as int] <= i * 128 + 1, // @ghost
+{
+    build_dist_code()
+}
+
+const fn len_code_by_search(len: usize) -> (r: u8)
+    requires // @ghost
+        len >= 3, // @ghost
+    ensures // @ghost
+        r < 29, // @ghost
+        LENGTH_BASE@[r as int] <= len, // @ghost
+{
+    proof { // @ghost-begin
+        lemma_tables();
+    } // @ghost-end
+    // 258 has its own code (285); every other length uses the last base ≤ len.
+    if len == MAX_MATCH {
+        return 28;
+    }
+    let mut c = 0;
+    while c + 1 < 28 && LENGTH_BASE[c + 1] as usize <= len
+        invariant // @ghost
+            c < 28, // @ghost
+            LENGTH_BASE@[c as int] <= len, // @ghost
+        decreases 28 - c, // @ghost
+    {
+        c += 1;
+    }
+    c as u8
+}
+
+const fn dist_code_by_search(dist: usize) -> (r: u8)
+    requires // @ghost
+        dist >= 1, // @ghost
+    ensures // @ghost
+        r < 30, // @ghost
+        DIST_BASE@[r as int] <= dist, // @ghost
+{
+    proof { // @ghost-begin
+        lemma_tables();
+    } // @ghost-end
+    let mut c = 0;
+    while c + 1 < 30 && DIST_BASE[c + 1] as usize <= dist
+        invariant // @ghost
+            c < 30, // @ghost
+            DIST_BASE@[c as int] <= dist, // @ghost
+        decreases 30 - c, // @ghost
+    {
+        c += 1;
+    }
+    c as u8
+}
+
+const fn build_len_code() -> (r: [u8; 256])
+    ensures // @ghost
+        forall|i: int| 0 <= i < 256 ==> #[trigger] r@[i] < 29 && LENGTH_BASE@[r@[i] as int] <= i + 3, // @ghost
+{
+    let mut t = [0u8; 256];
+    let mut i = 0;
+    while i < 256
+        invariant // @ghost
+            i <= 256, // @ghost
+            forall|j: int| 0 <= j < 256 ==> #[trigger] t@[j] < 29, // @ghost
+            forall|j: int| 0 <= j < i ==> #[trigger] LENGTH_BASE@[t@[j] as int] <= j + 3, // @ghost
+        decreases 256 - i, // @ghost
+    {
+        t[i] = len_code_by_search(i + MIN_MATCH);
+        i += 1;
+    }
+    t
+}
+
+const fn build_dist_code() -> (r: [u8; 512])
+    ensures // @ghost
+        forall|i: int| 0 <= i < 512 ==> #[trigger] r@[i] < 30, // @ghost
+        forall|i: int| 0 <= i < 256 ==> #[trigger] DIST_BASE@[r@[i] as int] <= i + 1, // @ghost
+        forall|i: int| 0 <= i < 256 ==> #[trigger] DIST_BASE@[r@[256 + i] as int] <= i * 128 + 1, // @ghost
+{
+    let mut t = [0u8; 512];
+    let mut i = 0;
+    while i < 256
+        invariant // @ghost
+            i <= 256, // @ghost
+            forall|j: int| 0 <= j < 512 ==> #[trigger] t@[j] < 30, // @ghost
+            forall|j: int| 0 <= j < i ==> #[trigger] DIST_BASE@[t@[j] as int] <= j + 1, // @ghost
+            forall|j: int| 0 <= j < i ==> #[trigger] DIST_BASE@[t@[256 + j] as int] <= j * 128 + 1, // @ghost
+        decreases 256 - i, // @ghost
+    {
+        proof { // @ghost-begin
+            let k = i;
+            assert(k << 7 == k * 128) by (bit_vector)
+                requires
+                    k < 256,
+            ;
+        } // @ghost-end
+        t[i] = dist_code_by_search(i + 1);
+        t[256 + i] = dist_code_by_search((i << 7) + 1);
+        i += 1;
+    }
+    t
+}
+
+/// Length-code index (0..=28) for a match length in `3..=258`.
+#[inline]
+pub fn length_code(len: usize) -> (r: usize)
+    requires // @ghost
+        3 <= len <= 258, // @ghost
+    ensures // @ghost
+        r < 29, // @ghost
+        LENGTH_BASE@[r as int] <= len, // @ghost
+{
+    LEN_CODE[len - MIN_MATCH] as usize
+}
+
+/// Distance code (0..=29) for a distance in `1..=32768`.
+#[inline]
+pub fn distance_code(dist: usize) -> (r: usize)
+    requires // @ghost
+        1 <= dist <= 32768, // @ghost
+    ensures // @ghost
+        r < 30, // @ghost
+        DIST_BASE@[r as int] <= dist, // @ghost
+{
+    let d = dist - 1;
+    proof { // @ghost-begin
+        assert(d >> 7 <= 255) by (bit_vector)
+            requires
+                d <= 32767,
+        ;
+        assert((d >> 7) * 128 <= d) by (bit_vector)
+            requires
+                d <= 32767,
+        ;
+    } // @ghost-end
+    if d < 256 {
+        DIST_CODE[d] as usize
+    } else {
+        DIST_CODE[256 + (d >> 7)] as usize
+    }
 }
 
 } // verus!
