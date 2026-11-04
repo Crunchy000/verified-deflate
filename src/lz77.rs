@@ -531,6 +531,31 @@ pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
 mod tests {
     use super::*;
 
+    #[test]
+    fn levels_follow_zlibs_configuration_table() {
+        // zlib's deflate.c configuration_table: good, lazy, nice, chain;
+        // levels 1-3 are greedy (deflate_fast), 4-9 lazy (deflate_slow).
+        let zlib: [(usize, usize, usize, usize); 9] = [
+            (4, 4, 8, 4),
+            (4, 5, 16, 8),
+            (4, 6, 32, 32),
+            (4, 4, 16, 16),
+            (8, 16, 32, 32),
+            (8, 16, 128, 128),
+            (8, 32, 128, 256),
+            (32, 128, 258, 1024),
+            (32, 258, 258, 4096),
+        ];
+        for (i, &(good, lazy, nice, chain)) in zlib.iter().enumerate() {
+            let level = i as u8 + 1;
+            let c = MatchConfig::for_level(level);
+            assert_eq!((c.good_len, c.max_lazy, c.nice_len, c.max_chain), (good, lazy, nice, chain), "level {level}");
+            assert_eq!(c.lazy, level >= 4, "level {level}");
+            assert!(!c.rle && c.window_bits == 15);
+        }
+        assert_eq!(MatchConfig::for_level(0), MatchConfig::for_level(1));
+    }
+
     fn tokens_for(data: &[u8], level: u8) -> Vec<Token> {
         let mut m = Matcher::new(MatchConfig::for_level(level));
         let mut out = vec![Token::Literal(0); data.len()];

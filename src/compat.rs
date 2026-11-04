@@ -316,3 +316,76 @@ pub fn deflate_bytes_gzip_conf<O: Into<CompressionOptions>>(
 pub fn deflate_bytes_gzip(input: &[u8]) -> Vec<u8> {
     deflate_bytes_gzip_conf(input, Compression::Default, GzBuilder::new())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn opts(checks: u16, lazy_if_less_than: u16, matching_type: MatchingType) -> CompressionOptions {
+        CompressionOptions {
+            max_hash_checks: checks,
+            lazy_if_less_than,
+            matching_type,
+            special: SpecialOptions::Normal,
+        }
+    }
+
+    /// The presets mean what `deflate` documents.
+    #[test]
+    fn presets_map_to_the_documented_search() {
+        let (rle, _) = CompressionOptions::rle().engine();
+        assert!(rle.rle, "rle(): run-length matching only");
+        let (h, _) = CompressionOptions::huffman_only().engine();
+        assert!(!h.rle && h.max_chain == 0, "huffman_only(): no matches at all");
+        let (f, _) = CompressionOptions::fast().engine();
+        assert!(!f.rle && f.max_chain == 1 && !f.lazy && f.max_lazy == MAX_MATCH, "fast(): one check, greedy");
+        let (d, _) = CompressionOptions::default().engine();
+        assert!(!d.rle && d.max_chain == 128 && d.lazy && d.max_lazy == 32, "default");
+        let (b, _) = CompressionOptions::high().engine();
+        assert!(!b.rle && b.max_chain == 1768 && b.lazy && b.max_lazy == 128, "high()");
+        for c in [d, b] {
+            // `max_hash_checks` alone bounds the search.
+            assert_eq!((c.nice_len, c.good_len), (MAX_MATCH, MAX_MATCH + 1));
+        }
+        assert_eq!(CompressionOptions::from(Compression::Fast), CompressionOptions::fast());
+        assert_eq!(CompressionOptions::from(Compression::Default), CompressionOptions::default());
+        assert_eq!(CompressionOptions::from(Compression::Best), CompressionOptions::high());
+    }
+
+    #[test]
+    fn options_map_to_the_search() {
+        // Checks above the chain length act as the chain length.
+        assert_eq!(opts(u16::MAX, 32, MatchingType::Lazy).engine().0.max_chain, 32 * 1024);
+        assert_eq!(opts(32 * 1024, 32, MatchingType::Lazy).engine().0.max_chain, 32 * 1024);
+        assert_eq!(opts(7, 32, MatchingType::Lazy).engine().0.max_chain, 7);
+        // Lazy matching below the threshold; 0 means never; 258 and above
+        // means always.
+        let c = opts(10, 5, MatchingType::Lazy).engine().0;
+        assert!(c.lazy && c.max_lazy == 5);
+        let c = opts(10, 0, MatchingType::Lazy).engine().0;
+        assert!(!c.lazy && c.max_lazy == MAX_MATCH);
+        let c = opts(10, 1000, MatchingType::Lazy).engine().0;
+        assert!(c.lazy && c.max_lazy == MAX_MATCH + 1);
+        let c = opts(10, 5, MatchingType::Greedy).engine().0;
+        assert!(!c.lazy && c.max_lazy == MAX_MATCH);
+        // With no hash checks: Lazy means RLE, Greedy means Huffman only.
+        let c = opts(0, 5, MatchingType::Lazy).engine().0;
+        assert!(c.rle);
+        let c = opts(0, 5, MatchingType::Greedy).engine().0;
+        assert!(!c.rle && c.max_chain == 0 && !c.lazy);
+        // Special options pick the block type.
+        for (special, strategy) in [
+            (SpecialOptions::Normal, Strategy::Auto),
+            (SpecialOptions::_ForceFixed, Strategy::Fixed),
+            (SpecialOptions::_ForceStored, Strategy::Stored),
+        ] {
+            assert_eq!(CompressionOptions { special, ..CompressionOptions::default() }.engine().1, strategy);
+        }
+    }
+
+    #[test]
+    fn matching_type_display() {
+        assert_eq!(MatchingType::Greedy.to_string(), "Greedy matching");
+        assert_eq!(MatchingType::Lazy.to_string(), "Lazy matching");
+    }
+}

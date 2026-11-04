@@ -308,11 +308,12 @@ mod tests {
             .comment("hi")
             .os(FileSystemType::Apple)
             .into_header_xfl(ExtraFlags::MaximumCompression);
-        let mut want = vec![0x1f, 0x8b, 8, FEXTRA | FNAME | FCOMMENT, 1, 2, 3, 4, 2, 19, 2, 0, 9, 9];
+        // RFC 1952 flag bits: FHCRC 0x02, FEXTRA 0x04, FNAME 0x08, FCOMMENT 0x10.
+        let mut want = vec![0x1f, 0x8b, 8, 0x04 | 0x08 | 0x10, 1, 2, 3, 4, 2, 19, 2, 0, 9, 9];
         want.extend_from_slice(b"a.txt\0hi\0");
         assert_eq!(h, want);
         let c = GzBuilder::new().os(FileSystemType::Fat).into_header_with_checksum();
-        assert_eq!(c[3], FHCRC);
+        assert_eq!(c[3], 0x02);
         assert_eq!(&c[10..], &(crc32(&c[..10]) as u16).to_le_bytes());
     }
 
@@ -324,11 +325,50 @@ mod tests {
 
     #[test]
     fn enum_values_round_trip() {
+        // RFC 1952 defines operating systems 0-13; gzip-header adds 14-19.
         for v in 0..=255u8 {
             let t = FileSystemType::from_u8(v);
-            assert!(t.as_u8() == v || t == FileSystemType::Unknown);
+            if v <= 19 || v == 255 {
+                assert_eq!(t.as_u8(), v);
+            } else {
+                assert_eq!(t, FileSystemType::Unknown);
+            }
             let x = ExtraFlags::from_u8(v);
-            assert!(x.as_u8() == v || x == ExtraFlags::Default);
+            if v == 2 || v == 4 {
+                assert_eq!(x.as_u8(), v);
+            } else {
+                assert_eq!(x, ExtraFlags::Default);
+            }
+        }
+        assert_eq!(FileSystemType::from_u8(3), FileSystemType::Unix);
+        assert_eq!(FileSystemType::from_u8(11), FileSystemType::NTFS);
+        assert_eq!(ExtraFlags::from_u8(2), ExtraFlags::MaximumCompression);
+        assert_eq!(ExtraFlags::from_u8(4), ExtraFlags::FastestCompression);
+    }
+
+    #[test]
+    fn descriptions_are_distinct() {
+        let mut seen = std::collections::HashSet::new();
+        for v in (0..=19u8).chain([255]) {
+            let d = FileSystemType::from_u8(v).to_string();
+            assert!(!d.is_empty() && seen.insert(d), "{v}");
+        }
+        for x in [ExtraFlags::Default, ExtraFlags::MaximumCompression, ExtraFlags::FastestCompression] {
+            let d = x.to_string();
+            assert!(!d.is_empty() && seen.insert(d));
+        }
+        assert_eq!(FileSystemType::Unix.to_string(), "Unix type system/Linux");
+    }
+
+    #[test]
+    fn extra_flags_and_default_os() {
+        let h = GzBuilder::new().xfl(ExtraFlags::FastestCompression).os(FileSystemType::Unix).into_header();
+        assert_eq!(h[8], 4);
+        let h = GzBuilder::new().into_header();
+        if cfg!(target_os = "linux") {
+            assert_eq!(h[9], FileSystemType::Unix.as_u8());
+        } else if cfg!(target_os = "macos") {
+            assert_eq!(h[9], FileSystemType::Apple.as_u8());
         }
     }
 }

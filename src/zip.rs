@@ -129,6 +129,18 @@ fn field32(n: usize) -> Result<u32, ZipError> {
     }
 }
 
+/// Refuses an entry whose local header, name and data would end the
+/// archive at an offset that does not fit a 32-bit field.
+fn check_entry_end(out_len: usize, name_len: usize, payload_len: usize) -> Result<(), ZipError> {
+    field32(out_len + LocalHeader::SIZE + name_len + payload_len).map(|_| ())
+}
+
+/// Refuses an archive whose end record would end at an offset that does
+/// not fit a 32-bit field.
+fn check_archive_end(out_len: usize) -> Result<(), ZipError> {
+    field32(out_len + EndOfCentralDirectory::SIZE).map(|_| ())
+}
+
 /// A timestamp in MS-DOS format (two-second resolution, years 1980-2107).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct DosDateTime {
@@ -585,7 +597,7 @@ impl ZipWriter {
         let local_offset = field32(self.out.len())?;
         let compressed_size = field32(payload.len())?;
         let uncompressed_size = field32(uncompressed)?;
-        field32(self.out.len() + LocalHeader::SIZE + name.len() + payload.len())?;
+        check_entry_end(self.out.len(), name.len(), payload.len())?;
         let flags = if name.is_ascii() { 0 } else { FLAG_UTF8 };
         let (mod_time, mod_date) = modified.to_dos();
         let name_len = name.len() as u16;
@@ -686,7 +698,7 @@ impl ZipWriter {
             self.out.extend_from_slice(name);
         }
         let cd_size = field32(self.out.len() - cd_offset as usize)?;
-        field32(self.out.len() + EndOfCentralDirectory::SIZE)?;
+        check_archive_end(self.out.len())?;
         let n = self.central.len() as u16;
         EndOfCentralDirectory {
             disk: 0,
@@ -930,6 +942,84 @@ mod tests {
         for good in ["a", "a/b", "dir/", "a.b/c..d", "...", "ab:c"] {
             assert!(validate_name(good).is_ok(), "{good:?} rejected");
         }
+        // Names must fit the 16-bit length field.
+        assert!(validate_name(&"a".repeat(0xFFFF)).is_ok());
+        assert!(validate_name(&"a".repeat(0x10000)).is_err());
+    }
+
+    #[test]
+    fn errors_describe_themselves() {
+        use std::error::Error;
+        let inner = InflateError::InvalidSymbol;
+        let e = ZipError::from(inner);
+        assert_eq!(e, ZipError::Inflate(inner));
+        assert_eq!(e.to_string(), format!("corrupt compressed data: {inner}"));
+        assert_eq!(e.source().map(|s| s.to_string()), Some(inner.to_string()));
+        assert!(ZipError::Truncated.source().is_none());
+        assert_eq!(ZipError::NotFound.to_string(), "no such entry");
+        let crc = ZipError::CrcMismatch { expected: 1, actual: 2 };
+        assert_eq!(crc.to_string(), "CRC mismatch: archive says 00000001, data is 00000002");
+    }
+
+    #[test]
+    fn empty_and_non_empty_archives() {
+        let empty = ZipWriter::new().finish().unwrap();
+        let a = ZipArchive::parse(&empty).unwrap();
+        assert!(a.is_empty());
+        assert_eq!(a.len(), 0);
+        let mut w = ZipWriter::new();
+        w.add_file("x", b"1", &FileOptions::default()).unwrap();
+        let one = w.finish().unwrap();
+        let a = ZipArchive::parse(&one).unwrap();
+        assert!(!a.is_empty() && a.len() == 1);
+    }
+
+    #[test]
+    fn multi_disk_and_zip64_archives_are_refused() {
+        let mut w = ZipWriter::new();
+        w.add_file("f", b"data", &FileOptions { level: 0, ..FileOptions::default() }).unwrap();
+        let zip = w.finish().unwrap();
+        assert!(ZipArchive::parse(&zip).is_ok());
+        let e = zip.len() - EndOfCentralDirectory::SIZE;
+        let cd = u32::from_le_bytes(zip[e + 16..e + 20].try_into().unwrap()) as usize;
+        let patch = |at: usize, bytes: &[u8]| {
+            let mut z = zip.clone();
+            z[at..at + bytes.len()].copy_from_slice(bytes);
+            ZipArchive::parse(&z).err()
+        };
+        // End record: this disk, the directory's disk, entry counts, sizes.
+        assert_eq!(patch(e + 4, &[1, 0]), Some(ZipError::MultiDisk));
+        assert_eq!(patch(e + 6, &[1, 0]), Some(ZipError::MultiDisk));
+        assert_eq!(patch(e + 8, &[2, 0]), Some(ZipError::MultiDisk));
+        assert_eq!(patch(e + 8, &[0xff, 0xff, 0xff, 0xff]), Some(ZipError::Zip64Unsupported));
+        assert_eq!(patch(e + 12, &[0xff; 4]), Some(ZipError::Zip64Unsupported));
+        assert_eq!(patch(e + 16, &[0xff; 4]), Some(ZipError::Zip64Unsupported));
+        // Central header: starting disk, compressed and uncompressed size,
+        // local header offset.
+        assert_eq!(patch(cd + 34, &[1, 0]), Some(ZipError::MultiDisk));
+        assert_eq!(patch(cd + 20, &[0xff; 4]), Some(ZipError::Zip64Unsupported));
+        assert_eq!(patch(cd + 24, &[0xff; 4]), Some(ZipError::Zip64Unsupported));
+        assert_eq!(patch(cd + 42, &[0xff; 4]), Some(ZipError::Zip64Unsupported));
+    }
+
+    #[test]
+    fn directory_modes_add_search_permission() {
+        // Each class that can read a directory can also enter it: the
+        // expected mode, stated bit by bit.
+        for mode in 0..0o10000u32 {
+            let mut expected = mode;
+            for (read, search) in [(0o400, 0o100), (0o040, 0o010), (0o004, 0o001)] {
+                if mode & read != 0 {
+                    expected |= search;
+                }
+            }
+            let mut w = ZipWriter::new();
+            w.add_directory("d", &FileOptions { unix_mode: mode, ..FileOptions::default() }).unwrap();
+            let zip = w.finish().unwrap();
+            let a = ZipArchive::parse(&zip).unwrap();
+            assert_eq!(a.entries()[0].unix_mode, Some(0o040_000 | expected), "mode {mode:o}");
+            assert!(a.entries()[0].is_dir());
+        }
     }
 
     #[test]
@@ -953,6 +1043,47 @@ mod tests {
         // 2024-02-29 12:34:57 UTC
         let t = DosDateTime::from_unix_seconds(1_709_210_097);
         assert_eq!(t, DosDateTime::new(2024, 2, 29, 12, 34, 56).unwrap());
+        // Reference values from Python's datetime.
+        for (secs, (y, mo, d, h, mi, s)) in [
+            (315_532_800, (1980, 1, 1, 0, 0, 0)),
+            (946_684_800, (2000, 1, 1, 0, 0, 0)),
+            (1_700_000_000, (2023, 11, 14, 22, 13, 20)),
+            (4_354_819_199, (2107, 12, 31, 23, 59, 58)),
+        ] {
+            assert_eq!(DosDateTime::from_unix_seconds(secs), DosDateTime::new(y, mo, d, h, mi, s).unwrap(), "{secs}");
+        }
+    }
+
+    #[test]
+    fn invalid_dates_are_refused() {
+        // Leap years: divisible by 4, except centuries not divisible by 400.
+        for (y, ok) in [(1980, true), (2000, true), (2023, false), (2024, true), (2100, false), (2104, true)] {
+            assert_eq!(DosDateTime::new(y, 2, 29, 0, 0, 0).is_some(), ok, "{y}-02-29");
+        }
+        assert!(DosDateTime::new(2023, 2, 28, 0, 0, 0).is_some());
+        for (y, mo, d, h, mi, s) in [
+            (1979, 12, 31, 23, 59, 58),
+            (2108, 1, 1, 0, 0, 0),
+            (2023, 0, 1, 0, 0, 0),
+            (2023, 13, 1, 0, 0, 0),
+            (2023, 1, 0, 0, 0, 0),
+            (2023, 1, 32, 0, 0, 0),
+            (2023, 4, 31, 0, 0, 0),
+            (2023, 6, 31, 0, 0, 0),
+            (2023, 9, 31, 0, 0, 0),
+            (2023, 11, 31, 0, 0, 0),
+            (2023, 1, 1, 24, 0, 0),
+            (2023, 1, 1, 0, 60, 0),
+            (2023, 1, 1, 0, 0, 60),
+        ] {
+            assert!(DosDateTime::new(y, mo, d, h, mi, s).is_none(), "{y}-{mo}-{d} {h}:{mi}:{s}");
+        }
+        for mo in [1, 3, 5, 7, 8, 10, 12] {
+            assert!(DosDateTime::new(2023, mo, 31, 23, 59, 59).is_some(), "month {mo}");
+        }
+        // Odd seconds round down; decoded headers can still be invalid.
+        assert_eq!(DosDateTime::new(2023, 1, 1, 0, 0, 59).unwrap().second, 58);
+        assert!(!DosDateTime::from_dos(0, 0).is_valid());
     }
 }
 
@@ -1128,6 +1259,77 @@ mod proofs {
         assert_eq!(days_from_civil(y, m, d), z);
     }
 
+    /// The 4 GiB limits are exact: a size or offset is stored iff it is
+    /// below 0xFFFFFFFF (the ZIP64 marker), unchanged; an entry is refused
+    /// iff its 30-byte local header, name and data would end at or past
+    /// that offset; and the archive iff its 22-byte end record would.
+    #[kani::proof]
+    fn size_limits_are_exact() {
+        let n: usize = kani::any();
+        match field32(n) {
+            Ok(v) => assert!(n < 0xFFFF_FFFF && v as usize == n),
+            Err(e) => assert!(n >= 0xFFFF_FFFF && e == ZipError::Zip64Unsupported),
+        }
+        let small = |x: &usize| *x < 1 << 34;
+        let (out, name, data): (usize, usize, usize) =
+            (kani::any_where(small), kani::any_where(small), kani::any_where(small));
+        let end = out as u128 + 30 + name as u128 + data as u128;
+        assert_eq!(check_entry_end(out, name, data).is_ok(), end < 0xFFFF_FFFF);
+        assert_eq!(check_archive_end(out).is_ok(), out as u128 + 22 < 0xFFFF_FFFF);
+    }
+
+    /// `is_valid` is exactly "in the DOS range and a real calendar date",
+    /// stated without `is_leap` or `days_in_month`: the fields are in
+    /// range, and converting the date to a day number and back gives the
+    /// same date. (A day past the end of its month, such as 2023-02-29,
+    /// converts back to a day of the next month.)
+    #[kani::proof]
+    fn is_valid_is_the_calendar() {
+        let t = DosDateTime {
+            year: kani::any(),
+            month: kani::any(),
+            day: kani::any(),
+            hour: kani::any(),
+            minute: kani::any(),
+            second: kani::any(),
+        };
+        let in_range = t.year >= 1980
+            && t.year <= 2107
+            && t.month >= 1
+            && t.month <= 12
+            && t.day >= 1
+            && t.day <= 31
+            && t.hour <= 23
+            && t.minute <= 59
+            && t.second <= 58
+            && t.second % 2 == 0;
+        let y = i64::from(t.year);
+        let real = in_range && civil_from_days(days_from_civil(y, t.month, t.day)) == (y, t.month, t.day);
+        assert_eq!(t.is_valid(), real);
+    }
+
+    /// `from_unix_seconds` gives the right time, not just a valid one:
+    /// inside the DOS range the result converts back to the input rounded
+    /// down to an even second, and outside it clamps to the nearer end.
+    #[kani::proof]
+    fn unix_time_converts_exactly() {
+        let lo = days_from_civil(1980, 1, 1) * 86_400;
+        let hi = days_from_civil(2107, 12, 31) * 86_400 + 86_399;
+        let s: i64 = kani::any();
+        let t = DosDateTime::from_unix_seconds(s);
+        if s < lo {
+            assert_eq!(t, DosDateTime::EPOCH);
+        } else if s > hi {
+            assert_eq!(t, DosDateTime::MAX);
+        } else {
+            let back = days_from_civil(i64::from(t.year), t.month, t.day) * 86_400
+                + i64::from(t.hour) * 3600
+                + i64::from(t.minute) * 60
+                + i64::from(t.second);
+            assert_eq!(back, s - s.rem_euclid(2));
+        }
+    }
+
     /// Any Unix time maps to a valid DOS timestamp.
     #[kani::proof]
     fn unix_time_always_valid() {
@@ -1135,25 +1337,33 @@ mod proofs {
         assert!(DosDateTime::from_unix_seconds(s).is_valid());
     }
 
-    /// For every byte string of up to 8 bytes, an accepted name has no
-    /// leading `/`, no `..` component, no backslash and no NUL. The spec is
-    /// stated independently of the implementation.
+    /// For every byte string of up to 8 bytes, a name is accepted exactly
+    /// when it meets the rule, stated position by position and
+    /// independently of the implementation: it is non-empty; it has no
+    /// backslash and no NUL; every `/` follows a non-`/` byte (so there is
+    /// no leading `/` and no empty component, and at most one trailing
+    /// `/` for a directory); no component is `.` or `..`; and it does not
+    /// start with a drive letter such as `C:`. Accepted names therefore
+    /// cannot escape the extraction directory, and no safe name is
+    /// refused.
     #[kani::proof]
     #[kani::unwind(10)]
-    fn validate_name_rejects_traversal() {
+    fn validate_name_is_exactly_the_rule() {
         let b: [u8; 8] = kani::any();
         let len: usize = kani::any();
         kani::assume(len <= 8);
         let n = &b[..len];
-        if name_is_safe(n) {
-            assert!(len > 0 && n[0] != b'/');
-            for i in 0..len {
-                assert!(n[i] != b'\\' && n[i] != 0);
-                let starts_component = i == 0 || n[i - 1] == b'/';
-                let ends_component = i + 2 == len || (i + 2 < len && n[i + 2] == b'/');
-                let dotdot = i + 1 < len && n[i] == b'.' && n[i + 1] == b'.';
-                assert!(!(starts_component && dotdot && ends_component));
+        let mut ok = len > 0 && !(len >= 2 && n[1] == b':' && n[0].is_ascii_alphabetic());
+        for i in 0..len {
+            let starts_component = i == 0 || n[i - 1] == b'/';
+            let ends_at = |j: usize| j == len || n[j] == b'/';
+            let dot = starts_component && n[i] == b'.' && ends_at(i + 1);
+            let dotdot = starts_component && n[i] == b'.' && i + 1 < len && n[i + 1] == b'.' && ends_at(i + 2);
+            let bad_slash = n[i] == b'/' && starts_component;
+            if n[i] == b'\\' || n[i] == 0 || dot || dotdot || bad_slash {
+                ok = false;
             }
         }
+        assert_eq!(name_is_safe(n), ok);
     }
 }

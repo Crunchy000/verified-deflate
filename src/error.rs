@@ -59,3 +59,34 @@ impl fmt::Display for InflateError {
 }
 
 impl std::error::Error for InflateError {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn messages_are_distinct() {
+        use InflateError::*;
+        let all = [
+            UnexpectedEof,
+            InvalidBlockType,
+            StoredLengthMismatch,
+            TooManyCodes,
+            InvalidCodeLengthCode,
+            RepeatWithoutPrevious,
+            CodeLengthOverflow,
+            MissingEndOfBlock,
+            InvalidLiteralLengthCode,
+            InvalidDistanceCode,
+            InvalidSymbol,
+            DistanceTooFarBack,
+            OutputLimitExceeded,
+        ];
+        let mut seen = std::collections::HashSet::new();
+        for e in all {
+            let m = e.to_string();
+            assert!(!m.is_empty() && seen.insert(m), "{e:?}");
+        }
+        assert_eq!(UnexpectedEof.to_string(), "unexpected end of compressed data");
+    }
+}
