@@ -505,29 +505,38 @@ pub fn validate_name(name: &str) -> Result<(), ZipError> {
 }
 
 /// Byte-level implementation of [`validate_name`], written with plain
-/// loops so the Kani harness can check it on arbitrary bytes.
+/// loops and index arithmetic so that Kani (every name of up to 8 bytes,
+/// `validate_name_is_exactly_the_rule`) and Verus (names of every length,
+/// `verus/src/name_is_safe.rs`, which holds a copy of this function that CI
+/// checks is identical) can prove it accepts exactly the names that meet the
+/// rule.
+#[allow(clippy::manual_range_contains)] // the comparisons Verus reasons about
 fn name_is_safe(b: &[u8]) -> bool {
-    if b.is_empty() || b.len() > 0xFFFF {
+    let n = b.len();
+    if n == 0 || n > 0xFFFF {
         return false;
     }
-    if b.len() >= 2 && b[1] == b':' && b[0].is_ascii_alphabetic() {
+    // A drive prefix such as `C:`.
+    if n >= 2 && b[1] == b':' && ((b'a' <= b[0] && b[0] <= b'z') || (b'A' <= b[0] && b[0] <= b'Z')) {
         return false;
     }
-    let body = if b[b.len() - 1] == b'/' { &b[..b.len() - 1] } else { b };
-    if body.is_empty() {
+    // The components run up to `end`; a single trailing `/` marks a
+    // directory.
+    let end = if b[n - 1] == b'/' { n - 1 } else { n };
+    if end == 0 {
         return false;
     }
     let mut start = 0;
     let mut i = 0;
-    while i <= body.len() {
-        if i == body.len() || body[i] == b'/' {
+    while i <= end {
+        if i == end || b[i] == b'/' {
+            // The component b[start..i] is complete.
             let len = i - start;
-            let dot = |k: usize| body[start + k] == b'.';
-            if len == 0 || (len == 1 && dot(0)) || (len == 2 && dot(0) && dot(1)) {
+            if len == 0 || (len == 1 && b[start] == b'.') || (len == 2 && b[start] == b'.' && b[start + 1] == b'.') {
                 return false;
             }
             start = i + 1;
-        } else if body[i] == 0 || body[i] == b'\\' {
+        } else if b[i] == 0 || b[i] == b'\\' {
             return false;
         }
         i += 1;
