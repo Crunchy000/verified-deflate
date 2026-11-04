@@ -109,6 +109,38 @@ jobs:
       - uses: dtolnay/rust-toolchain@1.83
       - run: .github/scripts/run-and-report.sh msrv cargo build --lib --bins
 
+  platforms:
+    # Everything else runs on 64-bit little-endian x86. These run the test
+    # suite where `usize` is 32 bits, and where integers are big-endian, so
+    # every byte-order conversion and size computation is exercised there.
+    name: Tests on ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: 32-bit x86
+            target: i686-unknown-linux-gnu
+            packages: gcc-multilib
+          - name: big-endian s390x (QEMU)
+            target: s390x-unknown-linux-gnu
+            packages: gcc-s390x-linux-gnu libc6-dev-s390x-cross qemu-user qemu-user-binfmt
+    env:
+      CARGO_TARGET_S390X_UNKNOWN_LINUX_GNU_LINKER: s390x-linux-gnu-gcc
+      CARGO_TARGET_S390X_UNKNOWN_LINUX_GNU_RUNNER: qemu-s390x
+      # Where QEMU finds the s390x C library, also for the `vzip` binary
+      # that the command-line tests start.
+      QEMU_LD_PREFIX: /usr/s390x-linux-gnu
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - name: Install the cross toolchain, zip and unzip
+        run: sudo apt-get update && sudo apt-get install -y zip unzip ${{ matrix.packages }}
+      - name: Tests (including zlib, unzip and Info-ZIP interop)
+        run: .github/scripts/run-and-report.sh tests-${{ matrix.target }} cargo test --release --target ${{ matrix.target }}
+
   kani:
     name: Kani ${{ matrix.module }}${{ matrix.part && format(' ({0})', matrix.part) || '' }}
     runs-on: ubuntu-latest

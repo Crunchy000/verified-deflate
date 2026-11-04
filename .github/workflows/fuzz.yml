@@ -1,0 +1,109 @@
+name: Fuzz
+
+# Coverage-guided differential fuzzing (fuzz/, cargo-fuzz and libFuzzer):
+# the decoder against zlib on arbitrary bytes; round trips through every
+# encoder, decoded by this crate and by zlib; and the ZIP reader on arbitrary
+# bytes and on archives the writer makes. A short run for every push and
+# pull request; a longer one every night, which keeps each target's corpus
+# in the Actions cache for the runs after it.
+
+on:
+  push:
+    paths:
+      - "src/**"
+      - "fuzz/**"
+      - ".github/workflows/fuzz.yml"
+  pull_request:
+    paths:
+      - "src/**"
+      - "fuzz/**"
+      - ".github/workflows/fuzz.yml"
+  schedule:
+    - cron: "41 2 * * *"
+  workflow_dispatch:
+    inputs:
+      seconds:
+        description: "Seconds of fuzzing per target"
+        required: false
+        default: "600"
+
+concurrency:
+  group: fuzz-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: never
+  # Nightly runs fuzz for 20 minutes per target; pushes and pull requests
+  # for one.
+  FUZZ_SECONDS: ${{ github.event.inputs.seconds || (github.event_name == 'schedule' && '1200') || '60' }}
+
+jobs:
+  fuzz:
+    name: Fuzz ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [inflate, compress, stream, zip_read, zip_roundtrip]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@nightly
+      - name: Cache cargo-fuzz and the dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/cargo-fuzz
+            ~/.cargo/registry
+          key: fuzz-tools-${{ hashFiles('fuzz/Cargo.lock') }}
+          restore-keys: fuzz-tools-
+      - name: Install cargo-fuzz
+        run: command -v cargo-fuzz || cargo install cargo-fuzz --locked
+      - name: Restore the corpus
+        uses: actions/cache/restore@v4
+        with:
+          path: fuzz/corpus/${{ matrix.target }}
+          key: fuzz-corpus-${{ matrix.target }}-${{ github.run_id }}
+          restore-keys: fuzz-corpus-${{ matrix.target }}-
+      - name: Add the seed inputs
+        run: python3 -I fuzz/seeds.py fuzz
+      - name: Build
+        working-directory: fuzz
+        # Release mode with debug assertions and overflow checks. The
+        # library forbids unsafe code, so no sanitizer is needed.
+        run: cargo fuzz build --sanitizer none --debug-assertions ${{ matrix.target }}
+      - name: Fuzz for ${{ env.FUZZ_SECONDS }} seconds
+        working-directory: fuzz
+        run: |
+          mkdir -p corpus/${{ matrix.target }}
+          before=$(ls corpus/${{ matrix.target }} | wc -l)
+          status=0
+          cargo fuzz run --sanitizer none --debug-assertions ${{ matrix.target }} -- \
+            -max_total_time="$FUZZ_SECONDS" -timeout=20 -rss_limit_mb=4096 -print_final_stats=1 \
+            > fuzz.log 2>&1 || status=$?
+          # libFuzzer's progress lines are many; the end of the log has the
+          # statistics, or the failure and how to reproduce it.
+          grep -Ev '^#[0-9]+\s+(NEW|REDUCE|pulse)' fuzz.log | tail -n 150
+          after=$(ls corpus/${{ matrix.target }} | wc -l)
+          runs=$(grep -oE 'stat::number_of_executed_units: [0-9]+' fuzz.log | grep -oE '[0-9]+$' || echo "?")
+          echo "**${{ matrix.target }}**: ${runs} inputs in ${FUZZ_SECONDS} s; corpus ${before} → ${after}" >> "$GITHUB_STEP_SUMMARY"
+          exit $status
+      - name: Minimise the corpus
+        if: success() && github.event_name != 'pull_request' && github.event_name != 'push'
+        working-directory: fuzz
+        run: cargo fuzz cmin --sanitizer none --debug-assertions ${{ matrix.target }}
+      - name: Save the corpus
+        if: success() && github.event_name != 'pull_request' && github.event_name != 'push'
+        uses: actions/cache/save@v4
+        with:
+          path: fuzz/corpus/${{ matrix.target }}
+          key: fuzz-corpus-${{ matrix.target }}-${{ github.run_id }}
+      - name: Keep the failing input
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-${{ matrix.target }}-failure
+          path: |
+            fuzz/artifacts/${{ matrix.target }}
+            fuzz/fuzz.log
+          if-no-files-found: ignore
