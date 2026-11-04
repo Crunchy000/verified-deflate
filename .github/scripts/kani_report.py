@@ -4,6 +4,7 @@
 Writes a table to the job summary and attaches it to the run as
 annotations (one notice with the table, one error per failing harness),
 so results can be read through the checks API without raw logs."""
+import json
 import os
 import re
 import sys
@@ -11,6 +12,26 @@ import sys
 
 def esc(s: str) -> str:
     return s.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+
+
+def coverage(logdir: str, short: str) -> str:
+    """Covered/instrumented regions from Kani's source coverage, if recorded
+    (assurance mode); empty otherwise."""
+    d = os.path.join(logdir, "coverage", short)
+    if not os.path.isdir(os.path.join(logdir, "coverage")):
+        return ""
+    covered = total = 0
+    for f in os.listdir(d) if os.path.isdir(d) else []:
+        if f.endswith("_kaniraw.json"):
+            try:
+                data = json.load(open(os.path.join(d, f))).get("data", {})
+            except (OSError, ValueError, AttributeError):
+                continue
+            for checks in data.values():
+                for c in checks:
+                    total += 1
+                    covered += c.get("status") == "COVERED"
+    return f"  cov {covered:>4}/{total:<4}"
 
 
 def main(logdir: str) -> int:
@@ -45,7 +66,7 @@ def main(logdir: str) -> int:
         vt = f"{float(t.group(1)):.1f}s" if t else "-"
         rss = re.search(r"Maximum resident set size \(kbytes\): (\d+)", log)
         mem = f"{int(rss.group(1)) / 1048576:.1f}G" if rss else "-"
-        rows.append(f"{status:14} {vt:>9} {secs:>6}s wall {mem:>6}  {harness}")
+        rows.append(f"{status:14} {vt:>9} {secs:>6}s wall {mem:>6}{coverage(logdir, short)}  {harness}")
         if status != "OK":
             lines = [l for l in log.splitlines() if l.strip()]
             picked = []

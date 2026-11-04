@@ -37,7 +37,7 @@ kani-extended = []
 [lints.rust]
 unsafe_code = "forbid"
 missing_docs = "warn"
-unexpected_cfgs = { level = "warn", check-cfg = ["cfg(kani)", "cfg(kani_sample)"] }
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(kani)", "cfg(kani_sample)", "cfg(mutants)"] }
 
 [profile.release]
 codegen-units = 1
@@ -46,3 +46,13 @@ lto = "thin"
 [profile.profiling]
 inherits = "release"
 debug = true
+
+# Mutation testing (see .github/workflows/ci.yml): release speed for the
+# tests, faster rebuilds, and debug assertions and overflow checks on.
+[profile.mutants]
+inherits = "release"
+lto = false
+codegen-units = 16
+incremental = true
+debug-assertions = true
+overflow-checks = true

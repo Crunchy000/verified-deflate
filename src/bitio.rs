@@ -301,6 +301,7 @@ pub const fn reverse_bits(code: u16, len: u32) -> u16 {
     }
 }
 
+#[cfg_attr(mutants, mutants::skip)] // proof code: the checker, not code under test
 #[cfg(kani)]
 mod proofs {
     use super::*;

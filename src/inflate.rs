@@ -300,12 +300,14 @@ mod tests {
 /// initial buffer replace growth with a panic, so Kani must prove growth is
 /// unreachable instead of modelling it. (If it were reachable, the harness
 /// would fail, so this keeps the proof sound.)
+#[cfg_attr(mutants, mutants::skip)] // proof code: the checker, not code under test
 #[cfg(kani)]
 #[cfg_attr(kani_sample, allow(dead_code))] // stubs are not applied when sampling
 pub(crate) fn grow_is_unreachable(_out: &mut Output, _n: usize) {
     panic!("output growth is unreachable in this harness");
 }
 
+#[cfg_attr(mutants, mutants::skip)] // proof code: the checker, not code under test
 #[cfg(kani)]
 mod proofs {
     use super::*;

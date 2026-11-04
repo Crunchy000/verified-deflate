@@ -78,6 +78,7 @@ impl Adler32 {
 /// Byte-by-byte reference version of [`Adler32::update`], reducing after
 /// every byte; `a` and `b` must be below 65521. Used as the specification
 /// in proofs and tests.
+#[cfg_attr(mutants, mutants::skip)] // specification used by proofs
 #[cfg_attr(not(any(kani, test)), allow(dead_code))]
 pub(crate) fn adler32_bytewise(mut a: u32, mut b: u32, data: &[u8]) -> u32 {
     for &x in data {
@@ -123,6 +124,7 @@ mod tests {
     }
 }
 
+#[cfg_attr(mutants, mutants::skip)] // proof code: the checker, not code under test
 #[cfg(kani)]
 mod proofs {
     use super::*;

@@ -623,6 +623,7 @@ mod tests {
     }
 }
 
+#[cfg_attr(mutants, mutants::skip)] // proof code: the checker, not code under test
 #[cfg(kani)]
 mod proofs {
     use super::*;

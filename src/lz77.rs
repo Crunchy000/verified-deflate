@@ -398,6 +398,7 @@ pub(crate) fn common_prefix(x: &[u8], y: &[u8]) -> usize {
 }
 
 /// Reference version of [`common_prefix`]: a plain byte loop.
+#[cfg_attr(mutants, mutants::skip)] // specification used by proofs
 #[cfg_attr(not(any(kani, test)), allow(dead_code))]
 pub(crate) fn common_prefix_ref(x: &[u8], y: &[u8]) -> usize {
     let mut n = 0;
@@ -481,6 +482,7 @@ fn word4(buf: &[u8], i: usize) -> [u8; 4] {
 /// is the specification. `copy_within_buffer_meets_spec` proves the fast
 /// version produces the same (unique) result; harnesses that only need the
 /// copy's effect use this one, whose model is much smaller.
+#[cfg_attr(mutants, mutants::skip)] // specification used by proofs
 #[cfg_attr(not(any(kani, test)), allow(dead_code))]
 pub(crate) fn copy_within_buffer_ref(buf: &mut [u8], pos: usize, dist: usize, len: usize) {
     for i in pos..pos + len {
@@ -518,6 +520,7 @@ pub fn replay(tokens: &[Token], out: &mut Vec<u8>) -> Result<(), InflateError> {
 /// correctness cannot depend on the hash; proving a harness under this stub
 /// proves it for every hash function (and avoids a 32-bit multiplication
 /// per position in the model).
+#[cfg_attr(mutants, mutants::skip)] // proof code: the checker, not code under test
 #[cfg(kani)]
 #[cfg_attr(kani_sample, allow(dead_code))] // stubs are not applied when sampling
 pub(crate) fn any_bucket(m: &Matcher, _data: &[u8], _pos: usize) -> usize {
@@ -607,6 +610,7 @@ mod tests {
     }
 }
 
+#[cfg_attr(mutants, mutants::skip)] // proof code: the checker, not code under test
 #[cfg(kani)]
 mod proofs {
     use super::*;
