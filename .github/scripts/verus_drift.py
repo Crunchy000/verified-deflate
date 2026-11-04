@@ -14,7 +14,12 @@ which Verus needs for postconditions) counts as `-> T`. Comments and
 layout do not matter.
 
 The pairs to check are listed in verus/copies.txt, one per line:
-    <production file> <function> <verus file>
+    <production file> <item> <verus file>
+where <item> is a function (`name`), a method (`Type::name`, looked up in
+the `impl` block for `Type`), or a type or constant (`struct:Name`,
+`enum:Name`, `const:NAME`, `const:Type::NAME`). Attributes and visibility
+before an item are not compared. A constant that Verus needs as
+`exec const NAME: T ensures ... { body }` counts as `const NAME: T = body;`.
 
 usage: verus_drift.py [repository root]
 """
@@ -84,19 +89,104 @@ def unname_return(toks):
     return out
 
 
+OPEN = {"{": 1, "(": 1, "[": 1, "}": -1, ")": -1, "]": -1}
+
+
+def block_end(toks, j):
+    """Index of the brace closing the block that opens at toks[j]."""
+    depth = 0
+    for k in range(j, len(toks)):
+        depth += {"{": 1, "}": -1}.get(toks[k], 0)
+        if depth == 0:
+            return k
+    raise ValueError("unbalanced braces")
+
+
+def impl_range(toks, ty):
+    """(start, end) token range of the inherent `impl` block for `ty`."""
+    for i, t in enumerate(toks):
+        if t != "impl":
+            continue
+        j = i + 1
+        if toks[j] == "<":
+            depth = 0
+            while True:
+                depth += {"<": 1, ">": -1}.get(toks[j], 0)
+                j += 1
+                if depth == 0:
+                    break
+        if toks[j] == ty:
+            k = j
+            while toks[k] != "{":
+                if toks[k] == "for":
+                    break
+                k += 1
+            if toks[k] == "{":
+                return k, block_end(toks, k)
+    raise ValueError(f"impl {ty} not found")
+
+
+def scope(toks, name):
+    if "::" in name:
+        ty, name = name.split("::")
+        a, b = impl_range(toks, ty)
+        return toks[a:b + 1], name
+    return toks, name
+
+
 def function(toks, name):
     """Tokens of `fn name` from `fn` to the brace closing its body."""
+    toks, name = scope(toks, name)
     for i in range(len(toks) - 1):
         if toks[i] == "fn" and toks[i + 1] == name:
             j = i
             while toks[j] != "{":
                 j += 1
-            depth = 0
-            for k in range(j, len(toks)):
-                depth += {"{": 1, "}": -1}.get(toks[k], 0)
-                if depth == 0:
-                    return toks[i:k + 1]
+            return toks[i:block_end(toks, j) + 1]
     raise ValueError(f"fn {name} not found")
+
+
+def type_item(toks, kind, name):
+    """Tokens of `struct Name ...` or `enum Name ...` to its closing brace."""
+    for i in range(len(toks) - 1):
+        if toks[i] == kind and toks[i + 1] == name:
+            j = i
+            while toks[j] not in ("{", ";"):
+                j += 1
+            return toks[i:(block_end(toks, j) if toks[j] == "{" else j) + 1]
+    raise ValueError(f"{kind} {name} not found")
+
+
+def const_item(toks, name):
+    """Tokens of `const NAME: T = value;`, reading the Verus form
+    `exec const NAME: T { value }` as the same thing."""
+    toks, name = scope(toks, name)
+    for i in range(len(toks) - 1):
+        if toks[i] == "const" and toks[i + 1] == name and (i == 0 or toks[i - 1] != "fn"):
+            j, depth = i, 0
+            while depth or toks[j] not in ("=", "{"):
+                depth += OPEN.get(toks[j], 0)
+                j += 1
+            if toks[j] == "=":
+                k, depth = j, 0
+                while depth or toks[k] != ";":
+                    depth += OPEN.get(toks[k], 0)
+                    k += 1
+                return toks[i:k + 1]
+            k = block_end(toks, j)
+            return toks[i:j] + ["="] + toks[j + 1:k] + [";"]
+    raise ValueError(f"const {name} not found")
+
+
+def item(toks, spec):
+    kind, sep, name = spec.partition(":")
+    if sep and name.startswith(":"):  # `Type::name`, a method
+        kind = ""
+    if kind in ("struct", "enum"):
+        return type_item(toks, kind, name)
+    if kind == "const":
+        return const_item(toks, name)
+    return function(toks, spec)
 
 
 def main(root):
@@ -107,8 +197,9 @@ def main(root):
             pairs.append(line.split())
     bad = 0
     for prod_file, name, verus_file in pairs:
-        prod = function(tokens(open(os.path.join(root, prod_file)).read()), name)
-        copy = function(unname_return(tokens(strip_ghost(open(os.path.join(root, verus_file)).read()))), name)
+        prod = item(tokens(open(os.path.join(root, prod_file)).read()), name)
+        copy_toks = unname_return(tokens(strip_ghost(open(os.path.join(root, verus_file)).read())))
+        copy = item([t for i, t in enumerate(copy_toks) if not (t == "exec" and copy_toks[i + 1:i + 2] == ["const"])], name)
         if prod == copy:
             print(f"ok      {name}: {verus_file} matches {prod_file} ({len(prod)} tokens)")
             continue

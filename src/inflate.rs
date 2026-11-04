@@ -4,8 +4,9 @@
 //! The decoder is strict in the same places zlib is: over-subscribed codes
 //! are always rejected, and incomplete codes are only accepted for a single
 //! one-bit code (or an empty distance code). Every malformed input yields an
-//! [`InflateError`]; the Kani harnesses check that no input of the
-//! verified sizes can make it panic, and that the output limit holds.
+//! [`InflateError`]. Verus proves (`verus/src/inflate.rs`) that for every
+//! input of every length the decoder returns, never panics, and keeps to
+//! the output limit; Kani checks its parts in more detail on small inputs.
 
 use crate::bitio::BitReader;
 use crate::error::InflateError;
@@ -52,8 +53,7 @@ pub fn decompress_with_limit(input: &[u8], max_output: usize) -> Result<Decompre
             1 => codes(&mut st.br, &mut st.out, &FIXED_LIT, &FIXED_DIST)?,
             2 => {
                 read_dynamic_codes(&mut st.br, &mut st.lit, &mut st.dist, &mut st.lengths)?;
-                let State { br, out, lit, dist, .. } = &mut st;
-                codes(br, out, lit, dist)?;
+                codes(&mut st.br, &mut st.out, &st.lit, &st.dist)?;
             }
             _ => return Err(InflateError::InvalidBlockType),
         }
@@ -70,12 +70,15 @@ const MAX_INITIAL_CAPACITY: usize = 1 << 26;
 
 const FIXED_LIT: Decoder = match Decoder::new(&fixed_litlen_lengths()) {
     Ok(d) => d,
-    Err(_) => panic!("fixed literal/length code is invalid"),
+    Err(_) => Decoder::EMPTY,
 };
 const FIXED_DIST: Decoder = match Decoder::new(&FIXED_DIST_LENGTHS) {
     Ok(d) => d,
-    Err(_) => panic!("fixed distance code is invalid"),
+    Err(_) => Decoder::EMPTY,
 };
+// The fixed codes are valid, so the fallbacks above are never taken:
+// checked when the crate is compiled.
+const _: () = assert!(Decoder::new(&fixed_litlen_lengths()).is_ok() && Decoder::new(&FIXED_DIST_LENGTHS).is_ok());
 
 /// The decoder's output: a zero-filled buffer written by index and grown
 /// by doubling when needed. Writing by index (rather than `Vec::push`)
@@ -146,7 +149,7 @@ impl State<'_> {
         let len = len as usize;
         self.out.reserve(len)?;
         let start = self.out.len;
-        self.br.read_aligned_bytes(&mut self.out.buf[start..start + len])?;
+        self.br.read_aligned_bytes(&mut self.out.buf.as_mut_slice()[start..start + len])?;
         self.out.len += len;
         Ok(())
     }
@@ -184,6 +187,7 @@ fn codes(br: &mut BitReader<'_>, out: &mut Output, lit: &Decoder, dist: &Decoder
 }
 
 /// Reads a dynamic block header (§3.2.7) and builds its two decoders.
+#[allow(clippy::needless_range_loop)] // an index loop, as the Verus copy needs
 fn read_dynamic_codes(
     br: &mut BitReader<'_>,
     lit: &mut Decoder,
@@ -197,8 +201,8 @@ fn read_dynamic_codes(
         return Err(InflateError::TooManyCodes);
     }
     let mut cl = [0u8; NUM_CODELEN];
-    for &sym in &CODELEN_ORDER[..ncode] {
-        cl[sym] = br.read_bits(3)? as u8;
+    for i in 0..ncode {
+        cl[CODELEN_ORDER[i]] = br.read_bits(3)? as u8;
     }
     let mut clcode = Decoder::EMPTY;
     clcode.rebuild(&cl).map_err(|_| InflateError::InvalidCodeLengthCode)?;

@@ -2,8 +2,9 @@
 
 A DEFLATE ([RFC 1951]) compressor and decompressor with ZIP archive
 support, in safe Rust with no dependencies. Its key properties are proven
-with the [Kani] model checker, two of them for inputs of every size with
-[Verus], and it is cross-checked against the reference zlib and Info-ZIP.
+with the [Kani] model checker, the most important for inputs of every
+size with [Verus], and it is cross-checked against the reference zlib and
+Info-ZIP.
 
 - **Complete DEFLATE**: stored, fixed-Huffman and dynamic-Huffman blocks,
   hash-chain LZ77 with lazy matching, levels 0–9. Each block uses whichever
@@ -50,7 +51,7 @@ properties:
 
 Ten larger harnesses are gated behind the `kani-extended` feature
 because they need more memory or time than a CI runner has: whole-stream
-decoder no-panic, fixed-Huffman round trips, a whole-archive round trip,
+decoder no-panic (which Verus proves for every input, below), fixed-Huffman round trips, a whole-archive round trip,
 single-query forms of the CRC slicing lemma (which CI proves by
 linearity instead), and the Huffman table-decoder equivalence at larger
 bounds. Dynamic-Huffman blocks are covered
@@ -58,17 +59,20 @@ compositionally rather than end to end.
 [VERIFICATION.md](VERIFICATION.md) lists every harness, its bounds, the
 modelling choices behind it, and what is **not** proven.
 
-Two functions are also proved for inputs of every size, not just up to a
+Three results are also proved for inputs of every size, not just up to a
 bound, with the deductive verifier [Verus] (in `verus/`, run in CI on
 every push):
 
-- The Huffman length-limit repair always returns a complete code within
-  the limit, for any number of symbols.
-- ZIP name validation accepts exactly the names that meet its rule, for
-  names of any length.
+- **The decoder** returns on every input of every length: it never
+  panics, never loops forever, and never produces more than the caller's
+  output limit.
+- **The Huffman code-length builder** always makes a complete code within
+  the length limit, for any alphabet, including DEFLATE's 286 symbols.
+- **ZIP name validation** accepts exactly the names that meet its rule,
+  for names of any length.
 
 CI checks that each verified copy is the library's code token for token,
-and that 13 planted bugs each make verification fail.
+and that 35 planted bugs each make verification fail.
 
 The proofs are themselves checked. Kani's source coverage shows which code
 each proof reaches. Mutation testing plants about 1,900 small bugs; the
