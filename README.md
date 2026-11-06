@@ -92,9 +92,16 @@ Two further checks run on top of the proofs. The test suite compares the
 engine against real zlib in both directions: zlib decodes every stream
 this crate produces, and this crate decodes about 1,400 zlib streams across
 all levels, strategies and window sizes. Archives are validated with
-`unzip -t` and Python's `zipfile`. Separately, `CompressOptions::verify`
-decompresses every stream before returning it, so a wrong stream can never
-be returned.
+`unzip -t` and Python's `zipfile`. Coverage-guided fuzzing (in `fuzz/`)
+runs the same comparison on inputs libFuzzer evolves:
+- the decoder against zlib on arbitrary bytes;
+- every encoder, one-shot and streaming, at any options, decoded by both;
+- the ZIP reader on arbitrary bytes, and on archives the writer makes.
+
+It runs for a minute per target on every change and for 20 minutes each
+night. The test suite also runs on 32-bit x86 and on big-endian s390x.
+Separately, `CompressOptions::verify` decompresses every stream before
+returning it, so a wrong stream can never be returned.
 
 ## Usage
 
@@ -264,6 +271,7 @@ corrupted chain to produce an invalid match.
 | `.github/scripts/` | Per-harness Kani runner, coverage and mutation reports, Verus copy and mutant checks, used by CI |
 | `src/bin/vzip.rs` | Command-line tool |
 | `tests/` | zlib, Info-ZIP and robustness tests |
+| `fuzz/` | Differential fuzz targets against zlib (cargo-fuzz), with their own dependencies |
 | `tools/deflate-upstream/` | Runs the `deflate` crate's own tests against this crate |
 | `tools/kani-sample/` | Runs harnesses as randomised tests where Kani isn't installed |
 

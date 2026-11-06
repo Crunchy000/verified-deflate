@@ -1,0 +1,58 @@
+# Coverage-guided fuzzing with cargo-fuzz (libFuzzer); see README.md here.
+# A crate of its own, so the library keeps no dependencies.
+[package]
+name = "verified-deflate-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+arbitrary = { version = "1", features = ["derive"] }
+libfuzzer-sys = "0.4"
+# The reference: C zlib, through flate2.
+flate2 = { version = "1", default-features = false, features = ["zlib"] }
+verified-deflate = { path = ".." }
+
+[workspace]
+members = ["."]
+
+[profile.release]
+debug = 1
+
+[[bin]]
+name = "inflate"
+path = "fuzz_targets/inflate.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "compress"
+path = "fuzz_targets/compress.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "stream"
+path = "fuzz_targets/stream.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "zip_read"
+path = "fuzz_targets/zip_read.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "zip_roundtrip"
+path = "fuzz_targets/zip_roundtrip.rs"
+test = false
+doc = false
+bench = false

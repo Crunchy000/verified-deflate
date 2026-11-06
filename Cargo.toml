@@ -9,7 +9,7 @@ repository = "https://github.com/Crunchy000/verified-deflate"
 readme = "README.md"
 keywords = ["deflate", "zip", "compression", "kani", "verification"]
 categories = ["compression"]
-exclude = ["/.github", "/verus"]
+exclude = ["/.github", "/verus", "/fuzz"]
 
 [lib]
 name = "verified_deflate"

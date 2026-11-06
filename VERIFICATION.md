@@ -25,7 +25,10 @@ weakest:
 3. **Differential testing**: the engine is checked against the reference
    zlib (through Python's `zlib` module), Info-ZIP `zip`/`unzip` and
    Python's `zipfile`. Large randomised round-trip and corruption tests
-   run on top.
+   run on top. Coverage-guided fuzzing compares the decoder and every
+   encoder with C zlib, and checks the ZIP reader and writer (see
+   [Fuzzing](#fuzzing)). The tests also run on 32-bit x86 and big-endian
+   s390x.
 4. **Run-time checks**: CRC-32 on every ZIP entry, an output limit on
    every decompression, and the optional `verify` mode. `verify`
    decompresses each compressed stream and falls back to stored blocks if
@@ -479,6 +482,47 @@ harness timed out. By file, after:
     - The `deflate`-compatible option and level mappings are pinned to `deflate`'s and zlib's tables.
     - Tests now cover the output-size bound against stored blocks, the streaming memory bound, gzip header values and messages, and `vzip`'s options and reports.
 
+## Fuzzing
+
+`fuzz/` holds five [cargo-fuzz] targets. libFuzzer evolves inputs toward
+new code paths, with debug assertions and overflow checks on. The
+reference is C zlib, through `flate2`.
+
+| Target | Checks |
+|---|---|
+| `inflate` | On arbitrary bytes, the decoder and zlib accept the same streams, with the same output and the same number of bytes consumed. |
+| `compress` | `compress_with` at any level, strategy and `verify` setting: zlib and this crate both decode the stream to the input. zlib's streams at every level decode to the input here. |
+| `stream` | The streaming raw, zlib and gzip encoders, with any `CompressionOptions` and any sequence of writes and flushes: zlib decodes what they produce to what was written, and so does this crate for raw streams. |
+| `zip_read` | Arbitrary bytes as an archive. An entry that reads has its recorded size and CRC-32, and lookup by name finds the first entry of that name. |
+| `zip_roundtrip` | Archives the writer makes from any entries and options read back exactly. Refused names are invalid or repeated. |
+
+`.github/workflows/fuzz.yml` runs each target for a minute on every push
+and pull request that touches the code. It also runs each for 20 minutes
+every night, keeping each corpus in the Actions cache so that runs build
+on one another. Before the workflow was added, a 15-minute run of each
+target found no difference from zlib and no failure. That run covered:
+- 29 million inputs for `inflate`;
+- 70 million for `zip_read`;
+- about 4 million each for `compress`, `stream` and `zip_roundtrip`.
+
+A failing input is kept as a workflow artifact. `fuzz/README.md` has the commands to run or
+reproduce one locally.
+
+Fuzzing finds bugs; it does not rule them out. It complements the
+proofs: Verus shows the decoder and ZIP reader never panic, and fuzzing
+checks that what they return agrees with zlib.
+
+## Other platforms
+
+The proofs and most of CI run on 64-bit little-endian x86. The CI job
+`platforms` runs the whole test suite, interop included, on two other
+targets:
+- 32-bit x86 (`i686-unknown-linux-gnu`), where `usize` is 32 bits;
+- big-endian s390x under QEMU, where any byte-order mistake in the bit
+  I/O, the checksums or the ZIP fields would show.
+
+The Verus proofs already allow a 32-bit `usize`.
+
 ## What is not proven
 
 The gaps, stated precisely:
@@ -523,3 +567,4 @@ The gaps, stated precisely:
   thing, so review them as you would a specification.
 
 [Verus]: https://github.com/verus-lang/verus
+[cargo-fuzz]: https://github.com/rust-fuzz/cargo-fuzz
