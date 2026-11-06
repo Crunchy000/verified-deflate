@@ -16,6 +16,9 @@
 //! - `deflate`, with `lz77`, `bitio`, `build_lengths` and `tables`: the
 //!   encoder returns on every input, level and strategy, without
 //!   panicking, and so does the streaming encoder.
+//! - `zip`, with `crc32`, `inflate` and their modules: the ZIP reader
+//!   returns on every byte string, without panicking, and so does reading
+//!   any entry of the archive it returns.
 //! - `std_specs`: the few standard-library functions taken as given.
 //!
 //! Run with the Verus release named in `.github/workflows/verus.yml`:
@@ -26,6 +29,7 @@
 
 pub mod bitio;
 pub mod build_lengths;
+pub mod crc32;
 pub mod deflate;
 pub mod error;
 pub mod huffman_decode;
@@ -35,3 +39,4 @@ pub mod lz77;
 pub mod name_is_safe;
 pub mod std_specs;
 pub mod tables;
+pub mod zip;

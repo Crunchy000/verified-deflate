@@ -104,12 +104,14 @@ impl From<InflateError> for ZipError {
     }
 }
 
+/// The little-endian 16-bit field at `b[i..i + 2]`.
 fn u16_at(b: &[u8], i: usize) -> u16 {
-    u16::from_le_bytes([b[i], b[i + 1]])
+    u16::from(b[i]) | (u16::from(b[i + 1]) << 8)
 }
 
+/// The little-endian 32-bit field at `b[i..i + 4]`.
 fn u32_at(b: &[u8], i: usize) -> u32 {
-    u32::from_le_bytes([b[i], b[i + 1], b[i + 2], b[i + 3]])
+    u32::from(b[i]) | (u32::from(b[i + 1]) << 8) | (u32::from(b[i + 2]) << 16) | (u32::from(b[i + 3]) << 24)
 }
 
 fn put16(out: &mut Vec<u8>, v: u16) {
@@ -869,7 +871,15 @@ impl<'a> ZipArchive<'a> {
 
     /// Index of the entry with this name.
     pub fn index_of(&self, name: &str) -> Option<usize> {
-        self.entries.iter().position(|e| e.raw_name == name.as_bytes())
+        let name = name.as_bytes();
+        let mut i = 0;
+        while i < self.entries.len() {
+            if self.entries[i].raw_name.as_slice() == name {
+                return Some(i);
+            }
+            i += 1;
+        }
+        None
     }
 
     /// The raw (still compressed) bytes of entry `index`.

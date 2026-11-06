@@ -59,7 +59,7 @@ compositionally rather than end to end.
 [VERIFICATION.md](VERIFICATION.md) lists every harness, its bounds, the
 modelling choices behind it, and what is **not** proven.
 
-Four results are also proved for inputs of every size, not just up to a
+Five results are also proved for inputs of every size, not just up to a
 bound, with the deductive verifier [Verus] (in `verus/`, run in CI on
 every push):
 
@@ -71,11 +71,15 @@ every push):
   encoders.
 - **The Huffman code-length builder** always makes a complete code within
   the length limit, for any alphabet, including DEFLATE's 286 symbols.
+- **The ZIP reader** returns on every byte string of every length without
+  panicking, and so does reading any entry of the archive it returns: its
+  header reads, slices and offset sums stay in bounds, on 32-bit targets
+  too. CRC-32 never panics either.
 - **ZIP name validation** accepts exactly the names that meet its rule,
   for names of any length.
 
 CI checks that each verified copy is the library's code token for token,
-and that 52 planted bugs each make verification fail.
+and that 68 planted bugs each make verification fail.
 
 The proofs are themselves checked. Kani's source coverage shows which code
 each proof reaches. Mutation testing plants about 1,900 small bugs; the

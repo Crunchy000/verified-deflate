@@ -14,6 +14,7 @@ weakest:
      - The decoder returns on every input, never panics and never exceeds its output limit.
      - The encoder returns on every input, level and strategy, and never panics. So does the streaming encoder.
      - The Huffman code-length builder makes a complete code within the limit for any alphabet.
+     - The ZIP reader returns on every byte string and never panics, and neither does reading any entry or computing a CRC-32.
      - The ZIP entry-name check accepts exactly the safe names.
 
      See [Verus proofs](#verus-proofs-inputs-of-every-size).
@@ -224,7 +225,7 @@ the zlib interop tests confirm the output is unchanged.
 | Harness | Property |
 |---|---|
 | `local_header_roundtrip`, `central_header_roundtrip`, `eocd_roundtrip` | For all field values, headers serialize to their fixed size and parse back unchanged. |
-| `header_parsers_never_panic` | Header parsers never panic on 0–46 arbitrary bytes. |
+| `header_parsers_never_panic` | Header parsers never panic on 0–46 arbitrary bytes. (Verus proves this, and the same for the whole reader, for every length; see below.) |
 | `find_eocd_is_sound` | Locating the end record in any 0–30 bytes never panics. A found record is a real signature whose comment ends exactly at the end of the data. |
 | `directory_bounds_sound` | For **all** positions and field values, the central directory range lies before the end record. |
 | `record_bounds_sound` | For **all** positions and field values, an accepted central record lies inside the directory and moves the parser forward. Together with the two harnesses above, this shows every slice the archive parser takes is in bounds, for archives of any size. |
@@ -267,14 +268,15 @@ machine or further restructuring of the decoder.
 Kani checks every input up to a size. [Verus] proves a property for every
 input, from loop invariants and lemmas that its SMT solver checks. The
 proofs are in `verus/` and run in `.github/workflows/verus.yml` on every
-push. They check in about 16 seconds, and the mutant check below in about
-three minutes.
+push. They check in about 20 seconds, and the mutant check below in about
+four minutes.
 
 | Code | Theorem | Kani's bound |
 |---|---|---|
 | The decoder: `decompress_with_limit` and `decompress`, with the bit reader, both Huffman decoders, the match copy and the tables (`verus/src/inflate.rs`, `bitio.rs`, `huffman_decode.rs`, `lz77.rs`, `tables.rs`) | For **every input of every length** and every output limit, the decoder returns: it never panics, and every loop terminates. On success the output is no longer than the limit, and the bytes consumed are within the input. Building a Huffman decoder from any code lengths at all leaves it well-formed, so decoding with it is always in bounds. | 2 bytes (5 for a fixed block), extended set only |
 | The encoder: `compress`, `compress_with` (with `verify` on or off) and the streaming `StreamEncoder` behind the `write` encoders, with the match finder, the block writers, the bit writer, canonical codes and the code lookups (`verus/src/deflate.rs`, `lz77.rs`, `bitio.rs`, `build_lengths.rs`, `tables.rs`) | For **every input of every length**, every level and every strategy, compression returns: it never panics, and every loop terminates. The same holds for any sequence of calls to the streaming encoder. Along the way, the tokenizer is proved to emit only matches DEFLATE can express (length 3–258, distance 1–32768), and the code lookups to return codes whose base is at most the value coded. | 3–6 bytes, end to end in the extended set |
 | The code-length builder: `huffman::build_lengths` with the tree, the heapsort and the length-limit repair (`verus/src/build_lengths.rs`, `limit_depths.rs`) | For **any alphabet** (DEFLATE's 19, 30 and 286 symbols included), any frequencies and any limit, the build succeeds exactly when it can: 2 or more symbols, a limit of 1–15 and no more used symbols than codes of that length. Then the lengths form a complete prefix code (Kraft sum exactly 1, the library's `is_complete`) within the limit, and the symbols with codes are exactly the used ones (symbols 0 and 1 when fewer than two are used). It never panics. | 3–6 symbols |
+| The ZIP reader: `ZipArchive::parse`, `index_of`, `raw_data`, `read` and `read_by_name`, with the header parsers, the end-record scan, the bounds helpers, `ZipEntry::is_dir`, DOS timestamps and CRC-32 (`verus/src/zip.rs`, `crc32.rs`, with the decoder above) | For **every byte string of every length**, parsing returns: it never panics, and its loops terminate. On the archive it returns, reading or looking up any index or name returns too. Every header read, slice and offset sum is in bounds, on 32-bit targets as well: the local-header offset sum in `raw_data`, which Kani only checks on 64-bit, cannot overflow because a slice is at most `isize::MAX` bytes. CRC-32 (`crc32`, `update`, the streaming `Crc32`) returns on every input with every table index in bounds. | 0–46 bytes per header, 0–30 for the end-record scan; the bounds helpers for all values |
 | ZIP names: `zip::name_is_safe`, behind `validate_name` (`verus/src/name_is_safe.rs`) | For byte strings of every length, a name is accepted exactly when it meets the position-by-position rule of `validate_name_is_exactly_the_rule`, plus the 65,535-byte limit. | 8 bytes |
 
 Verus checks every index, every arithmetic operation, every shift and every
@@ -284,6 +286,7 @@ Verus checks every index, every arithmetic operation, every shift and every
 What is *not* claimed:
 - That the decoder's output is the stream's contents, or that the encoder's output decodes to its input. Those rest on the Kani round trips, zlib interop, and the encoder's `verify` option.
 - That the builder makes the *shortest* code. Its heapsort is proved to sort only up to 5 entries, by Kani, and any complete code within the limit is a valid DEFLATE code.
+- That the ZIP reader accepts every well-formed archive, or that an entry's bytes are what was stored. Those rest on the tests against Info-ZIP and Python's `zipfile`, and on the CRC-32 check at run time (whose value Kani proves right).
 - That memory never runs out. `vstd` models growing a `Vec` as always succeeding, so an allocation failure, or a buffer passing `isize::MAX` bytes (which needs an input that large), is outside the proofs. The decoder's output limit bounds its allocations.
 
 - **The proofs are about a copy, checked to be the library's code.**
@@ -292,11 +295,11 @@ What is *not* claimed:
   Rust 1.83. So the proofs live in a separate crate, with a copy of the
   code. `.github/scripts/verus_drift.py` checks in CI that each copy, with
   its proof lines (marked `// @ghost`) removed, is the library's code token
-  for token. That covers 167 functions, methods, types, constants and
+  for token. That covers 214 functions, methods, types, constants and
   statics.
   Comments and layout may differ; code may not. `verus/copies.txt` lists
   the pairs.
-- **The proofs reject bugs.** `.github/scripts/verus_mutants.py` plants 52
+- **The proofs reject bugs.** `.github/scripts/verus_mutants.py` plants 68
   one-line bugs in the copies, one at a time, and checks that each makes
   verification fail. Examples:
   - reading a byte past the end of the input;
@@ -308,7 +311,10 @@ What is *not* claimed:
   - hashing one bit too wide for the hash table;
   - an encoder loop that never sees its last block, and so never ends;
   - stopping one unit short of a full code;
-  - accepting NUL or `..` in a name.
+  - accepting NUL or `..` in a name;
+  - reading a ZIP field one byte too far, or trusting the central directory's size;
+  - looking up a ZIP entry, or slicing its data, without checking the index or the end;
+  - a CRC-32 loop that never moves past its first eight bytes.
 
   A specification that pinned nothing down, or a precondition that could
   never hold, would let them through.
@@ -317,13 +323,16 @@ What is *not* claimed:
   - `div_ceil` rounds up;
   - `u32::from(bool)` is 0 or 1;
   - `u16::reverse_bits` and `<[T]>::fill` return, the latter keeping the length;
+  - `split_first_chunk` splits off `N` elements when there are that many, and `to_vec` keeps the length;
+  - `String::from_utf8_lossy` and `Cow::into_owned` return;
   - a byte slice has at most `isize::MAX` elements, which Rust guarantees.
 
   The byte-order loads and stores (`from_le_bytes`, `to_le_bytes`,
   `first_chunk`) sit in four one-line helpers whose bodies are not
   verified. None of these can panic.
-- **The fixed codes.** The fixed-Huffman decoders and encoder tables are
-  constants built at compile time. The library falls back to an empty table
+- **The fixed codes.** The fixed-Huffman decoders and encoder tables, and
+  the CRC-32 tables, are built at compile time (the CRC-32 table builder is
+  verified too, though a panic there would fail the build anyway). The library falls back to an empty table
   if building one fails, so the constants cannot panic, and compile-time
   assertions check that the fallbacks are never taken.
 - **The code was rewritten for Verus, not changed.** The rewrites:
@@ -338,13 +347,15 @@ What is *not* claimed:
     - names the factors of its size products, and writes the stored-block overhead as 40 bits rather than 3 + 5 + 32;
     - computes the bit position modulo 2^64, which leaves its value modulo 8, all the size model uses, unchanged;
     - keeps its history window with `copy_within` and `truncate` instead of `drain`.
+  - The ZIP reader reads its little-endian fields with shifts instead of `from_le_bytes`, and `index_of` is an index loop instead of `iter().position`.
+  - CRC-32 reads its words with shifts too, and finishes the last few bytes in its own loop instead of a shared `fold` that took the step as a closure.
   - `debug_assert!`s and `?` stay as they were.
 
   Evidence that behaviour is unchanged:
   - The old and new name checks agreed on 39 million short names.
   - The old and new encoders produce byte-identical output on 1,200 combinations of corpus, input size, level, strategy and `verify`.
   - The test suite and Kani harnesses pass unchanged.
-  - Compression and decompression speed on the benchmark corpora are unchanged, within the noise of repeated runs.
+  - Compression and decompression speed on the benchmark corpora are unchanged, within the noise of repeated runs, and so is CRC-32's (about 1.6 GB/s on 64 MiB before and after).
 
 ## Checking the proofs: coverage and mutation
 
@@ -475,7 +486,7 @@ The gaps, stated precisely:
 - **Most properties are bounded.** The Kani proofs cover all inputs *up
   to the sizes above*. Some hold for all inputs:
   - a few Kani harnesses that cover all values: CRC steps, the code tables and the ZIP bounds lemmas;
-  - the Verus proofs: decoder and encoder safety and termination, the code-length builder, and name validation.
+  - the Verus proofs: decoder, encoder, ZIP reader and CRC-32 safety and termination, the code-length builder, and name validation.
 
   Everything else is covered on large inputs by tests, not proofs. The code is written over
   slices of any length, so the same code paths run on large inputs.
