@@ -260,6 +260,17 @@ impl DosDateTime {
         }
     }
 
+    /// Seconds since the Unix epoch, reading the time as UTC (MS-DOS times
+    /// carry no time zone). [`from_unix_seconds`](Self::from_unix_seconds)
+    /// gives a valid time back. Total: an invalid date (month 0, say) still
+    /// gives a number.
+    pub const fn to_unix_seconds(&self) -> i64 {
+        days_from_civil(self.year as i64, self.month, self.day) * 86_400
+            + self.hour as i64 * 3600
+            + self.minute as i64 * 60
+            + self.second as i64
+    }
+
     /// Converts seconds since the Unix epoch (UTC), clamping to the
     /// representable range.
     pub const fn from_unix_seconds(secs: i64) -> Self {
@@ -580,6 +591,7 @@ struct EntryMeta {
     uncompressed: usize,
     modified: DosDateTime,
     external_attr: u32,
+    version_made_by: u16,
 }
 
 /// Builds a ZIP archive in memory.
@@ -608,7 +620,7 @@ impl ZipWriter {
     }
 
     fn add_entry(&mut self, name: &str, payload: &[u8], meta: EntryMeta) -> Result<(), ZipError> {
-        let EntryMeta { method, crc, uncompressed, modified, external_attr } = meta;
+        let EntryMeta { method, crc, uncompressed, modified, external_attr, version_made_by } = meta;
         let local_offset = field32(self.out.len())?;
         let compressed_size = field32(payload.len())?;
         let uncompressed_size = field32(uncompressed)?;
@@ -632,7 +644,7 @@ impl ZipWriter {
         self.out.extend_from_slice(name.as_bytes());
         self.out.extend_from_slice(payload);
         let central = CentralHeader {
-            version_made_by: VERSION_MADE_BY,
+            version_made_by,
             version_needed: VERSION_NEEDED,
             flags,
             method,
@@ -682,6 +694,7 @@ impl ZipWriter {
             uncompressed: data.len(),
             modified: opts.modified,
             external_attr: (0o100_000 | (opts.unix_mode & 0o7777)) << 16,
+            version_made_by: VERSION_MADE_BY,
         };
         match compressed {
             Some(c) => self.add_entry(name, &c, EntryMeta { method: METHOD_DEFLATED, ..meta }),
@@ -701,8 +714,52 @@ impl ZipWriter {
         let mode = mode | ((mode & 0o444) >> 2);
         // Unix directory mode in the high half, MS-DOS directory bit (0x10) in the low.
         let external_attr = ((0o040_000 | mode) << 16) | 0x10;
-        let meta = EntryMeta { method: METHOD_STORED, crc: 0, uncompressed: 0, modified: opts.modified, external_attr };
+        let meta = EntryMeta {
+            method: METHOD_STORED,
+            crc: 0,
+            uncompressed: 0,
+            modified: opts.modified,
+            external_attr,
+            version_made_by: VERSION_MADE_BY,
+        };
         self.add_entry(&name, &[], meta)
+    }
+
+    /// Adds a symbolic link to `target`, as Info-ZIP stores one: a stored
+    /// entry whose data is the target and whose Unix mode marks a link.
+    pub fn add_symlink(&mut self, name: &str, target: &str, opts: &FileOptions) -> Result<(), ZipError> {
+        self.check_new_name(name)?;
+        if name.ends_with('/') || target.is_empty() || target.contains('\0') {
+            return Err(ZipError::InvalidName(name.to_string()));
+        }
+        let meta = EntryMeta {
+            method: METHOD_STORED,
+            crc: crc32(target.as_bytes()),
+            uncompressed: target.len(),
+            modified: opts.modified,
+            external_attr: (0o120_000 | (opts.unix_mode & 0o7777)) << 16,
+            version_made_by: VERSION_MADE_BY,
+        };
+        self.add_entry(name, target.as_bytes(), meta)
+    }
+
+    /// Copies entry `index` of `archive` as it is, without recompressing:
+    /// its data, method, CRC, time and attributes. For updating an
+    /// archive, or deleting entries from one.
+    pub fn copy_entry(&mut self, archive: &ZipArchive<'_>, index: usize) -> Result<(), ZipError> {
+        let e = archive.entries().get(index).ok_or(ZipError::NotFound)?;
+        let name = std::str::from_utf8(&e.raw_name).map_err(|_| ZipError::InvalidName(e.name.clone()))?;
+        self.check_new_name(name)?;
+        let raw = archive.raw_data(index)?;
+        let meta = EntryMeta {
+            method: e.method,
+            crc: e.crc32,
+            uncompressed: e.uncompressed_size as usize,
+            modified: e.modified,
+            external_attr: e.external_attr,
+            version_made_by: e.version_made_by,
+        };
+        self.add_entry(name, raw, meta)
     }
 
     /// Writes the central directory and returns the archive bytes.
@@ -752,6 +809,12 @@ pub struct ZipEntry {
     pub unix_mode: Option<u32>,
     /// Offset of the local header.
     pub local_offset: u32,
+    /// "Version made by": the host system in the high byte (0 MS-DOS,
+    /// 3 Unix), the format version in the low byte.
+    pub version_made_by: u16,
+    /// External file attributes: MS-DOS attributes in the low byte, and
+    /// on Unix hosts the file mode in the high 16 bits.
+    pub external_attr: u32,
 }
 
 impl ZipEntry {
@@ -852,6 +915,8 @@ impl<'a> ZipArchive<'a> {
                 modified: DosDateTime::from_dos(h.mod_time, h.mod_date),
                 unix_mode: if h.version_made_by >> 8 == 3 { Some(h.external_attr >> 16) } else { None },
                 local_offset: h.local_offset,
+                version_made_by: h.version_made_by,
+                external_attr: h.external_attr,
             });
             p = next;
         }
@@ -956,6 +1021,47 @@ mod tests {
         assert_eq!(a.entries()[3].flags & FLAG_UTF8, FLAG_UTF8);
         assert_eq!(a.entries()[1].unix_mode, Some(0o100_644));
         assert_eq!(a.entries()[0].unix_mode, Some(0o040_755));
+    }
+
+    #[test]
+    fn unix_seconds_round_trip() {
+        for secs in [315_532_800i64, 1_000_000_000, 1_700_000_000, 4_354_819_198] {
+            assert_eq!(DosDateTime::from_unix_seconds(secs).to_unix_seconds(), secs);
+        }
+        assert_eq!(DosDateTime::EPOCH.to_unix_seconds(), 315_532_800);
+        // Any field values give some number without panicking.
+        let odd = DosDateTime { year: 2107, month: 0, day: 0, hour: 31, minute: 63, second: 62 };
+        let _ = odd.to_unix_seconds();
+    }
+
+    #[test]
+    fn copy_entry_keeps_entries_exactly() {
+        let opts = FileOptions::default();
+        let mut w = ZipWriter::new();
+        w.add_directory("d", &opts).unwrap();
+        w.add_file("d/big.txt", &b"copy me exactly ".repeat(100), &opts).unwrap();
+        w.add_file("small", b"x", &opts).unwrap();
+        w.add_symlink("link", "d/big.txt", &opts).unwrap();
+        let first = w.finish().unwrap();
+        let a = ZipArchive::parse(&first).unwrap();
+        assert_eq!(a.entries()[3].unix_mode, Some(0o120_644));
+        assert_eq!(a.read(3).unwrap(), b"d/big.txt");
+        // Copy all but "small".
+        let mut w = ZipWriter::new();
+        for i in [0, 1, 3] {
+            w.copy_entry(&a, i).unwrap();
+        }
+        assert!(matches!(w.copy_entry(&a, 0), Err(ZipError::DuplicateName(_))));
+        let second = w.finish().unwrap();
+        let b = ZipArchive::parse(&second).unwrap();
+        assert_eq!(b.len(), 3);
+        for (j, i) in [0, 1, 3].into_iter().enumerate() {
+            let (x, y) = (&a.entries()[i], &b.entries()[j]);
+            assert_eq!((&x.raw_name, x.method, x.crc32, x.modified), (&y.raw_name, y.method, y.crc32, y.modified));
+            assert_eq!((x.external_attr, x.version_made_by), (y.external_attr, y.version_made_by));
+            assert_eq!(a.raw_data(i).unwrap(), b.raw_data(j).unwrap());
+            assert_eq!(a.read(i).unwrap(), b.read(j).unwrap());
+        }
     }
 
     #[test]

@@ -25,7 +25,10 @@ Info-ZIP.
   and reader for Deflate64 ones, with UTF-8 names, Unix permissions,
   timestamps and data descriptors. Every entry is checked against its
   CRC-32.
-- **`vzip`**, a small command-line tool to create, extract, list and test
+- **`v7z`**, a command-line tool that takes 7-Zip's commands and switches
+  (`a`, `x`, `e`, `l`, `t`, `d`; `-t`, `-mx`, `-o`, `-r`, `-y`, `-ao`,
+  `-si`/`-so`, `-i`/`-x`) and exit codes, for zip, tar and gzip. A
+  simpler tool, **`vzip`**, creates, extracts, lists and tests ZIP
   archives.
 - `#![forbid(unsafe_code)]`, zero dependencies, MSRV 1.83.
 
@@ -144,6 +147,48 @@ vzip list out.zip
 vzip test out.zip
 vzip extract -d /tmp/out out.zip
 ```
+
+### `v7z`: the 7-Zip command line
+
+`v7z` follows 7-Zip's syntax, `v7z <command> [<switches>...] <archive>
+[<names>...]`, so scripts written for `7z` work with zip, tar and gzip
+archives:
+
+```sh
+v7z a -tzip -mx9 out.zip src/ README.md   # create, or update in place
+v7z a out.tar src -snl                    # store symbolic links as links
+v7z a out.tar.gz out.tar                  # gzip holds exactly one file
+v7z l -slt out.zip                        # technical listing
+v7z t out.zip                             # test every entry's CRC
+v7z x out.zip -o/tmp/out -aos             # extract, keeping existing files
+v7z e out.zip '*.txt' -r -y               # extract without paths
+v7z d out.zip 'src/*.rs'                  # delete entries
+tar cf - src | v7z a -si -tgzip src.tar.gz   # -si / -so pipes
+v7z x -so out.tar.gz | tar tf -
+```
+
+| Command | | Switches |
+|---|---|---|
+| `a` | add (create or update) | `-t{zip,tar,gzip}`, `-mx[N]`, `-mm={Deflate,Copy}`, `-snl`, `-si[name]`, `-so` |
+| `x`, `e` | extract with / without paths | `-o{dir}`, `-ao{a,s,u,t}`, `-y`, `-so`, `-si` |
+| `l`, `t` | list, test | `-slt` |
+| `d` | delete entries | |
+| `i` | show formats | |
+
+Names take wildcards (`*`, `?`), match from the archive's root, and with
+`-r` at any depth (`-r0`: wildcards only); `-i!`/`-x!` (and `@listfile`)
+add and remove names. An archive's type comes from `-t`, or else from its
+content when reading and its extension (`.zip`, `.tar`, `.gz`, `.tgz`)
+when creating. Exit codes are 7-Zip's: 0 success, 1 warning, 2 fatal error
+(including any CRC or data error), 7 command-line error, 255 stopped.
+Switches that only affect 7-Zip's console or threads (`-bb`, `-bso`,
+`-scs`, `-mmt` and similar) are accepted and ignored. Listings carry the
+same fields as 7-Zip's, but are not byte-identical.
+
+Extraction never writes outside the output directory: absolute names are
+made relative, names with `..` are refused, nothing is written through a
+symbolic link, links whose target leaves the directory are not made, and
+links are created after every file.
 
 ## Replacing the `deflate` crate
 
@@ -264,6 +309,10 @@ corrupted chain to produce an invalid match.
   supported.
 - tar: GNU sparse files and multi-volume archives are listed but their
   data is not reassembled.
+- `v7z`: no `.7z` format yet (nor bzip2, xz or the other 7-Zip formats),
+  no encryption (`-p`), and no `u`, `rn` or `h` commands. Without `-y` or
+  `-ao`, an existing file prompts on the terminal; with no terminal input
+  that stops extraction (exit 255).
 
 ## Layout
 
@@ -284,8 +333,9 @@ corrupted chain to produce an invalid match.
 | `src/e2e.rs` | End-to-end Kani harnesses |
 | `verus/` | Verus proofs, over copies of library functions |
 | `.github/scripts/` | Per-harness Kani runner, coverage and mutation reports, Verus copy and mutant checks, used by CI |
-| `src/bin/vzip.rs` | Command-line tool |
-| `tests/` | zlib, gzip, tar, Deflate64, Info-ZIP and robustness tests |
+| `src/bin/v7z/` | 7-Zip-compatible command-line tool: argument parsing, archive access, name matching, commands |
+| `src/bin/vzip.rs` | Simple ZIP command-line tool |
+| `tests/` | zlib, gzip, tar, Deflate64, Info-ZIP, 7-Zip, CLI and robustness tests |
 | `fuzz/` | Differential fuzz targets against zlib and its Deflate64 decoder (cargo-fuzz), with their own dependencies |
 | `tools/deflate-upstream/` | Runs the `deflate` crate's own tests against this crate |
 | `tools/kani-sample/` | Runs harnesses as randomised tests where Kani isn't installed |

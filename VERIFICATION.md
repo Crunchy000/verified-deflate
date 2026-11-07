@@ -29,8 +29,15 @@ weakest:
    fork) and 7-Zip. The gzip and zlib readers are checked on streams from
    Python and GNU gzip. The tar reader is checked field by field against
    Python's `tarfile` (ustar, GNU and pax) and on archives from GNU tar in
-   all five of its formats. tarfile and GNU tar read the writer's archives. Coverage-guided fuzzing compares the decoder and every
-   encoder with C zlib, and the Deflate64 decoder with zlib's `infback9`.
+   all five of its formats. tarfile and GNU tar read the writer's
+   archives. The `v7z` command line is checked against 7-Zip: each reads
+   and tests the other's zip, tar and gzip archives, extracts the same
+   files, lists the same items, and exits 2 on a damaged archive. Other
+   tests extract hostile tar archives (`..`, absolute names, links out of
+   the directory, a file through a link) and check nothing lands outside
+   the output directory. Coverage-guided fuzzing compares the decoder and
+   every encoder with C zlib, and the Deflate64 decoder with zlib's
+   `infback9`.
    It also checks the ZIP reader and writer (see [Fuzzing](#fuzzing)).
    In CI, `REQUIRE_INTEROP_TOOLS` makes a test fail, rather than skip,
    when its tool is missing. The tests also run on 32-bit x86 and big-endian
