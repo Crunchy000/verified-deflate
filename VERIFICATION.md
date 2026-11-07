@@ -26,7 +26,10 @@ weakest:
    zlib (through Python's `zlib` module), Info-ZIP `zip`/`unzip` and
    Python's `zipfile`. Large randomised round-trip and corruption tests
    run on top. Deflate64 is checked against Python's `inflate64` (a zlib
-   fork) and 7-Zip. Coverage-guided fuzzing compares the decoder and every
+   fork) and 7-Zip. The gzip and zlib readers are checked on streams from
+   Python and GNU gzip. The tar reader is checked field by field against
+   Python's `tarfile` (ustar, GNU and pax) and on archives from GNU tar in
+   all five of its formats. tarfile and GNU tar read the writer's archives. Coverage-guided fuzzing compares the decoder and every
    encoder with C zlib, and the Deflate64 decoder with zlib's `infback9`.
    It also checks the ZIP reader and writer (see [Fuzzing](#fuzzing)).
    In CI, `REQUIRE_INTEROP_TOOLS` makes a test fail, rather than skip,
@@ -490,7 +493,7 @@ harness timed out. By file, after:
 
 ## Fuzzing
 
-`fuzz/` holds six [cargo-fuzz] targets. libFuzzer evolves inputs toward
+`fuzz/` holds nine [cargo-fuzz] targets. libFuzzer evolves inputs toward
 new code paths, with debug assertions and overflow checks on. The
 reference is C zlib, through `flate2`. For Deflate64 it is zlib's
 `infback9`, Mark Adler's Deflate64 decoder, which is vendored unchanged in
@@ -505,6 +508,9 @@ header.
 | `stream` | The streaming raw, zlib and gzip encoders, with any `CompressionOptions` and any sequence of writes and flushes: zlib decodes what they produce to what was written, and so does this crate for raw streams. |
 | `zip_read` | Arbitrary bytes as an archive. An entry that reads has its recorded size and CRC-32, and lookup by name finds the first entry of that name. |
 | `zip_roundtrip` | Archives the writer makes from any entries and options read back exactly. Refused names are invalid or repeated. |
+| `gzip_zlib` | A gzip member and a zlib stream are accepted by this crate exactly when C zlib accepts them (through its own gzip and zlib wrappers), with the same output and bytes consumed. |
+| `tar_read` | Arbitrary bytes as a tar archive. Entries' data lies inside the archive at the recorded size, in order and without overlap, and paths made safe stay relative. |
+| `tar_roundtrip` | Archives the tar writer makes from any entries (files, directories, links) and metadata read back exactly, including names, link targets and numbers that need pax headers. |
 
 `.github/workflows/fuzz.yml` runs each target for a minute on every push
 and pull request that touches the code. It also runs each for 20 minutes
