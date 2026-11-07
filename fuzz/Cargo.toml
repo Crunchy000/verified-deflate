@@ -12,9 +12,14 @@ cargo-fuzz = true
 [dependencies]
 arbitrary = { version = "1", features = ["derive"] }
 libfuzzer-sys = "0.4"
-# The reference: C zlib, through flate2.
+# The references: C zlib, through flate2, and for Deflate64 zlib's
+# infback9 (in infback9/, built by build.rs against this zlib's header).
 flate2 = { version = "1", default-features = false, features = ["zlib"] }
+libz-sys = { version = "1", features = ["static"] }
 verified-deflate = { path = ".." }
+
+[build-dependencies]
+cc = "1"
 
 [workspace]
 members = ["."]
@@ -25,6 +30,13 @@ debug = 1
 [[bin]]
 name = "inflate"
 path = "fuzz_targets/inflate.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "inflate64"
+path = "fuzz_targets/inflate64.rs"
 test = false
 doc = false
 bench = false

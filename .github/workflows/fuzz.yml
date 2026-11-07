@@ -1,7 +1,8 @@
 name: Fuzz
 
 # Coverage-guided differential fuzzing (fuzz/, cargo-fuzz and libFuzzer):
-# the decoder against zlib on arbitrary bytes; round trips through every
+# the decoder against zlib on arbitrary bytes, and the Deflate64 decoder
+# against zlib's infback9; round trips through every
 # encoder, decoded by this crate and by zlib; and the ZIP reader on arbitrary
 # bytes and on archives the writer makes. A short run for every push and
 # pull request; a longer one every night, which keeps each target's corpus
@@ -45,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [inflate, compress, stream, zip_read, zip_roundtrip]
+        target: [inflate, inflate64, compress, stream, zip_read, zip_roundtrip]
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly
@@ -66,7 +67,10 @@ jobs:
           key: fuzz-corpus-${{ matrix.target }}-${{ github.run_id }}
           restore-keys: fuzz-corpus-${{ matrix.target }}-
       - name: Add the seed inputs
-        run: python3 -I fuzz/seeds.py fuzz
+        # inflate64 (Python) makes the Deflate64 seeds.
+        run: |
+          sudo python3 -m pip install --break-system-packages "inflate64>=1,<2"
+          python3 -I fuzz/seeds.py fuzz
       - name: Build
         working-directory: fuzz
         # Release mode with debug assertions and overflow checks. The

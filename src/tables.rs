@@ -36,6 +36,49 @@ pub const DIST_BASE: [u16; 30] = [
 pub const DIST_EXTRA: [u8; 30] =
     [0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13];
 
+/// Deflate64 (PKWARE's "Enhanced Deflating", ZIP method 9) differs from
+/// DEFLATE in its tables alone: length code 285 is base 3 with 16 extra bits
+/// (lengths 3–65538), and distance codes 30 and 31 cover distances up to
+/// 65536. These are the tables zlib's `infback9` decodes with.
+pub const LENGTH_BASE_64: [u16; 29] =
+    [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 3];
+/// Deflate64's extra bits for length codes 257..=285.
+pub const LENGTH_EXTRA_64: [u8; 29] =
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 16];
+/// Number of Deflate64 distance symbols (0..=31).
+pub const NUM_DIST_64: usize = 32;
+/// Base distance for Deflate64's distance codes 0..=31; the first 30 are
+/// DEFLATE's.
+pub const DIST_BASE_64: [u16; NUM_DIST_64] = [
+    1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145,
+    8193, 12289, 16385, 24577, 32769, 49153,
+];
+/// Extra bits for Deflate64's distance codes 0..=31; the first 30 are
+/// DEFLATE's.
+pub const DIST_EXTRA_64: [u8; NUM_DIST_64] =
+    [0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14];
+
+/// The Deflate64 tables extend DEFLATE's, entry for entry, except length
+/// code 285. Checked when the crate is compiled.
+const fn deflate64_extends_deflate() -> bool {
+    let mut i = 0;
+    while i < 30 {
+        if DIST_BASE_64[i] != DIST_BASE[i] || DIST_EXTRA_64[i] != DIST_EXTRA[i] {
+            return false;
+        }
+        i += 1;
+    }
+    let mut i = 0;
+    while i < 28 {
+        if LENGTH_BASE_64[i] != LENGTH_BASE[i] || LENGTH_EXTRA_64[i] != LENGTH_EXTRA[i] {
+            return false;
+        }
+        i += 1;
+    }
+    true
+}
+const _: () = assert!(deflate64_extends_deflate());
+
 /// Order in which code-length code lengths are transmitted (§3.2.7).
 pub const CODELEN_ORDER: [usize; NUM_CODELEN] = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15];
 
@@ -223,6 +266,41 @@ mod proofs {
         let dist = DIST_BASE[c] as usize + e;
         assert!(dist >= 1 && dist <= MAX_DISTANCE);
         assert_eq!(distance_code(dist), c);
+    }
+
+    /// Deflate64's distance codes: every (code, extra bits) pair decodes to
+    /// a distance in 1..=65536, and the codes partition that range, each
+    /// starting where the one before ends (so codes 30 and 31 continue
+    /// DEFLATE's series without gap or overlap).
+    #[kani::proof]
+    fn deflate64_distances_partition_1_to_65536() {
+        let c: u8 = kani::any();
+        let e: u16 = kani::any();
+        let c = usize::from(c);
+        kani::assume(c < 32);
+        kani::assume(usize::from(e) < (1usize << DIST_EXTRA_64[c]));
+        let dist = DIST_BASE_64[c] as usize + usize::from(e);
+        assert!(dist >= 1 && dist <= 65536);
+        if c > 0 {
+            assert_eq!(DIST_BASE_64[c - 1] as usize + (1usize << DIST_EXTRA_64[c - 1]), DIST_BASE_64[c] as usize);
+        } else {
+            assert_eq!(DIST_BASE_64[0], 1);
+        }
+        assert_eq!(DIST_BASE_64[31] as usize + (1usize << DIST_EXTRA_64[31]), 65537);
+    }
+
+    /// Deflate64's length codes: every (code, extra bits) pair decodes to a
+    /// length in 3..=65538, and code 285 reaches 65538.
+    #[kani::proof]
+    fn deflate64_lengths_reach_65538() {
+        let c: u8 = kani::any();
+        let e: u16 = kani::any();
+        let c = usize::from(c);
+        kani::assume(c < 29);
+        kani::assume(usize::from(e) < (1usize << LENGTH_EXTRA_64[c]));
+        let len = LENGTH_BASE_64[c] as usize + usize::from(e);
+        assert!(len >= MIN_MATCH && len <= 65538);
+        assert_eq!(LENGTH_BASE_64[28] as usize + (1usize << LENGTH_EXTRA_64[28]) - 1, 65538);
     }
 
     /// The fixed code lengths match the ranges listed in RFC 1951 §3.2.6.

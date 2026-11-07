@@ -1,9 +1,10 @@
-//! The DEFLATE decoder (`src/inflate.rs`).
+//! The DEFLATE and Deflate64 decoder (`src/inflate.rs`).
 //!
 //! The executable code below is the library's, token for token (CI checks
 //! this with `.github/scripts/verus_drift.py`); every line marked
 //! `// @ghost` is specification or proof. The theorem: for every input of
-//! every length and every output limit, `decompress_with_limit` returns
+//! every length and every output limit, `decompress_with_limit` and
+//! `decompress_deflate64_with_limit` return
 //! (it never panics and never loops forever), and when it succeeds the
 //! output is within the limit and the bytes consumed are within the input.
 //! The loops terminate because each block and each symbol reads at least
@@ -15,14 +16,15 @@ use crate::huffman_decode::Decoder;
 use crate::limit_depths::{lemma_p2_mono, p2};
 use crate::lz77::copy_within_buffer;
 use crate::tables::{
-    codelen_extra_bits, fixed_litlen_lengths, lemma_tables, CODELEN_ORDER, DIST_BASE, DIST_EXTRA, END_OF_BLOCK,
-    FIXED_DIST_LENGTHS, LENGTH_BASE, LENGTH_EXTRA, NUM_CODELEN, NUM_DIST, NUM_LITLEN,
+    codelen_extra_bits, fixed_litlen_lengths, lemma_tables, lemma_tables_64, CODELEN_ORDER, DIST_BASE_64,
+    DIST_EXTRA_64, END_OF_BLOCK, FIXED_DIST_LENGTHS, LENGTH_BASE, LENGTH_BASE_64, LENGTH_EXTRA, LENGTH_EXTRA_64,
+    NUM_CODELEN, NUM_DIST, NUM_DIST_64, NUM_LITLEN,
 };
 use vstd::prelude::*;
 
 verus! {
 
-/// 2^3 .. 2^7 and 2^13.
+/// 2^3 .. 2^7, 2^13, 2^14 and 2^16.
 proof fn lemma_p2_small()
     ensures
         p2(3) == 8,
@@ -30,8 +32,10 @@ proof fn lemma_p2_small()
         p2(5) == 32,
         p2(7) == 128,
         p2(13) == 8192,
+        p2(14) == 16384,
+        p2(16) == 65536,
 {
-    reveal_with_fuel(p2, 14);
+    reveal_with_fuel(p2, 17);
 }
 
 /// Result of [`decompress_with_limit`].
@@ -51,8 +55,34 @@ pub fn decompress(input: &[u8]) -> Result<Vec<u8>, InflateError> {
 /// Decompresses a raw DEFLATE stream, failing with
 /// [`InflateError::OutputLimitExceeded`] rather than producing more than
 /// `max_output` bytes.
-#[verifier::loop_isolation(false)]
 pub fn decompress_with_limit(input: &[u8], max_output: usize) -> (r: Result<Decompressed, InflateError>)
+    ensures // @ghost
+        r is Ok ==> r->Ok_0.data@.len() <= max_output, // @ghost
+        r is Ok ==> r->Ok_0.consumed <= input@.len(), // @ghost
+{
+    inflate::<false>(input, max_output)
+}
+
+/// Decompresses a raw Deflate64 stream (ZIP compression method 9) with no
+/// output limit.
+pub fn decompress_deflate64(input: &[u8]) -> Result<Vec<u8>, InflateError> {
+    decompress_deflate64_with_limit(input, usize::MAX).map(|d| d.data)
+}
+
+/// Decompresses a raw Deflate64 stream (ZIP compression method 9), failing
+/// with [`InflateError::OutputLimitExceeded`] rather than producing more
+/// than `max_output` bytes.
+pub fn decompress_deflate64_with_limit(input: &[u8], max_output: usize) -> (r: Result<Decompressed, InflateError>)
+    ensures // @ghost
+        r is Ok ==> r->Ok_0.data@.len() <= max_output, // @ghost
+        r is Ok ==> r->Ok_0.consumed <= input@.len(), // @ghost
+{
+    inflate::<true>(input, max_output)
+}
+
+/// Decompresses a DEFLATE stream, or a Deflate64 stream if `DEFLATE64`.
+#[verifier::loop_isolation(false)]
+fn inflate<const DEFLATE64: bool>(input: &[u8], max_output: usize) -> (r: Result<Decompressed, InflateError>)
     ensures // @ghost
         r is Ok ==> r->Ok_0.data@.len() <= max_output, // @ghost
         r is Ok ==> r->Ok_0.consumed <= input@.len(), // @ghost
@@ -62,7 +92,7 @@ pub fn decompress_with_limit(input: &[u8], max_output: usize) -> (r: Result<Deco
         out: Output::new(input.len(), max_output),
         lit: Decoder::EMPTY,
         dist: Decoder::EMPTY,
-        lengths: [0; NUM_LITLEN + NUM_DIST],
+        lengths: [0; NUM_LITLEN + NUM_DIST_64],
     };
     loop
         invariant // @ghost
@@ -77,10 +107,10 @@ pub fn decompress_with_limit(input: &[u8], max_output: usize) -> (r: Result<Deco
         } // @ghost-end
         match header >> 1 {
             0 => st.stored()?,
-            1 => codes(&mut st.br, &mut st.out, &FIXED_LIT, &FIXED_DIST)?,
+            1 => codes::<DEFLATE64>(&mut st.br, &mut st.out, &FIXED_LIT, &FIXED_DIST)?,
             2 => {
-                read_dynamic_codes(&mut st.br, &mut st.lit, &mut st.dist, &mut st.lengths)?;
-                codes(&mut st.br, &mut st.out, &st.lit, &st.dist)?;
+                read_dynamic_codes::<DEFLATE64>(&mut st.br, &mut st.lit, &mut st.dist, &mut st.lengths)?;
+                codes::<DEFLATE64>(&mut st.br, &mut st.out, &st.lit, &st.dist)?;
             }
             _ => return Err(InflateError::InvalidBlockType),
         }
@@ -215,7 +245,7 @@ struct State<'a> {
     lit: Decoder,
     dist: Decoder,
     /// Scratch space for a dynamic block's code lengths.
-    lengths: [u8; NUM_LITLEN + NUM_DIST],
+    lengths: [u8; NUM_LITLEN + NUM_DIST_64],
 }
 
 impl State<'_> {
@@ -250,8 +280,14 @@ impl State<'_> {
     }
 }
 
-/// Decodes one block's symbols with the given codes.
-fn codes(br: &mut BitReader<'_>, out: &mut Output, lit: &Decoder, dist: &Decoder) -> (r: Result<(), InflateError>)
+/// Decodes one block's symbols with the given codes, as Deflate64 if
+/// `DEFLATE64`.
+fn codes<const DEFLATE64: bool>(
+    br: &mut BitReader<'_>,
+    out: &mut Output,
+    lit: &Decoder,
+    dist: &Decoder,
+) -> (r: Result<(), InflateError>)
     requires // @ghost
         old(br).wf(), // @ghost
         old(out).wf(), // @ghost
@@ -266,8 +302,13 @@ fn codes(br: &mut BitReader<'_>, out: &mut Output, lit: &Decoder, dist: &Decoder
 {
     proof { // @ghost-begin
         lemma_tables();
+        lemma_tables_64();
         lemma_p2_small();
     } // @ghost-end
+    // Deflate64 decodes length code 285 and distance codes 30 and 31
+    // differently; its distance tables extend DEFLATE's.
+    let (length_base, length_extra, num_dist) =
+        if DEFLATE64 { (&LENGTH_BASE_64, &LENGTH_EXTRA_64, NUM_DIST_64) } else { (&LENGTH_BASE, &LENGTH_EXTRA, NUM_DIST) };
     loop
         invariant // @ghost
             br.wf(), // @ghost
@@ -277,12 +318,13 @@ fn codes(br: &mut BitReader<'_>, out: &mut Output, lit: &Decoder, dist: &Decoder
             out.limit == old(out).limit, // @ghost
             br.input_len() == old(br).input_len(), // @ghost
             br.remaining() <= old(br).remaining(), // @ghost
-            forall|i: int| 0 <= i < 29 ==> #[trigger] LENGTH_BASE@[i] <= 258, // @ghost
-            forall|i: int| 0 <= i < 29 ==> #[trigger] LENGTH_EXTRA@[i] <= 5, // @ghost
-            forall|i: int| 0 <= i < 30 ==> 1 <= #[trigger] DIST_BASE@[i] <= 24577, // @ghost
-            forall|i: int| 0 <= i < 30 ==> #[trigger] DIST_EXTRA@[i] <= 13, // @ghost
-            p2(5) == 32, // @ghost
-            p2(13) == 8192, // @ghost
+            forall|i: int| 0 <= i < 29 ==> #[trigger] length_base@[i] <= 258, // @ghost
+            forall|i: int| 0 <= i < 29 ==> #[trigger] length_extra@[i] <= 16, // @ghost
+            num_dist <= 32, // @ghost
+            forall|i: int| 0 <= i < 32 ==> 1 <= #[trigger] DIST_BASE_64@[i] <= 49153, // @ghost
+            forall|i: int| 0 <= i < 32 ==> #[trigger] DIST_EXTRA_64@[i] <= 14, // @ghost
+            p2(14) == 16384, // @ghost
+            p2(16) == 65536, // @ghost
         decreases br.remaining(), // @ghost
     {
         let sym = lit.decode(br)? as usize;
@@ -294,21 +336,21 @@ fn codes(br: &mut BitReader<'_>, out: &mut Output, lit: &Decoder, dist: &Decoder
             return Ok(());
         } else {
             let li = sym - 257;
-            if li >= LENGTH_BASE.len() {
+            if li >= length_base.len() {
                 return Err(InflateError::InvalidSymbol);
             }
             proof { // @ghost-begin
-                lemma_p2_mono(LENGTH_EXTRA@[li as int] as nat, 5);
+                lemma_p2_mono(length_extra@[li as int] as nat, 16);
             } // @ghost-end
-            let len = LENGTH_BASE[li] as usize + br.read_bits(u32::from(LENGTH_EXTRA[li]))? as usize;
+            let len = length_base[li] as usize + br.read_bits(u32::from(length_extra[li]))? as usize;
             let ds = dist.decode(br)? as usize;
-            if ds >= DIST_BASE.len() {
+            if ds >= num_dist {
                 return Err(InflateError::InvalidSymbol);
             }
             proof { // @ghost-begin
-                lemma_p2_mono(DIST_EXTRA@[ds as int] as nat, 13);
+                lemma_p2_mono(DIST_EXTRA_64@[ds as int] as nat, 14);
             } // @ghost-end
-            let d = DIST_BASE[ds] as usize + br.read_bits(u32::from(DIST_EXTRA[ds]))? as usize;
+            let d = DIST_BASE_64[ds] as usize + br.read_bits(u32::from(DIST_EXTRA_64[ds]))? as usize;
             if d > out.len {
                 return Err(InflateError::DistanceTooFarBack);
             }
@@ -320,12 +362,13 @@ fn codes(br: &mut BitReader<'_>, out: &mut Output, lit: &Decoder, dist: &Decoder
 }
 
 /// Reads a dynamic block header (§3.2.7) and builds its two decoders.
+/// Deflate64 allows all 32 distance codes.
 #[allow(clippy::needless_range_loop)] // an index loop, as the Verus copy needs
-fn read_dynamic_codes(
+fn read_dynamic_codes<const DEFLATE64: bool>(
     br: &mut BitReader<'_>,
     lit: &mut Decoder,
     dist: &mut Decoder,
-    lengths: &mut [u8; NUM_LITLEN + NUM_DIST],
+    lengths: &mut [u8; NUM_LITLEN + NUM_DIST_64],
 ) -> (r: Result<(), InflateError>)
     requires // @ghost
         old(br).wf(), // @ghost
@@ -345,7 +388,7 @@ fn read_dynamic_codes(
     let nlen = br.read_bits(5)? as usize + 257;
     let ndist = br.read_bits(5)? as usize + 1;
     let ncode = br.read_bits(4)? as usize + 4;
-    if nlen > NUM_LITLEN || ndist > NUM_DIST {
+    if nlen > NUM_LITLEN || ndist > if DEFLATE64 { NUM_DIST_64 } else { NUM_DIST } {
         return Err(InflateError::TooManyCodes);
     }
     let mut cl = [0u8; NUM_CODELEN];
@@ -383,7 +426,7 @@ fn read_dynamic_codes(
             clcode.wf(), // @ghost
             lit.wf(), // @ghost
             dist.wf(), // @ghost
-            idx <= total <= 316, // @ghost
+            idx <= total <= 318, // @ghost
             forall|k: nat| k <= 7 ==> #[trigger] p2(k) <= 128, // @ghost
         decreases total - idx, // @ghost
     {

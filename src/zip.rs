@@ -1,7 +1,8 @@
 //! ZIP archives (PKWARE APPNOTE 6.3): writing and reading archives whose
 //! entries are stored or DEFLATE-compressed.
 //!
-//! Supported: method 0 (stored) and 8 (deflate), UTF-8 names (flag bit 11),
+//! Supported: method 0 (stored) and 8 (deflate), and reading method 9
+//! (Deflate64, which Windows and 7-Zip use for large entries), UTF-8 names (flag bit 11),
 //! Unix permissions, DOS timestamps, data descriptors when reading.
 //! Not supported: ZIP64 (archives or entries of 4 GiB and more, or 65535+
 //! entries), encryption, multi-disk archives. These are reported as errors,
@@ -10,7 +11,7 @@
 use crate::crc32::crc32;
 use crate::deflate::{compress_with, CompressOptions, Strategy};
 use crate::error::InflateError;
-use crate::inflate::decompress_with_limit;
+use crate::inflate::{decompress_deflate64_with_limit, decompress_with_limit};
 use core::fmt;
 use std::collections::BTreeSet;
 
@@ -27,6 +28,8 @@ const FLAG_UTF8: u16 = 1 << 11;
 pub const METHOD_STORED: u16 = 0;
 /// Compression method 8.
 pub const METHOD_DEFLATED: u16 = 8;
+/// Compression method 9, Deflate64 (read only).
+pub const METHOD_DEFLATE64: u16 = 9;
 const MAX_COMMENT: usize = 0xFFFF;
 
 /// Errors from reading or writing ZIP archives.
@@ -45,7 +48,8 @@ pub enum ZipError {
     Zip64Unsupported,
     /// The entry is encrypted.
     Encrypted,
-    /// The entry uses a compression method other than stored or deflate.
+    /// The entry uses a compression method other than stored, deflate or
+    /// Deflate64.
     UnsupportedMethod(u16),
     /// The entry's sizes are inconsistent with its data.
     SizeMismatch,
@@ -732,7 +736,7 @@ pub struct ZipEntry {
     pub name: String,
     /// The name exactly as stored.
     pub raw_name: Vec<u8>,
-    /// Compression method (0 = stored, 8 = deflate).
+    /// Compression method (0 = stored, 8 = deflate, 9 = Deflate64).
     pub method: u16,
     /// General purpose flags.
     pub flags: u16,
@@ -908,6 +912,7 @@ impl<'a> ZipArchive<'a> {
                 raw.to_vec()
             }
             METHOD_DEFLATED => decompress_with_limit(raw, e.uncompressed_size as usize)?.data,
+            METHOD_DEFLATE64 => decompress_deflate64_with_limit(raw, e.uncompressed_size as usize)?.data,
             m => return Err(ZipError::UnsupportedMethod(m)),
         };
         if out.len() != e.uncompressed_size as usize {
@@ -951,6 +956,29 @@ mod tests {
         assert_eq!(a.entries()[3].flags & FLAG_UTF8, FLAG_UTF8);
         assert_eq!(a.entries()[1].unix_mode, Some(0o100_644));
         assert_eq!(a.entries()[0].unix_mode, Some(0o040_755));
+    }
+
+    #[test]
+    fn reads_deflate64_entries() {
+        // A DEFLATE stream with no length-258 match means the same as
+        // Deflate64, so relabelling a deflated entry as method 9 must read
+        // back the same bytes.
+        let data = b"Windows and 7-Zip write Deflate64 for large entries. ".repeat(4);
+        let mut w = ZipWriter::new();
+        w.add_file("a.txt", &data, &FileOptions::default()).unwrap();
+        let mut zip = w.finish().unwrap();
+        let eocd = zip.len() - EndOfCentralDirectory::SIZE;
+        let cd = u32_at(&zip, eocd + 16) as usize;
+        assert_eq!(u16_at(&zip, 8), METHOD_DEFLATED);
+        assert_eq!(u16_at(&zip, cd + 10), METHOD_DEFLATED);
+        zip[8..10].copy_from_slice(&METHOD_DEFLATE64.to_le_bytes());
+        zip[cd + 10..cd + 12].copy_from_slice(&METHOD_DEFLATE64.to_le_bytes());
+        let a = ZipArchive::parse(&zip).unwrap();
+        assert_eq!(a.entries()[0].method, METHOD_DEFLATE64);
+        assert_eq!(a.read(0).unwrap(), data);
+        // Method 10 is still refused.
+        zip[cd + 10..cd + 12].copy_from_slice(&10u16.to_le_bytes());
+        assert_eq!(ZipArchive::parse(&zip).unwrap().read(0), Err(ZipError::UnsupportedMethod(10)));
     }
 
     #[test]

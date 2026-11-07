@@ -181,7 +181,9 @@ name = "verified-deflate-fuzz"
 version = "0.0.0"
 dependencies = [
  "arbitrary",
+ "cc",
  "flate2",
  "libfuzzer-sys",
+ "libz-sys",
  "verified-deflate",
 ]
