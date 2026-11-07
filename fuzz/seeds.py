@@ -4,7 +4,9 @@
 For `inflate`: raw DEFLATE streams from zlib at every level and strategy,
 of text, binary, repetitive and random data. For `zip_read`: archives from
 Python's zipfile, stored and deflated, with directories, a non-ASCII name,
-an archive comment and an empty archive. If the `inflate64` package is
+an archive comment and an empty archive. For `gzip_zlib`: gzip and zlib
+streams, with header fields and two members. For `tar_read`: archives in
+each of tarfile's formats. If the `inflate64` package is
 installed, also Deflate64 streams for `inflate64`, and archives with
 Deflate64 (method 9) entries for `zip_read`. The other targets build their
 own inputs. Files go to fuzz/corpus/<target>/, named by content, so running
@@ -16,8 +18,10 @@ import hashlib
 import io
 import os
 import random
+import gzip
 import struct
 import sys
+import tarfile
 import zipfile
 import zlib
 
@@ -90,6 +94,33 @@ def main(root):
     with zipfile.ZipFile(buf, "w"):
         pass
     put(root, "zip_read", buf.getvalue())
+
+    # gzip (with header fields, and two members) and zlib streams.
+    for data in samples[:6]:
+        put(root, "gzip_zlib", gzip.compress(data, 6, mtime=0))
+        put(root, "gzip_zlib", zlib.compress(data, 6))
+    buf = io.BytesIO()
+    with gzip.GzipFile(filename="name.txt", mode="wb", fileobj=buf, mtime=1) as g:
+        g.write(samples[4])
+    buf.write(gzip.compress(b"second member", mtime=0))
+    put(root, "gzip_zlib", buf.getvalue())
+
+    # Tar in each of tarfile's formats: a directory, files, links, and a
+    # name long enough for the format's extension.
+    for fmt in (tarfile.USTAR_FORMAT, tarfile.GNU_FORMAT, tarfile.PAX_FORMAT):
+        buf = io.BytesIO()
+        with tarfile.open(fileobj=buf, mode="w", format=fmt) as t:
+            for name, kind, data, link in [
+                ("dir", tarfile.DIRTYPE, b"", ""),
+                ("dir/a.txt", tarfile.REGTYPE, samples[2], ""),
+                ("dir/link", tarfile.SYMTYPE, b"", "a.txt"),
+                ("hard", tarfile.LNKTYPE, b"", "dir/a.txt"),
+                ("p" * 120 + "/" + "n" * 60, tarfile.REGTYPE, b"x", ""),
+            ]:
+                ti = tarfile.TarInfo(name)
+                ti.type, ti.linkname, ti.size, ti.mtime = kind, link, len(data), 1700000000
+                t.addfile(ti, io.BytesIO(data))
+        put(root, "tar_read", buf.getvalue())
 
     if inflate64 is None:
         print("inflate64 not installed: no Deflate64 seeds")

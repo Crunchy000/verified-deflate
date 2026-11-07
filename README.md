@@ -13,8 +13,12 @@ Info-ZIP.
   zlib does, with an output limit to stop decompression bombs. It also
   reads **Deflate64** (the 64 KiB-window variant that Windows and 7-Zip
   write as ZIP method 9).
-- **zlib and gzip** encoding (RFC 1950, RFC 1952), one-shot or through
-  streaming `io::Write` encoders.
+- **zlib and gzip** (RFC 1950, RFC 1952): encoding, one-shot or through
+  streaming `io::Write` encoders, and decoding, with every checksum
+  checked and multi-member gzip files.
+- **tar archives**: a reader for ustar, pax and GNU archives (long names,
+  base-256 numbers, links, devices), and a writer that falls back to pax
+  headers for names, link targets and numbers that do not fit.
 - **A drop-in replacement for the [`deflate`] crate**: its whole API, checked
   by running `deflate`'s own test suite against this crate.
 - **ZIP archives**: writer and reader for stored and deflated entries,
@@ -256,10 +260,10 @@ corrupted chain to produce an invalid match.
   (deflate) are read and written, and method 9 (Deflate64) is read; no
   others.
 - Decompression works on whole buffers; streaming is for compression only.
-- zlib and gzip are written, not read: the decoder takes raw DEFLATE
-  (strip the 2-byte zlib or the gzip header first). Deflate64 is read,
-  not written. zlib preset
-  dictionaries are not supported.
+- Deflate64 is read, not written. zlib preset dictionaries are not
+  supported.
+- tar: GNU sparse files and multi-volume archives are listed but their
+  data is not reassembled.
 
 ## Layout
 
@@ -274,12 +278,14 @@ corrupted chain to produce an invalid match.
 | `src/deflate.rs` | Encoder |
 | `src/inflate.rs` | Decoder |
 | `src/zip.rs` | ZIP writer and reader |
+| `src/gzip.rs`, `src/zlib.rs` | gzip and zlib readers |
+| `src/tar.rs` | tar reader and writer |
 | `src/compat.rs`, `src/write.rs`, `src/gzip_header.rs` | The `deflate` crate's API: one-shot functions, streaming encoders, gzip headers |
 | `src/e2e.rs` | End-to-end Kani harnesses |
 | `verus/` | Verus proofs, over copies of library functions |
 | `.github/scripts/` | Per-harness Kani runner, coverage and mutation reports, Verus copy and mutant checks, used by CI |
 | `src/bin/vzip.rs` | Command-line tool |
-| `tests/` | zlib, Deflate64, Info-ZIP and robustness tests |
+| `tests/` | zlib, gzip, tar, Deflate64, Info-ZIP and robustness tests |
 | `fuzz/` | Differential fuzz targets against zlib and its Deflate64 decoder (cargo-fuzz), with their own dependencies |
 | `tools/deflate-upstream/` | Runs the `deflate` crate's own tests against this crate |
 | `tools/kani-sample/` | Runs harnesses as randomised tests where Kani isn't installed |

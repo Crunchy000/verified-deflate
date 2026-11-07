@@ -13,6 +13,9 @@ separate from the library, which keeps no dependencies.
 | `stream` | The streaming raw, zlib and gzip encoders, with any `CompressionOptions` and any sequence of writes and flushes: zlib decodes what they produce to what was written, and for raw streams so does this crate. |
 | `zip_read` | The ZIP reader on arbitrary bytes. An entry that reads successfully has its recorded size and CRC-32, and lookup by name finds the first entry of that name. (That it never panics, Verus proves.) |
 | `zip_roundtrip` | Archives the writer makes from any entries and options read back exactly. Names it refuses are invalid or repeated. |
+| `gzip_zlib` | A gzip member and a zlib stream are accepted exactly when C zlib accepts them (through its own wrappers), with the same output and bytes consumed. |
+| `tar_read` | Arbitrary bytes as a tar archive: entries' data lies inside it at the recorded size, in order, and paths made safe stay relative. |
+| `tar_roundtrip` | Archives the tar writer makes from any entries and metadata read back exactly, including what needs pax headers. |
 
 To run one locally (nightly Rust):
 

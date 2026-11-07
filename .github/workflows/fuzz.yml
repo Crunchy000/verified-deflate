@@ -46,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [inflate, inflate64, compress, stream, zip_read, zip_roundtrip]
+        target: [inflate, inflate64, compress, stream, zip_read, zip_roundtrip, gzip_zlib, tar_read, tar_roundtrip]
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly

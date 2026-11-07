@@ -77,13 +77,16 @@ mod compat;
 pub mod crc32;
 pub mod deflate;
 mod error;
+pub mod gzip;
 pub mod gzip_header;
 pub mod huffman;
 pub mod inflate;
 pub mod lz77;
 pub mod tables;
+pub mod tar;
 pub mod write;
 pub mod zip;
+pub mod zlib;
 
 #[cfg_attr(mutants, mutants::skip)] // proof code: the checker, not code under test
 #[cfg(kani)]
