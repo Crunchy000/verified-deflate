@@ -7,7 +7,7 @@ use std::process::ExitCode;
 use std::time::UNIX_EPOCH;
 
 use verified_deflate::zip::{validate_name, DosDateTime, FileOptions, ZipArchive, ZipWriter};
-use verified_deflate::{compress_with, decompress, CompressOptions};
+use verified_deflate::{compress_with, decompress, decompress_deflate64, CompressOptions, InflateError};
 
 const USAGE: &str = "\
 vzip - ZIP archives with verified-deflate
@@ -19,6 +19,7 @@ usage:
   vzip test ARCHIVE.zip
   vzip deflate [-0..-9] < INPUT > OUTPUT    (raw DEFLATE stream)
   vzip inflate < INPUT > OUTPUT
+  vzip inflate64 < INPUT > OUTPUT           (raw Deflate64 stream)
 
 options:
   -0 .. -9      compression level (default 6; 0 stores)
@@ -40,7 +41,8 @@ fn main() -> ExitCode {
         "list" | "l" => list(rest),
         "test" | "t" => test(rest),
         "deflate" => raw_deflate(rest),
-        "inflate" => raw_inflate(rest),
+        "inflate" => raw_inflate(rest, decompress),
+        "inflate64" => raw_inflate(rest, decompress_deflate64),
         "-h" | "--help" | "help" => {
             println!("{USAGE}");
             Ok(())
@@ -207,6 +209,7 @@ fn list(args: &[String]) -> Result<()> {
         let method = match e.method {
             0 => "stored".to_string(),
             8 => "deflate".to_string(),
+            9 => "deflate64".to_string(),
             n => n.to_string(),
         };
         println!(
@@ -267,11 +270,11 @@ fn raw_deflate(args: &[String]) -> Result<()> {
     io::stdout().write_all(&out).map_err(|e| e.to_string())
 }
 
-fn raw_inflate(args: &[String]) -> Result<()> {
+fn raw_inflate(args: &[String], decode: fn(&[u8]) -> std::result::Result<Vec<u8>, InflateError>) -> Result<()> {
     if !args.is_empty() {
         return Err(USAGE.into());
     }
     let input = read_stdin()?;
-    let out = decompress(&input).map_err(|e| e.to_string())?;
+    let out = decode(&input).map_err(|e| e.to_string())?;
     io::stdout().write_all(&out).map_err(|e| e.to_string())
 }

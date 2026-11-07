@@ -8,11 +8,12 @@
 //! archive it returns, for every index and name. Every header read, every
 //! slice and every offset sum stays in bounds, on 32-bit targets as on
 //! 64-bit ones, and every loop ends. `read` decompresses with the verified
-//! decoder (`inflate`) and checks the CRC with the verified `crc32`.
+//! decoder (`inflate`, DEFLATE or Deflate64) and checks the CRC with the
+//! verified `crc32`.
 
 use crate::crc32::crc32;
 use crate::error::InflateError;
-use crate::inflate::decompress_with_limit;
+use crate::inflate::{decompress_deflate64_with_limit, decompress_with_limit};
 use crate::std_specs::axiom_byte_slice_len;
 use vstd::prelude::*;
 
@@ -26,6 +27,8 @@ const FLAG_ENCRYPTED: u16 = 1;
 pub const METHOD_STORED: u16 = 0;
 /// Compression method 8.
 pub const METHOD_DEFLATED: u16 = 8;
+/// Compression method 9, Deflate64 (read only).
+pub const METHOD_DEFLATE64: u16 = 9;
 const MAX_COMMENT: usize = 0xFFFF;
 
 /// Errors from reading or writing ZIP archives.
@@ -490,6 +493,7 @@ impl<'a> ZipArchive<'a> {
                 raw.to_vec()
             }
             METHOD_DEFLATED => decompress_with_limit(raw, e.uncompressed_size as usize)?.data,
+            METHOD_DEFLATE64 => decompress_deflate64_with_limit(raw, e.uncompressed_size as usize)?.data,
             m => return Err(ZipError::UnsupportedMethod(m)),
         };
         if out.len() != e.uncompressed_size as usize {

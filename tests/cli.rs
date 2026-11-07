@@ -62,6 +62,10 @@ fn raw_deflate_pipe_roundtrip() {
     assert!(sh("\"$VZIP\" deflate -9 < in > c && \"$VZIP\" inflate < c > out").status.success());
     assert_eq!(fs::read(dir.join("out")).unwrap(), data);
     assert!(fs::metadata(dir.join("c")).unwrap().len() < 100);
+    // "hello" from zlib: no long codes, so also a Deflate64 stream.
+    fs::write(dir.join("h"), [0xcb, 0x48, 0xcd, 0xc9, 0xc9, 0x07, 0x00]).unwrap();
+    assert!(sh("\"$VZIP\" inflate64 < h > h.out").status.success());
+    assert_eq!(fs::read(dir.join("h.out")).unwrap(), b"hello");
     let _ = fs::remove_dir_all(&dir);
 }
 

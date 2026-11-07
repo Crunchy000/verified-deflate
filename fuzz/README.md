@@ -1,12 +1,14 @@
 # Fuzzing
 
 Coverage-guided differential fuzzing with [cargo-fuzz] (libFuzzer). The
-reference is C zlib, through `flate2`. This crate is separate from the
-library, which keeps no dependencies.
+reference is C zlib, through `flate2`, and for Deflate64 zlib's
+`infback9`, vendored in `infback9/` (see its README). This crate is
+separate from the library, which keeps no dependencies.
 
 | Target | Checks |
 |---|---|
 | `inflate` | On arbitrary bytes, the decoder and zlib accept the same streams, with the same output and the same number of bytes consumed. |
+| `inflate64` | The same for the Deflate64 decoder, against zlib's `infback9` (Mark Adler's Deflate64 decoder, built from `infback9/`). |
 | `compress` | `compress_with` at every level, strategy and `verify` setting: the stream decodes to the input with this crate and with zlib. zlib's streams, at every level, decode to the input with this crate. |
 | `stream` | The streaming raw, zlib and gzip encoders, with any `CompressionOptions` and any sequence of writes and flushes: zlib decodes what they produce to what was written, and for raw streams so does this crate. |
 | `zip_read` | The ZIP reader on arbitrary bytes. An entry that reads successfully has its recorded size and CRC-32, and lookup by name finds the first entry of that name. (That it never panics, Verus proves.) |
@@ -16,7 +18,7 @@ To run one locally (nightly Rust):
 
 ```sh
 cargo install cargo-fuzz
-python3 fuzz/seeds.py                      # starting inputs for inflate and zip_read
+python3 fuzz/seeds.py                      # starting inputs (Deflate64 ones need `pip install inflate64`)
 cd fuzz
 cargo fuzz run --sanitizer none --debug-assertions inflate -- -max_total_time=60
 ```

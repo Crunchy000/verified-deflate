@@ -6,12 +6,12 @@ weakest:
 1. **Proofs**:
    - **Kani**: bounded model checking of the real code, for *every* input
      up to the stated size. Each harness is a `#[kani::proof]` function
-     next to the code it checks. 66 harnesses run in CI on every push; 11
+     next to the code it checks. 68 harnesses run in CI on every push; 11
      more are too large for CI runners and are gated behind the
      `kani-extended` feature (see below).
    - **Verus**: deductive proofs for inputs of *every* size, where Kani's
      proofs stop at a bound:
-     - The decoder returns on every input, never panics and never exceeds its output limit.
+     - The decoder returns on every input, never panics and never exceeds its output limit, for DEFLATE and for Deflate64.
      - The encoder returns on every input, level and strategy, and never panics. So does the streaming encoder.
      - The Huffman code-length builder makes a complete code within the limit for any alphabet.
      - The ZIP reader returns on every byte string and never panics, and neither does reading any entry or computing a CRC-32.
@@ -25,9 +25,12 @@ weakest:
 3. **Differential testing**: the engine is checked against the reference
    zlib (through Python's `zlib` module), Info-ZIP `zip`/`unzip` and
    Python's `zipfile`. Large randomised round-trip and corruption tests
-   run on top. Coverage-guided fuzzing compares the decoder and every
-   encoder with C zlib, and checks the ZIP reader and writer (see
-   [Fuzzing](#fuzzing)). The tests also run on 32-bit x86 and big-endian
+   run on top. Deflate64 is checked against Python's `inflate64` (a zlib
+   fork) and 7-Zip. Coverage-guided fuzzing compares the decoder and every
+   encoder with C zlib, and the Deflate64 decoder with zlib's `infback9`.
+   It also checks the ZIP reader and writer (see [Fuzzing](#fuzzing)).
+   In CI, `REQUIRE_INTEROP_TOOLS` makes a test fail, rather than skip,
+   when its tool is missing. The tests also run on 32-bit x86 and big-endian
    s390x.
 4. **Run-time checks**: CRC-32 on every ZIP entry, an output limit on
    every decompression, and the optional `verify` mode. `verify`
@@ -173,6 +176,8 @@ the zlib interop tests confirm the output is unchanged.
 | `distance_code_covers_every_distance` | Every distance 1–32768 maps to a covering code. |
 | `distance_decode_is_inverse` | Every (code, extra bits) pair decodes to a valid distance that encodes back to the same code. |
 | `fixed_lengths_match_rfc` | The fixed literal/length code lengths match RFC 1951 §3.2.6 for all 288 symbols. |
+| `deflate64_distances_partition_1_to_65536` | Every Deflate64 (distance code, extra bits) pair decodes to a distance in 1–65536. The codes partition that range, each starting where the one before ends, so codes 30 and 31 continue DEFLATE's series without gap or overlap. |
+| `deflate64_lengths_reach_65538` | Every Deflate64 (length code, extra bits) pair decodes to a length in 3–65538, and code 285 reaches 65538. A compile-time check confirms the Deflate64 tables equal DEFLATE's apart from length code 285 and distance codes 30 and 31. |
 
 ### Huffman codes (`huffman`)
 
@@ -276,10 +281,10 @@ four minutes.
 
 | Code | Theorem | Kani's bound |
 |---|---|---|
-| The decoder: `decompress_with_limit` and `decompress`, with the bit reader, both Huffman decoders, the match copy and the tables (`verus/src/inflate.rs`, `bitio.rs`, `huffman_decode.rs`, `lz77.rs`, `tables.rs`) | For **every input of every length** and every output limit, the decoder returns: it never panics, and every loop terminates. On success the output is no longer than the limit, and the bytes consumed are within the input. Building a Huffman decoder from any code lengths at all leaves it well-formed, so decoding with it is always in bounds. | 2 bytes (5 for a fixed block), extended set only |
+| The decoder: `decompress_with_limit` and `decompress`, and their Deflate64 versions, with the bit reader, both Huffman decoders, the match copy and the tables (`verus/src/inflate.rs`, `bitio.rs`, `huffman_decode.rs`, `lz77.rs`, `tables.rs`) | For **every input of every length** and every output limit, the decoder returns, for DEFLATE and for Deflate64 (the format is a constant parameter, and the proof covers both values): it never panics, and every loop terminates. On success the output is no longer than the limit, and the bytes consumed are within the input. Building a Huffman decoder from any code lengths at all leaves it well-formed, so decoding with it is always in bounds. | 2 bytes (5 for a fixed block), extended set only |
 | The encoder: `compress`, `compress_with` (with `verify` on or off) and the streaming `StreamEncoder` behind the `write` encoders, with the match finder, the block writers, the bit writer, canonical codes and the code lookups (`verus/src/deflate.rs`, `lz77.rs`, `bitio.rs`, `build_lengths.rs`, `tables.rs`) | For **every input of every length**, every level and every strategy, compression returns: it never panics, and every loop terminates. The same holds for any sequence of calls to the streaming encoder. Along the way, the tokenizer is proved to emit only matches DEFLATE can express (length 3–258, distance 1–32768), and the code lookups to return codes whose base is at most the value coded. | 3–6 bytes, end to end in the extended set |
 | The code-length builder: `huffman::build_lengths` with the tree, the heapsort and the length-limit repair (`verus/src/build_lengths.rs`, `limit_depths.rs`) | For **any alphabet** (DEFLATE's 19, 30 and 286 symbols included), any frequencies and any limit, the build succeeds exactly when it can: 2 or more symbols, a limit of 1–15 and no more used symbols than codes of that length. Then the lengths form a complete prefix code (Kraft sum exactly 1, the library's `is_complete`) within the limit, and the symbols with codes are exactly the used ones (symbols 0 and 1 when fewer than two are used). It never panics. | 3–6 symbols |
-| The ZIP reader: `ZipArchive::parse`, `index_of`, `raw_data`, `read` and `read_by_name`, with the header parsers, the end-record scan, the bounds helpers, `ZipEntry::is_dir`, DOS timestamps and CRC-32 (`verus/src/zip.rs`, `crc32.rs`, with the decoder above) | For **every byte string of every length**, parsing returns: it never panics, and its loops terminate. On the archive it returns, reading or looking up any index or name returns too. Every header read, slice and offset sum is in bounds, on 32-bit targets as well: the local-header offset sum in `raw_data`, which Kani only checks on 64-bit, cannot overflow because a slice is at most `isize::MAX` bytes. CRC-32 (`crc32`, `update`, the streaming `Crc32`) returns on every input with every table index in bounds. | 0–46 bytes per header, 0–30 for the end-record scan; the bounds helpers for all values |
+| The ZIP reader: `ZipArchive::parse`, `index_of`, `raw_data`, `read` and `read_by_name`, with the header parsers, the end-record scan, the bounds helpers, `ZipEntry::is_dir`, DOS timestamps and CRC-32 (`verus/src/zip.rs`, `crc32.rs`, with the decoder above) | For **every byte string of every length**, parsing returns: it never panics, and its loops terminate. On the archive it returns, reading or looking up any index or name returns too, whether the entry is stored, deflated or Deflate64. Every header read, slice and offset sum is in bounds, on 32-bit targets as well: the local-header offset sum in `raw_data`, which Kani only checks on 64-bit, cannot overflow because a slice is at most `isize::MAX` bytes. CRC-32 (`crc32`, `update`, the streaming `Crc32`) returns on every input with every table index in bounds. | 0–46 bytes per header, 0–30 for the end-record scan; the bounds helpers for all values |
 | ZIP names: `zip::name_is_safe`, behind `validate_name` (`verus/src/name_is_safe.rs`) | For byte strings of every length, a name is accepted exactly when it meets the position-by-position rule of `validate_name_is_exactly_the_rule`, plus the 65,535-byte limit. | 8 bytes |
 
 Verus checks every index, every arithmetic operation, every shift and every
@@ -287,7 +292,7 @@ Verus checks every index, every arithmetic operation, every shift and every
 32-bit or a 64-bit `usize`, so the proofs hold for both.
 
 What is *not* claimed:
-- That the decoder's output is the stream's contents, or that the encoder's output decodes to its input. Those rest on the Kani round trips, zlib interop, and the encoder's `verify` option.
+- That the decoder's output is the stream's contents, or that the encoder's output decodes to its input. Those rest on the Kani round trips, zlib interop, and the encoder's `verify` option. For Deflate64 they rest on the tests against `inflate64` and 7-Zip, and on fuzzing against `infback9`.
 - That the builder makes the *shortest* code. Its heapsort is proved to sort only up to 5 entries, by Kani, and any complete code within the limit is a valid DEFLATE code.
 - That the ZIP reader accepts every well-formed archive, or that an entry's bytes are what was stored. Those rest on the tests against Info-ZIP and Python's `zipfile`, and on the CRC-32 check at run time (whose value Kani proves right).
 - That memory never runs out. `vstd` models growing a `Vec` as always succeeding, so an allocation failure, or a buffer passing `isize::MAX` bytes (which needs an input that large), is outside the proofs. The decoder's output limit bounds its allocations.
@@ -298,11 +303,11 @@ What is *not* claimed:
   Rust 1.83. So the proofs live in a separate crate, with a copy of the
   code. `.github/scripts/verus_drift.py` checks in CI that each copy, with
   its proof lines (marked `// @ghost`) removed, is the library's code token
-  for token. That covers 214 functions, methods, types, constants and
+  for token. That covers 223 functions, methods, types, constants and
   statics.
   Comments and layout may differ; code may not. `verus/copies.txt` lists
   the pairs.
-- **The proofs reject bugs.** `.github/scripts/verus_mutants.py` plants 68
+- **The proofs reject bugs.** `.github/scripts/verus_mutants.py` plants 70
   one-line bugs in the copies, one at a time, and checks that each makes
   verification fail. Examples:
   - reading a byte past the end of the input;
@@ -317,7 +322,8 @@ What is *not* claimed:
   - accepting NUL or `..` in a name;
   - reading a ZIP field one byte too far, or trusting the central directory's size;
   - looking up a ZIP entry, or slicing its data, without checking the index or the end;
-  - a CRC-32 loop that never moves past its first eight bytes.
+  - a CRC-32 loop that never moves past its first eight bytes;
+  - looking Deflate64's distance codes 30 and 31 up in DEFLATE's 30-entry table.
 
   A specification that pinned nothing down, or a precondition that could
   never hold, would let them through.
@@ -484,13 +490,17 @@ harness timed out. By file, after:
 
 ## Fuzzing
 
-`fuzz/` holds five [cargo-fuzz] targets. libFuzzer evolves inputs toward
+`fuzz/` holds six [cargo-fuzz] targets. libFuzzer evolves inputs toward
 new code paths, with debug assertions and overflow checks on. The
-reference is C zlib, through `flate2`.
+reference is C zlib, through `flate2`. For Deflate64 it is zlib's
+`infback9`, Mark Adler's Deflate64 decoder, which is vendored unchanged in
+`fuzz/infback9` and built with a small stand-in for zlib's internal
+header.
 
 | Target | Checks |
 |---|---|
 | `inflate` | On arbitrary bytes, the decoder and zlib accept the same streams, with the same output and the same number of bytes consumed. |
+| `inflate64` | The same for the Deflate64 decoder, against `infback9`. Python's `inflate64` encoder makes its seed inputs. |
 | `compress` | `compress_with` at any level, strategy and `verify` setting: zlib and this crate both decode the stream to the input. zlib's streams at every level decode to the input here. |
 | `stream` | The streaming raw, zlib and gzip encoders, with any `CompressionOptions` and any sequence of writes and flushes: zlib decodes what they produce to what was written, and so does this crate for raw streams. |
 | `zip_read` | Arbitrary bytes as an archive. An entry that reads has its recorded size and CRC-32, and lookup by name finds the first entry of that name. |
@@ -504,6 +514,19 @@ target found no difference from zlib and no failure. That run covered:
 - 29 million inputs for `inflate`;
 - 70 million for `zip_read`;
 - about 4 million each for `compress`, `stream` and `zip_roundtrip`.
+
+`inflate64` came with Deflate64 support. Within seconds of its first run
+it found one difference from `infback9`, a dynamic block with no
+distance codes:
+- `infback9` dates from 2003 and rejects such a block. Python's
+  `inflate64` copies its tables, so it rejects one too.
+- zlib fixed the same rejection in its own decoder in 1.2.1.1, and RFC
+  1951 §3.2.7 allows the case.
+- This crate accepts such a block, and the vendored `infback9` carries
+  zlib's fix, marked (see `fuzz/infback9/README.md`).
+
+After that, a 15-minute run of each target found nothing: 2.8 million
+inputs for `inflate64`, and 3–9 million for each of the others.
 
 A failing input is kept as a workflow artifact. `fuzz/README.md` has the commands to run or
 reproduce one locally.

@@ -2,7 +2,9 @@
 //!
 //! A DEFLATE ([RFC 1951]) compressor and decompressor plus ZIP archive
 //! support, written in safe Rust with no dependencies, with bounded proofs
-//! of its key properties checked by the [Kani] model checker.
+//! of its key properties checked by the [Kani] model checker. It also
+//! decompresses Deflate64 ([`decompress_deflate64`]), and reads ZIP entries
+//! that use it.
 //!
 //! ```
 //! use verified_deflate::{compress, decompress};
@@ -95,4 +97,6 @@ pub use compat::{
 pub use crc32::{crc32, Crc32};
 pub use deflate::{compress, compress_with, CompressOptions, Strategy};
 pub use error::InflateError;
-pub use inflate::{decompress, decompress_with_limit, Decompressed};
+pub use inflate::{
+    decompress, decompress_deflate64, decompress_deflate64_with_limit, decompress_with_limit, Decompressed,
+};

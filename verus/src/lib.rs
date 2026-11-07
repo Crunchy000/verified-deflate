@@ -11,8 +11,9 @@
 //!   always produces a complete code within the limit, for any alphabet.
 //! - `name_is_safe`: ZIP entry names are accepted exactly when safe.
 //! - `inflate`, with `bitio`, `huffman_decode`, `lz77`, `tables` and
-//!   `error`: the decoder returns on every input, without panicking, and
-//!   its output stays within the caller's limit.
+//!   `error`: the decoder, for DEFLATE and for Deflate64, returns on every
+//!   input, without panicking, and its output stays within the caller's
+//!   limit.
 //! - `deflate`, with `lz77`, `bitio`, `build_lengths` and `tables`: the
 //!   encoder returns on every input, level and strategy, without
 //!   panicking, and so does the streaming encoder.

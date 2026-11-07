@@ -10,21 +10,24 @@ Info-ZIP.
   hash-chain LZ77 with lazy matching, levels 0–9. Each block uses whichever
   of the three encodings is smallest, computed exactly.
 - **Strict, panic-free decoder** that rejects malformed streams the way
-  zlib does, with an output limit to stop decompression bombs.
+  zlib does, with an output limit to stop decompression bombs. It also
+  reads **Deflate64** (the 64 KiB-window variant that Windows and 7-Zip
+  write as ZIP method 9).
 - **zlib and gzip** encoding (RFC 1950, RFC 1952), one-shot or through
   streaming `io::Write` encoders.
 - **A drop-in replacement for the [`deflate`] crate**: its whole API, checked
   by running `deflate`'s own test suite against this crate.
 - **ZIP archives**: writer and reader for stored and deflated entries,
-  UTF-8 names, Unix permissions, timestamps and data descriptors. Every
-  entry is checked against its CRC-32.
+  and reader for Deflate64 ones, with UTF-8 names, Unix permissions,
+  timestamps and data descriptors. Every entry is checked against its
+  CRC-32.
 - **`vzip`**, a small command-line tool to create, extract, list and test
   archives.
 - `#![forbid(unsafe_code)]`, zero dependencies, MSRV 1.83.
 
 ## Verification
 
-66 Kani harnesses sit next to the code they check and run in CI on every
+68 Kani harnesses sit next to the code they check and run in CI on every
 push. For every input up to the stated sizes, they prove these
 properties:
 
@@ -63,9 +66,9 @@ Five results are also proved for inputs of every size, not just up to a
 bound, with the deductive verifier [Verus] (in `verus/`, run in CI on
 every push):
 
-- **The decoder** returns on every input of every length: it never
-  panics, never loops forever, and never produces more than the caller's
-  output limit.
+- **The decoder** returns on every input of every length, for DEFLATE and
+  Deflate64: it never panics, never loops forever, and never produces more
+  than the caller's output limit.
 - **The encoder** returns on every input, at every level and strategy,
   without panicking, and so does the streaming encoder behind the `write`
   encoders.
@@ -79,7 +82,7 @@ every push):
   for names of any length.
 
 CI checks that each verified copy is the library's code token for token,
-and that 68 planted bugs each make verification fail.
+and that 70 planted bugs each make verification fail.
 
 The proofs are themselves checked. Kani's source coverage shows which code
 each proof reaches. Mutation testing plants about 1,900 small bugs; the
@@ -92,9 +95,13 @@ Two further checks run on top of the proofs. The test suite compares the
 engine against real zlib in both directions: zlib decodes every stream
 this crate produces, and this crate decodes about 1,400 zlib streams across
 all levels, strategies and window sizes. Archives are validated with
-`unzip -t` and Python's `zipfile`. Coverage-guided fuzzing (in `fuzz/`)
+`unzip -t` and Python's `zipfile`. For Deflate64, the tests decode the
+streams of Python's `inflate64` encoder and the archives 7-Zip writes, and
+on corrupted streams accept exactly what `inflate64`'s decoder accepts. Coverage-guided fuzzing (in `fuzz/`)
 runs the same comparison on inputs libFuzzer evolves:
 - the decoder against zlib on arbitrary bytes;
+- the Deflate64 decoder against zlib's `infback9`, Mark Adler's Deflate64
+  decoder;
 - every encoder, one-shot and streaming, at any options, decoded by both;
 - the ZIP reader on arbitrary bytes, and on archives the writer makes.
 
@@ -245,11 +252,13 @@ corrupted chain to produce an invalid match.
 
 - No ZIP64: archives and entries must be under 4 GiB, with fewer than
   65,535 entries. Larger archives are rejected, never misread.
-- No encryption or multi-disk archives. Only methods 0 (stored) and 8
-  (deflate) are supported.
+- No encryption or multi-disk archives. Methods 0 (stored) and 8
+  (deflate) are read and written, and method 9 (Deflate64) is read; no
+  others.
 - Decompression works on whole buffers; streaming is for compression only.
 - zlib and gzip are written, not read: the decoder takes raw DEFLATE
-  (strip the 2-byte zlib or the gzip header first). zlib preset
+  (strip the 2-byte zlib or the gzip header first). Deflate64 is read,
+  not written. zlib preset
   dictionaries are not supported.
 
 ## Layout
@@ -270,8 +279,8 @@ corrupted chain to produce an invalid match.
 | `verus/` | Verus proofs, over copies of library functions |
 | `.github/scripts/` | Per-harness Kani runner, coverage and mutation reports, Verus copy and mutant checks, used by CI |
 | `src/bin/vzip.rs` | Command-line tool |
-| `tests/` | zlib, Info-ZIP and robustness tests |
-| `fuzz/` | Differential fuzz targets against zlib (cargo-fuzz), with their own dependencies |
+| `tests/` | zlib, Deflate64, Info-ZIP and robustness tests |
+| `fuzz/` | Differential fuzz targets against zlib and its Deflate64 decoder (cargo-fuzz), with their own dependencies |
 | `tools/deflate-upstream/` | Runs the `deflate` crate's own tests against this crate |
 | `tools/kani-sample/` | Runs harnesses as randomised tests where Kani isn't installed |
 

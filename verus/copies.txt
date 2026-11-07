@@ -26,6 +26,11 @@ src/tables.rs   const:LENGTH_BASE                   verus/src/tables.rs
 src/tables.rs   const:LENGTH_EXTRA                  verus/src/tables.rs
 src/tables.rs   const:DIST_BASE                     verus/src/tables.rs
 src/tables.rs   const:DIST_EXTRA                    verus/src/tables.rs
+src/tables.rs   const:LENGTH_BASE_64                verus/src/tables.rs
+src/tables.rs   const:LENGTH_EXTRA_64               verus/src/tables.rs
+src/tables.rs   const:NUM_DIST_64                   verus/src/tables.rs
+src/tables.rs   const:DIST_BASE_64                  verus/src/tables.rs
+src/tables.rs   const:DIST_EXTRA_64                 verus/src/tables.rs
 src/tables.rs   const:CODELEN_ORDER                 verus/src/tables.rs
 src/tables.rs   const:FIXED_DIST_LENGTHS            verus/src/tables.rs
 src/tables.rs   codelen_extra_bits                  verus/src/tables.rs
@@ -70,6 +75,9 @@ src/lz77.rs     word4                               verus/src/lz77.rs
 src/inflate.rs  struct:Decompressed                 verus/src/inflate.rs
 src/inflate.rs  decompress                          verus/src/inflate.rs
 src/inflate.rs  decompress_with_limit               verus/src/inflate.rs
+src/inflate.rs  decompress_deflate64                verus/src/inflate.rs
+src/inflate.rs  decompress_deflate64_with_limit     verus/src/inflate.rs
+src/inflate.rs  inflate                             verus/src/inflate.rs
 src/inflate.rs  const:INITIAL_CAPACITY              verus/src/inflate.rs
 src/inflate.rs  const:MAX_INITIAL_CAPACITY          verus/src/inflate.rs
 src/inflate.rs  const:FIXED_LIT                     verus/src/inflate.rs
@@ -194,6 +202,7 @@ src/zip.rs      const:EOCD_SIG                      verus/src/zip.rs
 src/zip.rs      const:FLAG_ENCRYPTED                verus/src/zip.rs
 src/zip.rs      const:METHOD_STORED                 verus/src/zip.rs
 src/zip.rs      const:METHOD_DEFLATED               verus/src/zip.rs
+src/zip.rs      const:METHOD_DEFLATE64              verus/src/zip.rs
 src/zip.rs      const:MAX_COMMENT                   verus/src/zip.rs
 src/zip.rs      enum:ZipError                       verus/src/zip.rs
 src/zip.rs      ZipError::from                      verus/src/zip.rs

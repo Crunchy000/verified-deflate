@@ -77,8 +77,10 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
-      - name: Install zip/unzip for interop tests
-        run: sudo apt-get install -y zip unzip
+      - name: Install the interop tools (Info-ZIP, 7-Zip, Python's inflate64)
+        run: |
+          sudo apt-get install -y zip unzip 7zip
+          sudo python3 -m pip install --break-system-packages "inflate64>=1,<2"
       - name: Format
         run: .github/scripts/run-and-report.sh fmt cargo fmt --all --check
       - name: Clippy
@@ -87,8 +89,10 @@ jobs:
         run: .github/scripts/run-and-report.sh clippy-harnesses cargo clippy --lib --profile test -- -D warnings
         env:
           RUSTFLAGS: --cfg kani --cfg kani_sample
-      - name: Tests (including zlib, unzip and Info-ZIP interop)
+      - name: Tests (including zlib, Deflate64, unzip and Info-ZIP interop)
         run: .github/scripts/run-and-report.sh tests cargo test --release
+        env:
+          REQUIRE_INTEROP_TOOLS: "1"
       - name: Kani harnesses as randomised tests (sanity check, not proof)
         run: .github/scripts/run-and-report.sh sampled-harnesses cargo test --lib --release -- proofs e2e
         env:
@@ -136,10 +140,14 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-      - name: Install the cross toolchain, zip and unzip
-        run: sudo apt-get update && sudo apt-get install -y zip unzip ${{ matrix.packages }}
-      - name: Tests (including zlib, unzip and Info-ZIP interop)
+      - name: Install the cross toolchain and the interop tools
+        run: |
+          sudo apt-get update && sudo apt-get install -y zip unzip 7zip ${{ matrix.packages }}
+          sudo python3 -m pip install --break-system-packages "inflate64>=1,<2"
+      - name: Tests (including zlib, Deflate64, unzip and Info-ZIP interop)
         run: .github/scripts/run-and-report.sh tests-${{ matrix.target }} cargo test --release --target ${{ matrix.target }}
+        env:
+          REQUIRE_INTEROP_TOOLS: "1"
 
   kani:
     name: Kani ${{ matrix.module }}${{ matrix.part && format(' ({0})', matrix.part) || '' }}

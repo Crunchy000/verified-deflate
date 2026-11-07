@@ -44,6 +44,46 @@ pub const DIST_BASE: [u16; 30] = [
 pub const DIST_EXTRA: [u8; 30] =
     [0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13];
 
+/// Deflate64's base length for length codes 257..=285: DEFLATE's, except
+/// code 285, which is base 3 with 16 extra bits.
+pub const LENGTH_BASE_64: [u16; 29] =
+    [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 3];
+
+/// Deflate64's extra bits for length codes 257..=285.
+pub const LENGTH_EXTRA_64: [u8; 29] =
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 16];
+
+/// Number of Deflate64 distance symbols (0..=31).
+pub const NUM_DIST_64: usize = 32;
+
+/// Base distance for Deflate64's distance codes 0..=31.
+pub const DIST_BASE_64: [u16; NUM_DIST_64] = [
+    1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145,
+    8193, 12289, 16385, 24577, 32769, 49153,
+];
+
+/// Extra bits for Deflate64's distance codes 0..=31.
+pub const DIST_EXTRA_64: [u8; NUM_DIST_64] =
+    [0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14];
+
+/// The bounds of the Deflate64 table entries.
+pub proof fn lemma_tables_64()
+    ensures
+        forall|i: int| 0 <= i < 29 ==> #[trigger] LENGTH_BASE_64@[i] <= 227,
+        forall|i: int| 0 <= i < 29 ==> #[trigger] LENGTH_EXTRA_64@[i] <= 16,
+        forall|i: int| 0 <= i < 32 ==> 1 <= #[trigger] DIST_BASE_64@[i] <= 49153,
+        forall|i: int| 0 <= i < 32 ==> #[trigger] DIST_EXTRA_64@[i] <= 14,
+{
+    assert forall|i: int| 0 <= i < 29 implies #[trigger] LENGTH_BASE_64@[i] <= 227 && LENGTH_EXTRA_64@[i] <= 16 by {
+        assert(LENGTH_BASE_64@ =~= seq![3u16, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 3]);
+        assert(LENGTH_EXTRA_64@ =~= seq![0u8, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 16]);
+    }
+    assert forall|i: int| 0 <= i < 32 implies 1 <= #[trigger] DIST_BASE_64@[i] <= 49153 && DIST_EXTRA_64@[i] <= 14 by {
+        assert(DIST_BASE_64@ =~= seq![1u16, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577, 32769, 49153]);
+        assert(DIST_EXTRA_64@ =~= seq![0u8, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14]);
+    }
+}
+
 /// Order in which code-length code lengths are transmitted (§3.2.7).
 pub const CODELEN_ORDER: [usize; NUM_CODELEN] = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15];
 
