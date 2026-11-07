@@ -433,6 +433,16 @@ impl<'a> TarArchive<'a> {
     }
 }
 
+/// True if `data` starts with a tar header: a non-zero 512-byte block
+/// whose checksum matches. (How `file` and 7-Zip recognise tar, which has
+/// no signature: old archives lack the `ustar` magic.)
+pub fn is_tar(data: &[u8]) -> bool {
+    match data.get(..BLOCK) {
+        Some(h) => !h.iter().all(|&b| b == 0) && checksum_ok(h, 0).unwrap_or(false),
+        None => false,
+    }
+}
+
 /// Turns a stored path into a safe relative one, as tar and 7-Zip do when
 /// extracting: drops leading `/` and `./` components and empty ones, and
 /// refuses (`None`) a path with a `..` component, a NUL, or nothing left.
@@ -658,6 +668,16 @@ impl TarWriter {
         Ok(())
     }
 
+    /// Copies entry `index` of `archive` as it is: its headers (pax and
+    /// GNU long-name ones too) and data. For updating an archive, or
+    /// deleting entries from one.
+    pub fn copy_entry(&mut self, archive: &TarArchive<'_>, index: usize) {
+        let e = &archive.entries[index];
+        let end = (e.data_offset + e.size as usize).next_multiple_of(BLOCK).min(archive.data.len());
+        self.out.extend_from_slice(&archive.data[e.header_offset..end]);
+        self.pad();
+    }
+
     /// Writes the end-of-archive marker (two zero blocks) and returns the
     /// archive.
     pub fn finish(mut self) -> Vec<u8> {
@@ -757,6 +777,31 @@ mod tests {
     }
 
     #[test]
+    fn copy_entry_keeps_entries_exactly() {
+        let mut w = TarWriter::new();
+        w.add_file("a", b"first", &opts()).unwrap();
+        w.add_file(&"long/".repeat(40), b"pax-named", &opts()).unwrap_err();
+        w.add_file(&format!("{}/f", "l".repeat(200)), b"pax-named", &opts()).unwrap();
+        w.add_symlink("s", "a", &opts()).unwrap();
+        let first = w.finish();
+        let a = TarArchive::parse(&first).unwrap();
+        let mut w = TarWriter::new();
+        w.copy_entry(&a, 1);
+        w.copy_entry(&a, 2);
+        let second = w.finish();
+        let b = TarArchive::parse(&second).unwrap();
+        assert_eq!(b.len(), 2);
+        for (j, i) in [1, 2].into_iter().enumerate() {
+            let (x, y) = (&a.entries()[i], &b.entries()[j]);
+            assert_eq!(
+                (&x.path, x.kind, x.mode, x.mtime, &x.link_target),
+                (&y.path, y.kind, y.mode, y.mtime, &y.link_target)
+            );
+            assert_eq!(a.data(i), b.data(j));
+        }
+    }
+
+    #[test]
     fn corruption_is_reported() {
         let mut w = TarWriter::new();
         w.add_file("f", &[7; 1000], &opts()).unwrap();
@@ -769,6 +814,7 @@ mod tests {
         // Without the end-of-archive marker the entries still read.
         assert_eq!(TarArchive::parse(&bytes[..1536]).unwrap().len(), 1);
         assert!(TarArchive::parse(&[]).unwrap().is_empty());
+        assert!(is_tar(&bytes) && !is_tar(&bad) && !is_tar(&[0; 1024]) && !is_tar(&bytes[..511]));
     }
 
     #[test]

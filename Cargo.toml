@@ -19,6 +19,10 @@ path = "src/lib.rs"
 name = "vzip"
 path = "src/bin/vzip.rs"
 
+[[bin]]
+name = "v7z"
+path = "src/bin/v7z/main.rs"
+
 # The library has no dependencies. `kani-sample` is a tiny local stand-in
 # for the `kani` crate that runs every proof harness as a randomised test
 # (see tools/kani-sample/README.md). It is only built under `--cfg

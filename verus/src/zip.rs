@@ -321,6 +321,12 @@ pub struct ZipEntry {
     pub unix_mode: Option<u32>,
     /// Offset of the local header.
     pub local_offset: u32,
+    /// "Version made by": the host system in the high byte (0 MS-DOS,
+    /// 3 Unix), the format version in the low byte.
+    pub version_made_by: u16,
+    /// External file attributes: MS-DOS attributes in the low byte, and
+    /// on Unix hosts the file mode in the high 16 bits.
+    pub external_attr: u32,
 }
 
 impl ZipEntry {
@@ -441,6 +447,8 @@ impl<'a> ZipArchive<'a> {
                 modified: DosDateTime::from_dos(h.mod_time, h.mod_date),
                 unix_mode: if h.version_made_by >> 8 == 3 { Some(h.external_attr >> 16) } else { None },
                 local_offset: h.local_offset,
+                version_made_by: h.version_made_by,
+                external_attr: h.external_attr,
             });
             p = next;
         }
