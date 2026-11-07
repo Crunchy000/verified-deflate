@@ -68,3 +68,24 @@ path = "fuzz_targets/zip_roundtrip.rs"
 test = false
 doc = false
 bench = false
+
+[[bin]]
+name = "gzip_zlib"
+path = "fuzz_targets/gzip_zlib.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "tar_read"
+path = "fuzz_targets/tar_read.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "tar_roundtrip"
+path = "fuzz_targets/tar_roundtrip.rs"
+test = false
+doc = false
+bench = false
