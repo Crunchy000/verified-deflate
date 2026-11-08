@@ -1,5 +1,5 @@
 //! `v7z`: 7-Zip's command line (`7z`) for the formats verified-deflate
-//! handles: zip, tar and gzip. The commands `a`, `d`, `e`, `l`, `t` and
+//! handles: zip, tar, gzip and bzip2. The commands `a`, `d`, `e`, `l`, `t` and
 //! `x` and the common switches work as in 7-Zip, with 7-Zip's exit codes,
 //! so scripts written for `7z` work with `v7z` on these formats.
 
@@ -15,16 +15,16 @@ use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
-use verified_deflate::gzip;
 use verified_deflate::gzip_header::{ExtraFlags, FileSystemType, GzBuilder};
 use verified_deflate::tar::{TarOptions, TarWriter};
-use verified_deflate::zip::{DosDateTime, FileOptions, ZipWriter};
+use verified_deflate::zip::{DosDateTime, FileOptions, Method, ZipWriter};
+use verified_deflate::{bzip2, gzip};
 use verified_deflate::{compress_with, CompressOptions, Strategy};
 
 const BANNER: &str = concat!(
     "\nv7z ",
     env!("CARGO_PKG_VERSION"),
-    " (verified-deflate) : the 7-Zip command line for zip, tar and gzip\n"
+    " (verified-deflate) : the 7-Zip command line for zip, tar, gzip and bzip2\n"
 );
 
 const USAGE: &str = "
@@ -45,14 +45,14 @@ Usage: v7z <command> [<switches>...] <archive_name> [<file_names>...] [@listfile
   -i[r[-|0]]{@listfile|!wildcard} : Include filenames
   -m{Parameters} : set compression Method
     -mx[N] : set compression level: -mx1 (fastest) ... -mx9 (ultra)
-    -mm={Copy|Deflate} : set method (zip)
+    -mm={Copy|Deflate|BZip2} : set method (zip)
   -o{Directory} : set Output directory
   -r[-|0] : Recurse subdirectories for name search
   -si[{name}] : read data from stdin
   -slt : show technical information for l (List) command
   -snl : store symbolic links as links
   -so : write data to stdout
-  -t{Type} : Set type of archive (zip, tar, gzip)
+  -t{Type} : Set type of archive (zip, tar, gzip, bzip2)
   -x[r[-|0]]{@listfile|!wildcard} : eXclude filenames
   -y : assume Yes on all queries
 ";
@@ -139,8 +139,9 @@ fn main() -> ExitCode {
 
 fn info(ctx: &mut Ctx) {
     ctx.say(
-        "\nFormats:\n  zip   read write  zip jar   methods Store Deflate, and Deflate64 (read)\n  \
-         tar   read write  tar       ustar, pax, GNU\n  gzip  read write  gz gzip tgz tpz\n",
+        "\nFormats:\n  zip   read write  zip jar   methods Store Deflate BZip2, and Deflate64 (read)\n  \
+         tar   read write  tar       ustar, pax, GNU\n  gzip  read write  gz gzip tgz tpz\n  \
+         bzip2 read write  bz2 bzip2 tbz2 tbz\n",
     );
 }
 
@@ -216,7 +217,7 @@ fn list(ctx: &mut Ctx) -> Result<(), Fatal> {
                 "Path = {}\nFolder = {}\nSize = {}\n",
                 item.path,
                 if item.is_dir() { '+' } else { '-' },
-                item.size
+                item.size.map(|n| n.to_string()).unwrap_or_default()
             );
             if let Some(p) = item.packed {
                 s += &format!("Packed Size = {p}\n");
@@ -262,12 +263,13 @@ fn list(ctx: &mut Ctx) -> Result<(), Fatal> {
     for item in &chosen {
         let date = item.mtime.map(Time::display).unwrap_or_else(|| " ".repeat(19));
         let p = item.packed.map(|p| p.to_string()).unwrap_or_default();
-        s += &format!("{date} {} {:>12} {:>12}  {}\n", attr_letters(item), item.size, p, item.path);
+        let n = item.size.map(|n| n.to_string()).unwrap_or_default();
+        s += &format!("{date} {} {n:>12} {p:>12}  {}\n", attr_letters(item), item.path);
         if item.is_dir() {
             dirs += 1;
         } else {
             files += 1;
-            size += item.size;
+            size += item.size.unwrap_or(0);
         }
         packed += item.packed.unwrap_or(0);
         if let Some(t) = item.mtime {
@@ -554,14 +556,24 @@ fn make_symlink(target: &str, path: &Path) -> io::Result<()> {
     fs::write(path, target)
 }
 
-/// Compression level from `-mx` (7-Zip's default is 5) and `-mm`.
-fn level(ctx: &Ctx, kind: Kind) -> Result<u8, Fatal> {
+/// The compression level from `-mx` (7-Zip's default is 5) and the
+/// method from `-mm`. A bzip2 level is the block size in 100 kB, which
+/// 7-Zip sets from `-mx` as 1 (`-mx1`, `-mx2`), 5 (`-mx3`, `-mx4`) or 9.
+fn compression(ctx: &Ctx, kind: Kind) -> Result<(u8, Method), Fatal> {
     let level = ctx.args.level.unwrap_or(5);
-    match ctx.args.method.as_deref().map(str::to_ascii_lowercase).as_deref() {
-        None | Some("deflate") => Ok(level),
-        Some("copy") if kind == Kind::Zip => Ok(0),
-        Some("deflate64") => Err(Fatal("writing Deflate64 is not supported (it can be read)".into(), EXIT_USAGE)),
-        Some(m) => Err(Fatal(format!("method {m} is not supported for {}", kind.name()), EXIT_USAGE)),
+    let bzip2_level = match level {
+        0 => 0,
+        1 | 2 => 1,
+        3 | 4 => 5,
+        _ => 9,
+    };
+    match (kind, ctx.args.method.as_deref().map(str::to_ascii_lowercase).as_deref()) {
+        (_, Some("deflate64")) => Err(Fatal("writing Deflate64 is not supported (it can be read)".into(), EXIT_USAGE)),
+        (Kind::Zip | Kind::Gzip | Kind::Tar, None | Some("deflate")) => Ok((level, Method::Deflate)),
+        (Kind::Zip, Some("copy")) => Ok((0, Method::Deflate)),
+        (Kind::Zip, Some("bzip2")) => Ok((bzip2_level, Method::Bzip2)),
+        (Kind::Bzip2, None | Some("bzip2")) => Ok((bzip2_level.max(1), Method::Bzip2)),
+        (_, Some(m)) => Err(Fatal(format!("method {m} is not supported for {}", kind.name()), EXIT_USAGE)),
     }
 }
 
@@ -595,12 +607,12 @@ fn add(ctx: &mut Ctx) -> Result<(), Fatal> {
         Some(t) => Kind::from_type(t).map_err(|m| Fatal(m, EXIT_USAGE))?,
         None => Kind::from_extension(&archive).ok_or_else(|| {
             Fatal(
-                format!("{archive}: the 7z format is not supported yet; name the archive .zip, .tar or .gz, or use -tzip, -ttar or -tgzip"),
+                format!("{archive}: the 7z format is not supported yet; name the archive .zip, .tar, .gz or .bz2, or use -t"),
                 EXIT_USAGE,
             )
         })?,
     };
-    let level = level(ctx, kind)?;
+    let (level, method) = compression(ctx, kind)?;
     let exclude = Selector { names: Vec::new(), exclude: ctx.args.exclude.clone() };
     // The inputs: files from disk, or (-si) standard input.
     let mut stdin_data = None;
@@ -636,7 +648,7 @@ fn add(ctx: &mut Ctx) -> Result<(), Fatal> {
         None
     };
     let old = match &existing {
-        Some(data) if kind != Kind::Gzip => {
+        Some(data) if !matches!(kind, Kind::Gzip | Kind::Bzip2) => {
             let opened = open(ctx, "Open", &archive, data)?;
             if opened.kind != kind {
                 return Err(fatal(format!("{archive} is a {} archive, not {}", opened.kind.name(), kind.name())));
@@ -651,9 +663,13 @@ fn add(ctx: &mut Ctx) -> Result<(), Fatal> {
         None => inputs.iter().map(|i| i.name.clone()).collect(),
     };
     let bytes = match kind {
-        Kind::Zip => build_zip(ctx, old.as_ref(), &inputs, stdin_data.as_ref(), &new_names, level)?,
+        Kind::Zip => build_zip(ctx, old.as_ref(), &inputs, stdin_data.as_ref(), &new_names, level, method)?,
         Kind::Tar => build_tar(ctx, old.as_ref(), &inputs, stdin_data.as_ref(), &new_names)?,
         Kind::Gzip => build_gzip(ctx, &inputs, stdin_data.as_ref(), level)?,
+        Kind::Bzip2 => {
+            let (_, data, _) = single_file(ctx, kind, &inputs, stdin_data.as_ref())?;
+            bzip2::compress(&data, level)
+        }
     };
     write_archive(ctx, &archive, &bytes)?;
     let read = if stdin_data.is_some() { 1 } else { inputs.iter().filter(|i| i.kind == InputKind::File).count() };
@@ -695,6 +711,7 @@ fn build_zip(
     stdin: Option<&(String, Vec<u8>)>,
     new_names: &[String],
     level: u8,
+    method: Method,
 ) -> Result<Vec<u8>, Fatal> {
     let mut w = ZipWriter::new();
     if let Some(zip) = old.and_then(Opened::zip) {
@@ -711,6 +728,7 @@ fn build_zip(
         };
         FileOptions {
             level,
+            method,
             strategy: Strategy::Auto,
             modified: DosDateTime::from_unix_seconds(mtime),
             unix_mode: mode,
@@ -781,17 +799,28 @@ fn build_tar(
     Ok(w.finish())
 }
 
-fn build_gzip(ctx: &mut Ctx, inputs: &[Input], stdin: Option<&(String, Vec<u8>)>, level: u8) -> Result<Vec<u8>, Fatal> {
+/// The one file a gzip or bzip2 archive holds: its name (without
+/// directories), data and modification time.
+fn single_file(
+    ctx: &mut Ctx,
+    kind: Kind,
+    inputs: &[Input],
+    stdin: Option<&(String, Vec<u8>)>,
+) -> Result<(String, Vec<u8>, i64), Fatal> {
     let files: Vec<&Input> = inputs.iter().filter(|i| i.kind == InputKind::File).collect();
-    let (name, data, mtime) = match (stdin, files.as_slice()) {
-        (Some((name, data)), []) => (name.clone(), data.clone(), 0),
+    match (stdin, files.as_slice()) {
+        (Some((name, data)), []) => Ok((name.clone(), data.clone(), 0)),
         (None, [one]) if inputs.len() == 1 => {
             let data = read_input(ctx, one).ok_or_else(|| fatal(format!("cannot read {}", one.disk.display())))?;
             let base = one.name.rsplit('/').next().unwrap_or(&one.name).to_string();
-            (base, data, mtime_of(&one.meta))
+            Ok((base, data, mtime_of(&one.meta)))
         }
-        _ => return Err(Fatal("a gzip archive holds exactly one file".into(), EXIT_USAGE)),
-    };
+        _ => Err(Fatal(format!("a {} archive holds exactly one file", kind.name()), EXIT_USAGE)),
+    }
+}
+
+fn build_gzip(ctx: &mut Ctx, inputs: &[Input], stdin: Option<&(String, Vec<u8>)>, level: u8) -> Result<Vec<u8>, Fatal> {
+    let (name, data, mtime) = single_file(ctx, Kind::Gzip, inputs, stdin)?;
     let mut builder = GzBuilder::new().mtime(u32::try_from(mtime).unwrap_or(0)).os(FileSystemType::Unix);
     if !name.is_empty() {
         builder = builder.filename(name.as_bytes());
@@ -831,7 +860,9 @@ fn delete(ctx: &mut Ctx) -> Result<(), Fatal> {
             }
             w.finish()
         }
-        Kind::Gzip => return Err(fatal("gzip archives do not support deleting")),
+        Kind::Gzip | Kind::Bzip2 => {
+            return Err(fatal(format!("{} archives do not support deleting", opened.kind.name())))
+        }
     };
     ctx.say(&format!("Updating archive: {archive}\n\nDelete data from archive: {n} files\n"));
     if n > 0 {

@@ -1,13 +1,15 @@
 //! ZIP archives (PKWARE APPNOTE 6.3): writing and reading archives whose
-//! entries are stored or DEFLATE-compressed.
+//! entries are stored, DEFLATE- or bzip2-compressed.
 //!
-//! Supported: method 0 (stored) and 8 (deflate), and reading method 9
-//! (Deflate64, which Windows and 7-Zip use for large entries), UTF-8 names (flag bit 11),
+//! Supported: methods 0 (stored), 8 (deflate) and 12 (bzip2), reading
+//! method 9 (Deflate64, which Windows and 7-Zip use for large entries),
+//! UTF-8 names (flag bit 11),
 //! Unix permissions, DOS timestamps, data descriptors when reading.
 //! Not supported: ZIP64 (archives or entries of 4 GiB and more, or 65535+
 //! entries), encryption, multi-disk archives. These are reported as errors,
 //! never misread.
 
+use crate::bzip2::{decompress_with_limit as bzip2_with_limit, Bzip2Error};
 use crate::crc32::crc32;
 use crate::deflate::{compress_with, CompressOptions, Strategy};
 use crate::error::InflateError;
@@ -30,6 +32,8 @@ pub const METHOD_STORED: u16 = 0;
 pub const METHOD_DEFLATED: u16 = 8;
 /// Compression method 9, Deflate64 (read only).
 pub const METHOD_DEFLATE64: u16 = 9;
+/// Compression method 12, bzip2.
+pub const METHOD_BZIP2: u16 = 12;
 const MAX_COMMENT: usize = 0xFFFF;
 
 /// Errors from reading or writing ZIP archives.
@@ -48,8 +52,8 @@ pub enum ZipError {
     Zip64Unsupported,
     /// The entry is encrypted.
     Encrypted,
-    /// The entry uses a compression method other than stored, deflate or
-    /// Deflate64.
+    /// The entry uses a compression method other than stored, deflate,
+    /// Deflate64 or bzip2.
     UnsupportedMethod(u16),
     /// The entry's sizes are inconsistent with its data.
     SizeMismatch,
@@ -62,6 +66,8 @@ pub enum ZipError {
     },
     /// The entry's DEFLATE data is corrupt.
     Inflate(InflateError),
+    /// The entry's bzip2 data is corrupt.
+    Bzip2(Bzip2Error),
     /// The entry name is empty, too long, absolute, or contains `..`,
     /// backslashes or NUL.
     InvalidName(String),
@@ -86,6 +92,7 @@ impl fmt::Display for ZipError {
                 write!(f, "CRC mismatch: archive says {expected:08x}, data is {actual:08x}")
             }
             Self::Inflate(e) => write!(f, "corrupt compressed data: {e}"),
+            Self::Bzip2(e) => write!(f, "{e}"),
             Self::InvalidName(n) => write!(f, "invalid entry name {n:?}"),
             Self::DuplicateName(n) => write!(f, "duplicate entry name {n:?}"),
             Self::NotFound => f.write_str("no such entry"),
@@ -97,6 +104,7 @@ impl std::error::Error for ZipError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Self::Inflate(e) => Some(e),
+            Self::Bzip2(e) => Some(e),
             _ => None,
         }
     }
@@ -105,6 +113,12 @@ impl std::error::Error for ZipError {
 impl From<InflateError> for ZipError {
     fn from(e: InflateError) -> Self {
         Self::Inflate(e)
+    }
+}
+
+impl From<Bzip2Error> for ZipError {
+    fn from(e: Bzip2Error) -> Self {
+        Self::Bzip2(e)
     }
 }
 
@@ -561,11 +575,25 @@ fn name_is_safe(b: &[u8]) -> bool {
     true
 }
 
+/// How [`ZipWriter::add_file`] compresses an entry.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[non_exhaustive]
+pub enum Method {
+    /// DEFLATE (method 8), which every ZIP reader supports.
+    #[default]
+    Deflate,
+    /// bzip2 (method 12), with blocks of 100,000 × the level bytes. 7-Zip,
+    /// Info-ZIP `unzip` 6 and libarchive read it; Windows Explorer does not.
+    Bzip2,
+}
+
 /// Per-entry settings for [`ZipWriter`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FileOptions {
     /// Compression level 0-9 (0 stores).
     pub level: u8,
+    /// Compression method.
+    pub method: Method,
     /// DEFLATE block strategy.
     pub strategy: Strategy,
     /// Modification time.
@@ -579,7 +607,14 @@ pub struct FileOptions {
 
 impl Default for FileOptions {
     fn default() -> Self {
-        Self { level: 6, strategy: Strategy::Auto, modified: DosDateTime::EPOCH, unix_mode: 0o644, verify: true }
+        Self {
+            level: 6,
+            method: Method::Deflate,
+            strategy: Strategy::Auto,
+            modified: DosDateTime::EPOCH,
+            unix_mode: 0o644,
+            verify: true,
+        }
     }
 }
 
@@ -628,8 +663,14 @@ impl ZipWriter {
         let flags = if name.is_ascii() { 0 } else { FLAG_UTF8 };
         let (mod_time, mod_date) = modified.to_dos();
         let name_len = name.len() as u16;
+        // The APPNOTE version that introduced the method.
+        let version_needed = match method {
+            METHOD_DEFLATE64 => 21,
+            METHOD_BZIP2 => 46,
+            _ => VERSION_NEEDED,
+        };
         LocalHeader {
-            version_needed: VERSION_NEEDED,
+            version_needed,
             flags,
             method,
             mod_time,
@@ -645,7 +686,7 @@ impl ZipWriter {
         self.out.extend_from_slice(payload);
         let central = CentralHeader {
             version_made_by,
-            version_needed: VERSION_NEEDED,
+            version_needed,
             flags,
             method,
             mod_time,
@@ -666,8 +707,8 @@ impl ZipWriter {
         Ok(())
     }
 
-    /// Adds a file. It is DEFLATE-compressed unless that would not make it
-    /// smaller (or `level` is 0), in which case it is stored.
+    /// Adds a file. It is compressed with `opts.method` unless that would
+    /// not make it smaller (or `level` is 0), in which case it is stored.
     pub fn add_file(&mut self, name: &str, data: &[u8], opts: &FileOptions) -> Result<(), ZipError> {
         self.check_new_name(name)?;
         if name.ends_with('/') {
@@ -678,12 +719,24 @@ impl ZipWriter {
         let compressed = if opts.level == 0 {
             None
         } else {
-            let c = compress_with(
-                data,
-                &CompressOptions { level: opts.level, strategy: opts.strategy, verify: opts.verify },
-            );
+            let (method, c) = match opts.method {
+                Method::Deflate => (
+                    METHOD_DEFLATED,
+                    compress_with(
+                        data,
+                        &CompressOptions { level: opts.level, strategy: opts.strategy, verify: opts.verify },
+                    ),
+                ),
+                Method::Bzip2 => {
+                    let c = crate::bzip2::compress(data, opts.level);
+                    // With `verify`, an entry that does not decompress to
+                    // the input is stored instead.
+                    let ok = !opts.verify || bzip2_with_limit(&c, data.len()).is_ok_and(|d| d == data);
+                    (METHOD_BZIP2, if ok { c } else { data.to_vec() })
+                }
+            };
             if c.len() < data.len() {
-                Some(c)
+                Some((method, c))
             } else {
                 None
             }
@@ -697,7 +750,7 @@ impl ZipWriter {
             version_made_by: VERSION_MADE_BY,
         };
         match compressed {
-            Some(c) => self.add_entry(name, &c, EntryMeta { method: METHOD_DEFLATED, ..meta }),
+            Some((method, c)) => self.add_entry(name, &c, EntryMeta { method, ..meta }),
             None => self.add_entry(name, data, meta),
         }
     }
@@ -978,6 +1031,7 @@ impl<'a> ZipArchive<'a> {
             }
             METHOD_DEFLATED => decompress_with_limit(raw, e.uncompressed_size as usize)?.data,
             METHOD_DEFLATE64 => decompress_deflate64_with_limit(raw, e.uncompressed_size as usize)?.data,
+            METHOD_BZIP2 => bzip2_with_limit(raw, e.uncompressed_size as usize)?,
             m => return Err(ZipError::UnsupportedMethod(m)),
         };
         if out.len() != e.uncompressed_size as usize {
@@ -1032,6 +1086,25 @@ mod tests {
         // Any field values give some number without panicking.
         let odd = DosDateTime { year: 2107, month: 0, day: 0, hour: 31, minute: 63, second: 62 };
         let _ = odd.to_unix_seconds();
+    }
+
+    #[test]
+    fn bzip2_entries_round_trip() {
+        let opts = FileOptions { method: Method::Bzip2, level: 9, ..FileOptions::default() };
+        let text = b"bzip2 in a zip, bzip2 in a zip ".repeat(200);
+        let mut w = ZipWriter::new();
+        w.add_file("text", &text, &opts).unwrap();
+        w.add_file("tiny", b"x", &opts).unwrap();
+        let zip = w.finish().unwrap();
+        let a = ZipArchive::parse(&zip).unwrap();
+        assert_eq!((a.entries()[0].method, a.entries()[1].method), (METHOD_BZIP2, METHOD_STORED));
+        assert_eq!(u16_at(&zip, 4), 46);
+        assert_eq!(a.read(0).unwrap(), text);
+        assert_eq!(a.read(1).unwrap(), b"x");
+        // Damage in the bzip2 data is an error, not wrong output.
+        let mut bad = zip.clone();
+        bad[60] ^= 0x40;
+        assert!(ZipArchive::parse(&bad).unwrap().read(0).is_err());
     }
 
     #[test]

@@ -35,10 +35,15 @@ weakest:
    files, lists the same items, and exits 2 on a damaged archive. Other
    tests extract hostile tar archives (`..`, absolute names, links out of
    the directory, a file through a link) and check nothing lands outside
-   the output directory. Coverage-guided fuzzing compares the decoder and
-   every encoder with C zlib, and the Deflate64 decoder with zlib's
-   `infback9`.
-   It also checks the ZIP reader and writer (see [Fuzzing](#fuzzing)).
+   the output directory. bzip2 is checked against libbz2 (through
+   Python's `bz2`), the bzip2 program and 7-Zip, each way, at every block
+   size, with randomised blocks and concatenated streams. On thousands of
+   damaged streams, with and without their CRCs repaired, the decoder
+   accepts exactly what libbz2 accepts, with the same output.
+   Coverage-guided fuzzing compares the decoder and every encoder with C
+   zlib, the Deflate64 decoder with zlib's `infback9`, and the bzip2
+   decoder and encoder with C libbz2. It also checks the ZIP reader and
+   writer (see [Fuzzing](#fuzzing)).
    In CI, `REQUIRE_INTEROP_TOOLS` makes a test fail, rather than skip,
    when its tool is missing. The tests also run on 32-bit x86 and big-endian
    s390x.
@@ -294,7 +299,7 @@ four minutes.
 | The decoder: `decompress_with_limit` and `decompress`, and their Deflate64 versions, with the bit reader, both Huffman decoders, the match copy and the tables (`verus/src/inflate.rs`, `bitio.rs`, `huffman_decode.rs`, `lz77.rs`, `tables.rs`) | For **every input of every length** and every output limit, the decoder returns, for DEFLATE and for Deflate64 (the format is a constant parameter, and the proof covers both values): it never panics, and every loop terminates. On success the output is no longer than the limit, and the bytes consumed are within the input. Building a Huffman decoder from any code lengths at all leaves it well-formed, so decoding with it is always in bounds. | 2 bytes (5 for a fixed block), extended set only |
 | The encoder: `compress`, `compress_with` (with `verify` on or off) and the streaming `StreamEncoder` behind the `write` encoders, with the match finder, the block writers, the bit writer, canonical codes and the code lookups (`verus/src/deflate.rs`, `lz77.rs`, `bitio.rs`, `build_lengths.rs`, `tables.rs`) | For **every input of every length**, every level and every strategy, compression returns: it never panics, and every loop terminates. The same holds for any sequence of calls to the streaming encoder. Along the way, the tokenizer is proved to emit only matches DEFLATE can express (length 3–258, distance 1–32768), and the code lookups to return codes whose base is at most the value coded. | 3–6 bytes, end to end in the extended set |
 | The code-length builder: `huffman::build_lengths` with the tree, the heapsort and the length-limit repair (`verus/src/build_lengths.rs`, `limit_depths.rs`) | For **any alphabet** (DEFLATE's 19, 30 and 286 symbols included), any frequencies and any limit, the build succeeds exactly when it can: 2 or more symbols, a limit of 1–15 and no more used symbols than codes of that length. Then the lengths form a complete prefix code (Kraft sum exactly 1, the library's `is_complete`) within the limit, and the symbols with codes are exactly the used ones (symbols 0 and 1 when fewer than two are used). It never panics. | 3–6 symbols |
-| The ZIP reader: `ZipArchive::parse`, `index_of`, `raw_data`, `read` and `read_by_name`, with the header parsers, the end-record scan, the bounds helpers, `ZipEntry::is_dir`, DOS timestamps and CRC-32 (`verus/src/zip.rs`, `crc32.rs`, with the decoder above) | For **every byte string of every length**, parsing returns: it never panics, and its loops terminate. On the archive it returns, reading or looking up any index or name returns too, whether the entry is stored, deflated or Deflate64. Every header read, slice and offset sum is in bounds, on 32-bit targets as well: the local-header offset sum in `raw_data`, which Kani only checks on 64-bit, cannot overflow because a slice is at most `isize::MAX` bytes. CRC-32 (`crc32`, `update`, the streaming `Crc32`) returns on every input with every table index in bounds. | 0–46 bytes per header, 0–30 for the end-record scan; the bounds helpers for all values |
+| The ZIP reader: `ZipArchive::parse`, `index_of`, `raw_data`, `read` and `read_by_name`, with the header parsers, the end-record scan, the bounds helpers, `ZipEntry::is_dir`, DOS timestamps and CRC-32 (`verus/src/zip.rs`, `crc32.rs`, with the decoder above) | For **every byte string of every length**, parsing returns: it never panics, and its loops terminate. On the archive it returns, reading or looking up any index or name returns too, whether the entry is stored, deflated or Deflate64; for a bzip2 entry, given that the bzip2 decoder returns (below). Every header read, slice and offset sum is in bounds, on 32-bit targets as well: the local-header offset sum in `raw_data`, which Kani only checks on 64-bit, cannot overflow because a slice is at most `isize::MAX` bytes. CRC-32 (`crc32`, `update`, the streaming `Crc32`) returns on every input with every table index in bounds. | 0–46 bytes per header, 0–30 for the end-record scan; the bounds helpers for all values |
 | ZIP names: `zip::name_is_safe`, behind `validate_name` (`verus/src/name_is_safe.rs`) | For byte strings of every length, a name is accepted exactly when it meets the position-by-position rule of `validate_name_is_exactly_the_rule`, plus the 65,535-byte limit. | 8 bytes |
 
 Verus checks every index, every arithmetic operation, every shift and every
@@ -345,6 +350,12 @@ What is *not* claimed:
   - `split_first_chunk` splits off `N` elements when there are that many, and `to_vec` keeps the length;
   - `String::from_utf8_lossy` and `Cow::into_owned` return;
   - a byte slice has at most `isize::MAX` elements, which Rust guarantees.
+
+  `verus/src/bzip2.rs` also takes the bzip2 decoder as given: that
+  `bzip2::decompress_with_limit` returns on every input without
+  panicking, which reading a ZIP entry of method 12 relies on. The
+  decoder has no proof yet. It is tested against libbz2 and the bzip2
+  program and fuzzed against C libbz2 (see [Fuzzing](#fuzzing)).
 
   The byte-order loads and stores (`from_le_bytes`, `to_le_bytes`,
   `first_chunk`) sit in four one-line helpers whose bodies are not
@@ -500,12 +511,13 @@ harness timed out. By file, after:
 
 ## Fuzzing
 
-`fuzz/` holds nine [cargo-fuzz] targets. libFuzzer evolves inputs toward
-new code paths, with debug assertions and overflow checks on. The
+`fuzz/` holds eleven [cargo-fuzz] targets. libFuzzer evolves inputs
+toward new code paths, with debug assertions and overflow checks on. The
 reference is C zlib, through `flate2`. For Deflate64 it is zlib's
-`infback9`, Mark Adler's Deflate64 decoder, which is vendored unchanged in
+`infback9`, Mark Adler's Deflate64 decoder, which is vendored in
 `fuzz/infback9` and built with a small stand-in for zlib's internal
-header.
+header. For bzip2 it is C libbz2 1.0.8, built from the source the
+`bzip2-sys` crate bundles.
 
 | Target | Checks |
 |---|---|
@@ -513,11 +525,13 @@ header.
 | `inflate64` | The same for the Deflate64 decoder, against `infback9`. Python's `inflate64` encoder makes its seed inputs. |
 | `compress` | `compress_with` at any level, strategy and `verify` setting: zlib and this crate both decode the stream to the input. zlib's streams at every level decode to the input here. |
 | `stream` | The streaming raw, zlib and gzip encoders, with any `CompressionOptions` and any sequence of writes and flushes: zlib decodes what they produce to what was written, and so does this crate for raw streams. |
-| `zip_read` | Arbitrary bytes as an archive. An entry that reads has its recorded size and CRC-32, and lookup by name finds the first entry of that name. |
-| `zip_roundtrip` | Archives the writer makes from any entries and options read back exactly. Refused names are invalid or repeated. |
+| `zip_read` | Arbitrary bytes as an archive. An entry that reads has its recorded size and CRC-32, and lookup by name finds the first entry of that name. Entries that declare over 16 MiB are not read, as bzip2 can reach that from a few hundred bytes. |
+| `zip_roundtrip` | Archives the writer makes from any entries and options (deflated, bzip2 or stored) read back exactly. Refused names are invalid or repeated. |
 | `gzip_zlib` | A gzip member and a zlib stream are accepted by this crate exactly when C zlib accepts them (through its own gzip and zlib wrappers), with the same output and bytes consumed. |
 | `tar_read` | Arbitrary bytes as a tar archive. Entries' data lies inside the archive at the recorded size, in order and without overlap, and paths made safe stay relative. |
 | `tar_roundtrip` | Archives the tar writer makes from any entries (files, directories, links) and metadata read back exactly, including names, link targets and numbers that need pax headers. |
+| `bzip2_decode` | On arbitrary bytes, the bzip2 decoder and libbz2 accept the same streams, with the same output and bytes consumed. Each input is tried again with its CRCs rewritten to match what its blocks decode to (`bzip2::fix_crcs`), so a change inside a block meets the decoders' structural checks rather than a CRC. |
+| `bzip2_roundtrip` | The bzip2 encoder at every level, plain and with "randomised" blocks: libbz2 and this crate decode what it writes to the input. |
 
 `.github/workflows/fuzz.yml` runs each target for a minute on every push
 and pull request that touches the code. It also runs each for 20 minutes
@@ -590,12 +604,17 @@ The gaps, stated precisely:
   cost compression ratio, never validity.
 - **Compression ratio and speed** are not correctness properties and are
   not verified.
-- **The `vzip` command-line tool** is not verified. It is a thin layer over
-  the library, and extraction refuses names that fail `validate_name`.
+- **bzip2** (`bzip2`, and the block sort in `bwt`) has no proofs yet. It
+  is checked by tests against libbz2, the bzip2 program and 7-Zip, and
+  by differential fuzzing against C libbz2.
+- **The command-line tools** `vzip` and `v7z` are not verified. They are
+  thin layers over the library. Extraction refuses names that fail
+  `validate_name` (`vzip`), or that would leave the output directory
+  (`v7z`), and `v7z`'s safety rules are tested on hostile archives.
 - **The trusted base** includes:
   - the Rust compiler and standard library;
   - Kani and its CBMC back end;
-  - Verus, with its Z3 solver, its `vstd` library and the few standard-library facts in `verus/src/std_specs.rs`;
+  - Verus, with its Z3 solver, its `vstd` library, the few standard-library facts in `verus/src/std_specs.rs` and the bzip2 decoder's assumed termination in `verus/src/bzip2.rs`;
   - the drift check that ties each Verus copy to the library;
   - the harnesses and Verus specifications themselves.
 

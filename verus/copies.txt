@@ -203,6 +203,7 @@ src/zip.rs      const:FLAG_ENCRYPTED                verus/src/zip.rs
 src/zip.rs      const:METHOD_STORED                 verus/src/zip.rs
 src/zip.rs      const:METHOD_DEFLATED               verus/src/zip.rs
 src/zip.rs      const:METHOD_DEFLATE64              verus/src/zip.rs
+src/zip.rs      const:METHOD_BZIP2                  verus/src/zip.rs
 src/zip.rs      const:MAX_COMMENT                   verus/src/zip.rs
 src/zip.rs      enum:ZipError                       verus/src/zip.rs
 src/zip.rs      ZipError::from                      verus/src/zip.rs

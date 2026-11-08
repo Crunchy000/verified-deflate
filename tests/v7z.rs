@@ -174,6 +174,50 @@ fn gzip_holds_one_file_and_pipes_work() {
 }
 
 #[test]
+fn bzip2_holds_one_file() {
+    let dir = fresh("v7z-bz2");
+    let data = b"bzip2 me ".repeat(5000);
+    fs::write(dir.join("src/data.txt"), &data).unwrap();
+    for (mx, digit) in [("-mx1", b'1'), ("-mx3", b'5'), ("-mx9", b'9')] {
+        let o = v7z(&["a", "d.txt.bz2", "src/data.txt", mx], &dir);
+        assert_eq!(code(&o), 0, "{}", text(&o));
+        let packed = fs::read(dir.join("d.txt.bz2")).unwrap();
+        assert_eq!(packed[3], digit, "{mx}");
+        assert_eq!(verified_deflate::bzip2::decompress(&packed).unwrap(), data);
+        fs::remove_file(dir.join("d.txt.bz2")).unwrap();
+    }
+    assert_eq!(code(&v7z(&["a", "d.txt.bz2", "src/data.txt"], &dir)), 0);
+    // The item is named after the archive; its size is unknown until read.
+    let o = v7z(&["l", "-slt", "d.txt.bz2"], &dir);
+    assert!(text(&o).contains("Path = d.txt\nFolder = -\nSize = \n"), "{}", text(&o));
+    let o = v7z(&["t", "d.txt.bz2"], &dir);
+    assert!(text(&o).contains(&format!("Size:       {}", data.len())), "{}", text(&o));
+    let o = v7z(&["e", "d.txt.bz2", "-oout"], &dir);
+    assert_eq!(code(&o), 0);
+    assert_eq!(fs::read(dir.join("out/d.txt")).unwrap(), data);
+    // Detected by content whatever the name; damage is a fatal error.
+    fs::copy(dir.join("d.txt.bz2"), dir.join("noext")).unwrap();
+    assert_eq!(code(&v7z(&["t", "noext"], &dir)), 0);
+    let mut bad = fs::read(dir.join("d.txt.bz2")).unwrap();
+    let n = bad.len();
+    bad[n / 2] ^= 1;
+    fs::write(dir.join("bad.bz2"), &bad).unwrap();
+    assert_eq!(code(&v7z(&["t", "bad.bz2"], &dir)), 2);
+    // Two files do not fit; bzip2 cannot be deleted from.
+    assert_eq!(code(&v7z(&["a", "two.bz2", "src/data.txt", "src/data.txt"], &dir)), 7);
+    assert_eq!(code(&v7z(&["d", "d.txt.bz2", "d.txt"], &dir)), 2);
+    // bzip2 inside a zip.
+    let o = v7z(&["a", "-mm=BZip2", "bz.zip", "src/data.txt"], &dir);
+    assert_eq!(code(&o), 0, "{}", text(&o));
+    let o = v7z(&["l", "-slt", "bz.zip"], &dir);
+    assert!(text(&o).contains("Method = BZip2"), "{}", text(&o));
+    let o = v7z(&["x", "bz.zip", "-ozout"], &dir);
+    assert_eq!(code(&o), 0);
+    assert_eq!(fs::read(dir.join("zout/src/data.txt")).unwrap(), data);
+    let _ = fs::remove_dir_all(&dir);
+}
+
+#[test]
 fn overwrite_modes() {
     let dir = fresh("v7z-ow");
     fs::write(dir.join("src/f.txt"), b"archived").unwrap();
@@ -329,11 +373,18 @@ fn agrees_with_7zip() {
     };
     let dir = fresh("v7z-7zip");
     let files = make_tree(&dir.join("src"));
+    // gzip and bzip2 hold one file.
+    let single = |archive: &str| archive.ends_with(".gz") || archive.ends_with(".bz2");
     // Ours, read by 7-Zip.
-    for (archive, extra) in [("ours.zip", ""), ("ours.tar", ""), ("ours.gz", "")] {
-        let args: Vec<&str> =
-            if archive.ends_with(".gz") { vec!["a", archive, "src/sub/b.bin"] } else { vec!["a", archive, "src"] };
-        let _ = extra;
+    for (archive, method) in [
+        ("ours.zip", None),
+        ("ours-bzip2.zip", Some("-mm=BZip2")),
+        ("ours.tar", None),
+        ("ours.gz", None),
+        ("ours.bz2", None),
+    ] {
+        let mut args = vec!["a", archive, if single(archive) { "src/sub/b.bin" } else { "src" }];
+        args.extend(method);
         assert_eq!(code(&v7z(&args, &dir)), 0, "{archive}");
         let o = run(sz, &["t", archive], &dir);
         assert_eq!(code(&o), 0, "7z t {archive}: {}", text(&o));
@@ -342,6 +393,9 @@ fn agrees_with_7zip() {
         assert_eq!(code(&o), 0, "7z x {archive}: {}", text(&o));
         if archive.ends_with(".gz") {
             assert_eq!(fs::read(dir.join(&out).join("b.bin")).unwrap(), files["sub/b.bin"]);
+        } else if archive.ends_with(".bz2") {
+            // 7-Zip names a bzip2 file's item after the archive.
+            assert_eq!(fs::read(dir.join(&out).join("ours")).unwrap(), files["sub/b.bin"]);
         } else {
             let got: BTreeMap<String, Vec<u8>> = read_tree(&dir.join(&out))
                 .into_iter()
@@ -354,18 +408,21 @@ fn agrees_with_7zip() {
         let ours = slt_items(&String::from_utf8_lossy(&v7z(&["l", "-slt", archive], &dir).stdout));
         assert_eq!(ours, theirs, "l -slt {archive}");
     }
-    // 7-Zip's, read by us: zip at three levels and with Deflate64, tar, gzip.
+    // 7-Zip's, read by us: zip at three levels, with Deflate64 and with
+    // bzip2, tar, gzip and bzip2.
     for (archive, args) in [
         ("7z1.zip", vec!["-tzip", "-mx1"]),
         ("7z9.zip", vec!["-tzip", "-mx9"]),
         ("7z64.zip", vec!["-tzip", "-mm=Deflate64"]),
+        ("7zbz.zip", vec!["-tzip", "-mm=BZip2"]),
         ("7z.tar", vec!["-ttar"]),
         ("7z.gz", vec!["-tgzip"]),
+        ("7z.bz2", vec!["-tbzip2", "-mx9"]),
     ] {
         let mut a = vec!["a"];
         a.extend(&args);
         a.push(archive);
-        a.push(if archive.ends_with(".gz") { "src/sub/b.bin" } else { "src" });
+        a.push(if single(archive) { "src/sub/b.bin" } else { "src" });
         let o = run(sz, &a, &dir);
         assert_eq!(code(&o), 0, "7z a {archive}: {}", text(&o));
         let o = v7z(&["t", archive], &dir);
@@ -375,6 +432,8 @@ fn agrees_with_7zip() {
         assert_eq!(code(&o), 0, "v7z x {archive}: {}", text(&o));
         if archive.ends_with(".gz") {
             assert_eq!(fs::read(dir.join(&out).join("b.bin")).unwrap(), files["sub/b.bin"]);
+        } else if archive.ends_with(".bz2") {
+            assert_eq!(fs::read(dir.join(&out).join("7z")).unwrap(), files["sub/b.bin"]);
         } else {
             let got: BTreeMap<String, Vec<u8>> = read_tree(&dir.join(&out))
                 .into_iter()

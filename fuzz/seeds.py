@@ -6,7 +6,9 @@ of text, binary, repetitive and random data. For `zip_read`: archives from
 Python's zipfile, stored and deflated, with directories, a non-ASCII name,
 an archive comment and an empty archive. For `gzip_zlib`: gzip and zlib
 streams, with header fields and two members. For `tar_read`: archives in
-each of tarfile's formats. If the `inflate64` package is
+each of tarfile's formats. For `bzip2_decode`: bzip2 streams at levels 1,
+5 and 9, and two streams concatenated, and for `zip_read` an archive with
+bzip2 (method 12) entries. If the `inflate64` package is
 installed, also Deflate64 streams for `inflate64`, and archives with
 Deflate64 (method 9) entries for `zip_read`. The other targets build their
 own inputs. Files go to fuzz/corpus/<target>/, named by content, so running
@@ -14,6 +16,7 @@ this again adds nothing new.
 
 usage: seeds.py [fuzz directory]
 """
+import bz2
 import hashlib
 import io
 import os
@@ -104,6 +107,17 @@ def main(root):
         g.write(samples[4])
     buf.write(gzip.compress(b"second member", mtime=0))
     put(root, "gzip_zlib", buf.getvalue())
+
+    # bzip2 streams, and bzip2 in a zip.
+    for data in samples:
+        for level in (1, 5, 9):
+            put(root, "bzip2_decode", bz2.compress(data, level))
+    put(root, "bzip2_decode", bz2.compress(samples[2], 1) + bz2.compress(samples[4], 9))
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_BZIP2) as z:
+        z.writestr("fox.txt", samples[4])
+        z.writestr("random", samples[5])
+    put(root, "zip_read", buf.getvalue())
 
     # Tar in each of tarfile's formats: a directory, files, links, and a
     # name long enough for the format's extension.

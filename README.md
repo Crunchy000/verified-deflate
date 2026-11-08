@@ -16,18 +16,21 @@ Info-ZIP.
 - **zlib and gzip** (RFC 1950, RFC 1952): encoding, one-shot or through
   streaming `io::Write` encoders, and decoding, with every checksum
   checked and multi-member gzip files.
+- **bzip2**: a compressor and a decompressor that accepts exactly what
+  libbz2 accepts (fuzzed against it), with an output limit, multiple
+  streams and the old "randomised" blocks; also as ZIP method 12.
 - **tar archives**: a reader for ustar, pax and GNU archives (long names,
   base-256 numbers, links, devices), and a writer that falls back to pax
   headers for names, link targets and numbers that do not fit.
 - **A drop-in replacement for the [`deflate`] crate**: its whole API, checked
   by running `deflate`'s own test suite against this crate.
-- **ZIP archives**: writer and reader for stored and deflated entries,
+- **ZIP archives**: writer and reader for stored, deflated and bzip2 entries,
   and reader for Deflate64 ones, with UTF-8 names, Unix permissions,
   timestamps and data descriptors. Every entry is checked against its
   CRC-32.
 - **`v7z`**, a command-line tool that takes 7-Zip's commands and switches
   (`a`, `x`, `e`, `l`, `t`, `d`; `-t`, `-mx`, `-o`, `-r`, `-y`, `-ao`,
-  `-si`/`-so`, `-i`/`-x`) and exit codes, for zip, tar and gzip. A
+  `-si`/`-so`, `-i`/`-x`) and exit codes, for zip, tar, gzip and bzip2. A
   simpler tool, **`vzip`**, creates, extracts, lists and tests ZIP
   archives.
 - `#![forbid(unsafe_code)]`, zero dependencies, MSRV 1.83.
@@ -151,13 +154,15 @@ vzip extract -d /tmp/out out.zip
 ### `v7z`: the 7-Zip command line
 
 `v7z` follows 7-Zip's syntax, `v7z <command> [<switches>...] <archive>
-[<names>...]`, so scripts written for `7z` work with zip, tar and gzip
-archives:
+[<names>...]`, so scripts written for `7z` work with zip, tar, gzip and
+bzip2 archives:
 
 ```sh
 v7z a -tzip -mx9 out.zip src/ README.md   # create, or update in place
 v7z a out.tar src -snl                    # store symbolic links as links
 v7z a out.tar.gz out.tar                  # gzip holds exactly one file
+v7z a out.tar.bz2 out.tar                 # and so does bzip2
+v7z a -mm=BZip2 out.zip src               # bzip2 inside a zip
 v7z l -slt out.zip                        # technical listing
 v7z t out.zip                             # test every entry's CRC
 v7z x out.zip -o/tmp/out -aos             # extract, keeping existing files
@@ -169,7 +174,7 @@ v7z x -so out.tar.gz | tar tf -
 
 | Command | | Switches |
 |---|---|---|
-| `a` | add (create or update) | `-t{zip,tar,gzip}`, `-mx[N]`, `-mm={Deflate,Copy}`, `-snl`, `-si[name]`, `-so` |
+| `a` | add (create or update) | `-t{zip,tar,gzip,bzip2}`, `-mx[N]`, `-mm={Deflate,Copy,BZip2}`, `-snl`, `-si[name]`, `-so` |
 | `x`, `e` | extract with / without paths | `-o{dir}`, `-ao{a,s,u,t}`, `-y`, `-so`, `-si` |
 | `l`, `t` | list, test | `-slt` |
 | `d` | delete entries | |
@@ -178,7 +183,8 @@ v7z x -so out.tar.gz | tar tf -
 Names take wildcards (`*`, `?`), match from the archive's root, and with
 `-r` at any depth (`-r0`: wildcards only); `-i!`/`-x!` (and `@listfile`)
 add and remove names. An archive's type comes from `-t`, or else from its
-content when reading and its extension (`.zip`, `.tar`, `.gz`, `.tgz`)
+content when reading and its extension (`.zip`, `.tar`, `.gz`, `.tgz`,
+`.bz2`, `.tbz2`)
 when creating. Exit codes are 7-Zip's: 0 success, 1 warning, 2 fatal error
 (including any CRC or data error), 7 command-line error, 255 stopped.
 Switches that only affect 7-Zip's console or threads (`-bb`, `-bso`,
@@ -297,19 +303,25 @@ instructions per candidate against zlib's 10, mostly bounds checks and a
 distance check on every chain entry, which makes it impossible for a
 corrupted chain to produce an invalid match.
 
+bzip2 at level 9, against the bzip2 1.0.8 program on the same machine
+(MB/s, one thread): on 1.9 MB of source code and prose, compression 8.9
+(bzip2: 10.9) and decompression 39 (26), to within 0.02% of bzip2's
+size; on 5 MB of random bytes, 5.6 (7.0) and 21 (12). The block sort is
+SA-IS, so no input is slow to compress.
+
 ## Limitations
 
 - No ZIP64: archives and entries must be under 4 GiB, with fewer than
   65,535 entries. Larger archives are rejected, never misread.
-- No encryption or multi-disk archives. Methods 0 (stored) and 8
-  (deflate) are read and written, and method 9 (Deflate64) is read; no
-  others.
+- No encryption or multi-disk archives. Methods 0 (stored), 8
+  (deflate) and 12 (bzip2) are read and written, and method 9
+  (Deflate64) is read; no others.
 - Decompression works on whole buffers; streaming is for compression only.
 - Deflate64 is read, not written. zlib preset dictionaries are not
   supported.
 - tar: GNU sparse files and multi-volume archives are listed but their
   data is not reassembled.
-- `v7z`: no `.7z` format yet (nor bzip2, xz or the other 7-Zip formats),
+- `v7z`: no `.7z` format yet (nor xz, lzma or the other 7-Zip formats),
   no encryption (`-p`), and no `u`, `rn` or `h` commands. Without `-y` or
   `-ao`, an existing file prompts on the terminal; with no terminal input
   that stops extraction (exit 255).
@@ -329,6 +341,7 @@ corrupted chain to produce an invalid match.
 | `src/zip.rs` | ZIP writer and reader |
 | `src/gzip.rs`, `src/zlib.rs` | gzip and zlib readers |
 | `src/tar.rs` | tar reader and writer |
+| `src/bzip2.rs`, `src/bwt.rs` | bzip2 compressor and decompressor; the block sort (SA-IS) |
 | `src/compat.rs`, `src/write.rs`, `src/gzip_header.rs` | The `deflate` crate's API: one-shot functions, streaming encoders, gzip headers |
 | `src/e2e.rs` | End-to-end Kani harnesses |
 | `verus/` | Verus proofs, over copies of library functions |
