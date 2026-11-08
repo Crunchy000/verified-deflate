@@ -87,6 +87,7 @@ pub mod inflate;
 pub mod lz77;
 pub mod lzma;
 pub mod lzma2;
+pub mod sevenz;
 pub mod tables;
 pub mod tar;
 pub mod write;

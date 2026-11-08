@@ -23,6 +23,8 @@ from the library, which keeps no dependencies.
 | `bzip2_roundtrip` | The bzip2 encoder at every level, plain and with "randomised" blocks: libbz2 and this crate decode what it writes to the input. |
 | `lzma_decode` | On arbitrary bytes, as a raw LZMA1 stream, a raw LZMA2 stream, a `.lzma` file or an `.xz` stream (the first byte picks), the decoders and liblzma accept the same streams, with the same output and bytes consumed. |
 | `xz_roundtrip` | The `.xz` encoder at every level, with every check and any delta and branch filters, and the `.lzma` encoder: liblzma and this crate decode what they write to the input. |
+| `sevenz_read` | The 7z reader on arbitrary bytes, or on archives the writer makes with bytes changed, with the header CRCs made to match: it never panics, and every entry that reads has its recorded size and CRC. |
+| `sevenz_roundtrip` | Archives the 7z writer makes from any entries, at any level, with the header compressed or not, read back exactly. Names it refuses are unsafe. |
 
 To run one locally (nightly Rust):
 

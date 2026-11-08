@@ -2,6 +2,8 @@
 //! of items, each of which can be read.
 
 use std::borrow::Cow;
+use std::cell::RefCell;
+use verified_deflate::sevenz::SevenZArchive;
 use verified_deflate::tar::{EntryKind, TarArchive};
 use verified_deflate::zip::{
     DosDateTime, ZipArchive, METHOD_BZIP2, METHOD_DEFLATE64, METHOD_DEFLATED, METHOD_LZMA, METHOD_STORED, METHOD_XZ,
@@ -17,6 +19,7 @@ pub enum Kind {
     Bzip2,
     Xz,
     Lzma,
+    SevenZ,
 }
 
 impl Kind {
@@ -29,6 +32,7 @@ impl Kind {
             Kind::Bzip2 => "bzip2",
             Kind::Xz => "xz",
             Kind::Lzma => "lzma",
+            Kind::SevenZ => "7z",
         }
     }
 
@@ -41,7 +45,7 @@ impl Kind {
             "bzip2" | "bz2" => Ok(Kind::Bzip2),
             "xz" => Ok(Kind::Xz),
             "lzma" => Ok(Kind::Lzma),
-            "7z" => Err(format!("archive type {t} is not supported yet")),
+            "7z" => Ok(Kind::SevenZ),
             other => Err(format!("unsupported archive type: {other}")),
         }
     }
@@ -65,6 +69,8 @@ impl Kind {
             Some(Kind::Xz)
         } else if lower.ends_with(".lzma") {
             Some(Kind::Lzma)
+        } else if lower.ends_with(".7z") {
+            Some(Kind::SevenZ)
         } else {
             None
         }
@@ -72,7 +78,10 @@ impl Kind {
 
     /// The type of an archive, from its first bytes.
     pub fn detect(data: &[u8]) -> Option<Kind> {
-        if data.starts_with(b"PK\x03\x04") || data.starts_with(b"PK\x05\x06") || data.starts_with(b"PK\x07\x08") {
+        if data.starts_with(&verified_deflate::sevenz::SIGNATURE) {
+            Some(Kind::SevenZ)
+        } else if data.starts_with(b"PK\x03\x04") || data.starts_with(b"PK\x05\x06") || data.starts_with(b"PK\x07\x08")
+        {
             Some(Kind::Zip)
         } else if data.starts_with(&[0x1f, 0x8b]) {
             Some(Kind::Gzip)
@@ -174,7 +183,7 @@ pub struct Item {
     /// Unix permission bits, if recorded.
     pub mode: Option<u32>,
     pub crc: Option<u32>,
-    pub method: Option<&'static str>,
+    pub method: Option<String>,
     pub host_os: Option<&'static str>,
     pub user: Option<String>,
     pub group: Option<String>,
@@ -196,7 +205,12 @@ enum Source<'a> {
     Bzip2(&'a [u8]),
     Xz(&'a [u8]),
     Lzma(&'a [u8]),
+    /// A 7z archive, with its folders' outputs once decoded.
+    SevenZ(SevenZArchive<'a>, RefCell<Vec<Option<Decoded>>>),
 }
+
+/// A 7z folder's output, or why it could not be decoded.
+type Decoded = Result<Vec<u8>, String>;
 
 /// An archive opened for reading.
 pub struct Opened<'a> {
@@ -273,15 +287,18 @@ impl<'a> Opened<'a> {
                             mtime: Some(Time::Dos(e.modified)),
                             mode: unix.map(|m| m & 0o7777),
                             crc: Some(e.crc32),
-                            method: Some(match e.method {
-                                METHOD_STORED => "Store",
-                                METHOD_DEFLATED => "Deflate",
-                                METHOD_DEFLATE64 => "Deflate64",
-                                METHOD_BZIP2 => "BZip2",
-                                METHOD_LZMA => "LZMA",
-                                METHOD_XZ => "XZ",
-                                _ => "Unknown",
-                            }),
+                            method: Some(
+                                match e.method {
+                                    METHOD_STORED => "Store",
+                                    METHOD_DEFLATED => "Deflate",
+                                    METHOD_DEFLATE64 => "Deflate64",
+                                    METHOD_BZIP2 => "BZip2",
+                                    METHOD_LZMA => "LZMA",
+                                    METHOD_XZ => "XZ",
+                                    _ => "Unknown",
+                                }
+                                .to_string(),
+                            ),
                             host_os: Some(host_os(e.version_made_by)),
                             user: None,
                             group: None,
@@ -350,7 +367,7 @@ impl<'a> Opened<'a> {
                     mtime: (header.mtime != 0).then_some(Time::Unix(i64::from(header.mtime))),
                     mode: None,
                     crc: Some(crc),
-                    method: Some("Deflate"),
+                    method: Some("Deflate".into()),
                     host_os: Some(match header.os_byte {
                         0 => "FAT",
                         3 => "Unix",
@@ -401,7 +418,7 @@ impl<'a> Opened<'a> {
                     mtime: None,
                     mode: None,
                     crc: None,
-                    method: Some(method),
+                    method: Some(method.into()),
                     host_os: None,
                     user: None,
                     group: None,
@@ -409,6 +426,53 @@ impl<'a> Opened<'a> {
                 };
                 let source = if kind == Kind::Xz { Source::Xz(data) } else { Source::Lzma(data) };
                 Ok(Self { kind, items: vec![item], source })
+            }
+            Kind::SevenZ => {
+                let a = SevenZArchive::parse(data).map_err(|e| e.to_string())?;
+                // As 7-Zip lists them: a block's packed size on its first file.
+                let mut seen = vec![false; a.folder_count()];
+                let items = a
+                    .entries()
+                    .iter()
+                    .map(|e| {
+                        let packed = e.folder.and_then(|(f, _)| {
+                            let first = !seen[f];
+                            seen[f] = true;
+                            first.then(|| a.folder_packed_size(f))
+                        });
+                        Item {
+                            path: e.name.trim_end_matches('/').to_string(),
+                            kind: if e.is_dir {
+                                ItemKind::Dir
+                            } else if e.is_symlink() {
+                                ItemKind::Symlink(String::new())
+                            } else {
+                                ItemKind::File
+                            },
+                            size: Some(e.size),
+                            packed,
+                            mtime: e.mtime_unix().map(Time::Unix),
+                            mode: e.unix_mode().map(|m| m & 0o7777),
+                            crc: e.crc,
+                            method: e.folder.map(|(f, _)| a.folder_methods(f)),
+                            host_os: None,
+                            user: None,
+                            group: None,
+                            dos_attrib: e.attributes.map(|x| x as u8),
+                        }
+                    })
+                    .collect();
+                let cache = RefCell::new(vec![None; a.folder_count()]);
+                let mut opened = Self { kind, items, source: Source::SevenZ(a, cache) };
+                // A symbolic link's target is its data.
+                for i in 0..opened.items.len() {
+                    if opened.items[i].kind == ItemKind::Symlink(String::new()) {
+                        let target =
+                            opened.read(i).map(|d| String::from_utf8_lossy(&d).into_owned()).unwrap_or_default();
+                        opened.items[i].kind = ItemKind::Symlink(target);
+                    }
+                }
+                Ok(opened)
             }
         }
     }
@@ -423,6 +487,16 @@ impl<'a> Opened<'a> {
             Source::Bzip2(data) => bzip2::decompress(data).map(Cow::Owned).map_err(|e| e.to_string()),
             Source::Xz(data) => xz::decompress(data).map(Cow::Owned).map_err(|e| e.to_string()),
             Source::Lzma(data) => lzma::decompress(data).map(Cow::Owned).map_err(|e| e.to_string()),
+            Source::SevenZ(a, cache) => {
+                let e = a.entries().get(i).ok_or("no such entry")?;
+                let Some((f, _)) = e.folder else { return Ok(Cow::Borrowed(&[])) };
+                let mut cache = cache.borrow_mut();
+                let out = cache[f].get_or_insert_with(|| a.decode_folder(f, usize::MAX).map_err(|e| e.to_string()));
+                match out {
+                    Ok(out) => a.entry_data(i, out).map(|d| Cow::Owned(d.to_vec())).map_err(|e| e.to_string()),
+                    Err(e) => Err(e.clone()),
+                }
+            }
         }
     }
 
@@ -436,6 +510,13 @@ impl<'a> Opened<'a> {
     pub fn tar(&self) -> Option<&TarArchive<'a>> {
         match &self.source {
             Source::Tar(t) => Some(t),
+            _ => None,
+        }
+    }
+
+    pub fn sevenz(&self) -> Option<&SevenZArchive<'a>> {
+        match &self.source {
+            Source::SevenZ(a, _) => Some(a),
             _ => None,
         }
     }
