@@ -73,6 +73,8 @@
 
 pub mod adler32;
 pub mod bitio;
+mod bwt;
+pub mod bzip2;
 mod compat;
 pub mod crc32;
 pub mod deflate;

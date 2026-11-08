@@ -1,12 +1,13 @@
 //! Archives made by the ZIP writer, from any entries and options, read back
 //! exactly: the same names in the same order, the same contents, times
-//! and file modes. Names the writer refuses must be invalid or repeated.
+//! and file modes, with entries deflated, bzip2-compressed or stored. Names
+//! the writer refuses must be invalid or repeated.
 
 #![no_main]
 
 use arbitrary::Arbitrary;
 use libfuzzer_sys::fuzz_target;
-use verified_deflate::zip::{validate_name, DosDateTime, FileOptions, ZipArchive, ZipError, ZipWriter};
+use verified_deflate::zip::{validate_name, DosDateTime, FileOptions, Method, ZipArchive, ZipError, ZipWriter};
 use verified_deflate::Strategy;
 
 const STRATEGIES: [Strategy; 4] = [Strategy::Auto, Strategy::Stored, Strategy::Fixed, Strategy::Dynamic];
@@ -16,6 +17,7 @@ struct Entry {
     name: String,
     directory: bool,
     level: u8,
+    bzip2: bool,
     strategy: u8,
     verify: bool,
     unix_mode: u32,
@@ -37,6 +39,7 @@ fuzz_target!(|entries: Vec<Entry>| {
     for e in &entries {
         let options = FileOptions {
             level: e.level % 10,
+            method: if e.bzip2 { Method::Bzip2 } else { Method::Deflate },
             strategy: STRATEGIES[usize::from(e.strategy) % 4],
             modified: DosDateTime::from_unix_seconds(e.unix_time),
             unix_mode: e.unix_mode,

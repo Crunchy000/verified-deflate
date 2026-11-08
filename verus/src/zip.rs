@@ -11,6 +11,7 @@
 //! decoder (`inflate`, DEFLATE or Deflate64) and checks the CRC with the
 //! verified `crc32`.
 
+use crate::bzip2::{decompress_with_limit as bzip2_with_limit, Bzip2Error};
 use crate::crc32::crc32;
 use crate::error::InflateError;
 use crate::inflate::{decompress_deflate64_with_limit, decompress_with_limit};
@@ -29,6 +30,8 @@ pub const METHOD_STORED: u16 = 0;
 pub const METHOD_DEFLATED: u16 = 8;
 /// Compression method 9, Deflate64 (read only).
 pub const METHOD_DEFLATE64: u16 = 9;
+/// Compression method 12, bzip2.
+pub const METHOD_BZIP2: u16 = 12;
 const MAX_COMMENT: usize = 0xFFFF;
 
 /// Errors from reading or writing ZIP archives.
@@ -45,7 +48,8 @@ pub enum ZipError {
     Zip64Unsupported,
     /// The entry is encrypted.
     Encrypted,
-    /// The entry uses a compression method other than stored or deflate.
+    /// The entry uses a compression method other than stored, deflate,
+    /// Deflate64 or bzip2.
     UnsupportedMethod(u16),
     /// The entry's sizes are inconsistent with its data.
     SizeMismatch,
@@ -58,6 +62,8 @@ pub enum ZipError {
     },
     /// The entry's DEFLATE data is corrupt.
     Inflate(InflateError),
+    /// The entry's bzip2 data is corrupt.
+    Bzip2(Bzip2Error),
     /// The entry name is empty, too long, absolute, or contains `..`,
     /// backslashes or NUL.
     InvalidName(String),
@@ -82,6 +88,25 @@ impl vstd::std_specs::convert::FromSpecImpl<InflateError> for ZipError {
 
     open spec fn from_spec(e: InflateError) -> Self {
         ZipError::Inflate(e)
+    }
+}
+// @ghost-end
+
+impl From<Bzip2Error> for ZipError {
+    fn from(e: Bzip2Error) -> Self {
+        Self::Bzip2(e)
+    }
+}
+
+// @ghost-begin
+/// What the conversion above returns, for `?`.
+impl vstd::std_specs::convert::FromSpecImpl<Bzip2Error> for ZipError {
+    open spec fn obeys_from_spec() -> bool {
+        true
+    }
+
+    open spec fn from_spec(e: Bzip2Error) -> Self {
+        ZipError::Bzip2(e)
     }
 }
 // @ghost-end
@@ -502,6 +527,7 @@ impl<'a> ZipArchive<'a> {
             }
             METHOD_DEFLATED => decompress_with_limit(raw, e.uncompressed_size as usize)?.data,
             METHOD_DEFLATE64 => decompress_deflate64_with_limit(raw, e.uncompressed_size as usize)?.data,
+            METHOD_BZIP2 => bzip2_with_limit(raw, e.uncompressed_size as usize)?,
             m => return Err(ZipError::UnsupportedMethod(m)),
         };
         if out.len() != e.uncompressed_size as usize {

@@ -2,9 +2,9 @@
 //! of items, each of which can be read.
 
 use std::borrow::Cow;
-use verified_deflate::gzip;
 use verified_deflate::tar::{EntryKind, TarArchive};
-use verified_deflate::zip::{DosDateTime, ZipArchive, METHOD_DEFLATE64, METHOD_DEFLATED, METHOD_STORED};
+use verified_deflate::zip::{DosDateTime, ZipArchive, METHOD_BZIP2, METHOD_DEFLATE64, METHOD_DEFLATED, METHOD_STORED};
+use verified_deflate::{bzip2, gzip};
 
 /// An archive format.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -12,6 +12,7 @@ pub enum Kind {
     Zip,
     Tar,
     Gzip,
+    Bzip2,
 }
 
 impl Kind {
@@ -21,6 +22,7 @@ impl Kind {
             Kind::Zip => "zip",
             Kind::Tar => "tar",
             Kind::Gzip => "gzip",
+            Kind::Bzip2 => "bzip2",
         }
     }
 
@@ -30,7 +32,8 @@ impl Kind {
             "zip" => Ok(Kind::Zip),
             "tar" => Ok(Kind::Tar),
             "gzip" | "gz" => Ok(Kind::Gzip),
-            "7z" | "xz" | "bzip2" | "bz2" | "lzma" | "wim" => Err(format!("archive type {t} is not supported yet")),
+            "bzip2" | "bz2" => Ok(Kind::Bzip2),
+            "7z" | "xz" | "lzma" | "wim" => Err(format!("archive type {t} is not supported yet")),
             other => Err(format!("unsupported archive type: {other}")),
         }
     }
@@ -48,6 +51,8 @@ impl Kind {
             || lower.ends_with(".tpz")
         {
             Some(Kind::Gzip)
+        } else if [".bz2", ".bzip2", ".tbz2", ".tbz"].iter().any(|e| lower.ends_with(e)) {
+            Some(Kind::Bzip2)
         } else {
             None
         }
@@ -59,6 +64,8 @@ impl Kind {
             Some(Kind::Zip)
         } else if data.starts_with(&[0x1f, 0x8b]) {
             Some(Kind::Gzip)
+        } else if bzip2::is_bzip2(data) {
+            Some(Kind::Bzip2)
         } else if verified_deflate::tar::is_tar(data) {
             Some(Kind::Tar)
         } else {
@@ -132,7 +139,8 @@ pub struct Item {
     /// The path as stored, as text.
     pub path: String,
     pub kind: ItemKind,
-    pub size: u64,
+    /// Unknown for bzip2 until it is decompressed, as in 7-Zip.
+    pub size: Option<u64>,
     /// Bytes the item takes in the archive, where the format says.
     pub packed: Option<u64>,
     pub mtime: Option<Time>,
@@ -158,6 +166,7 @@ enum Source<'a> {
     Zip(ZipArchive<'a>),
     Tar(TarArchive<'a>),
     Gzip(&'a [u8]),
+    Bzip2(&'a [u8]),
 }
 
 /// An archive opened for reading.
@@ -182,9 +191,19 @@ fn host_os(version_made_by: u16) -> &'static str {
 /// The name gzip's item gets when its header has none: the archive's name
 /// without `.gz` (`.tgz` becomes `.tar`), as 7-Zip names it.
 fn gzip_item_name(archive_name: &str) -> String {
+    item_name(archive_name, &[(".tgz", ".tar"), (".tpz", ".tar"), (".gzip", ""), (".gz", "")])
+}
+
+/// The name of a bzip2 file's item: the archive's name without `.bz2`
+/// (`.tbz2` becomes `.tar`).
+fn bzip2_item_name(archive_name: &str) -> String {
+    item_name(archive_name, &[(".tbz2", ".tar"), (".tbz", ".tar"), (".bzip2", ""), (".bz2", "")])
+}
+
+fn item_name(archive_name: &str, extensions: &[(&str, &str)]) -> String {
     let base = archive_name.rsplit(['/', '\\']).next().unwrap_or(archive_name);
     let lower = base.to_ascii_lowercase();
-    for (ext, replacement) in [(".tgz", ".tar"), (".tpz", ".tar"), (".gzip", ""), (".gz", "")] {
+    for &(ext, replacement) in extensions {
         if lower.ends_with(ext) && lower.len() > ext.len() {
             return format!("{}{replacement}", &base[..base.len() - ext.len()]);
         }
@@ -215,7 +234,7 @@ impl<'a> Opened<'a> {
                         Item {
                             path: e.name.trim_end_matches('/').to_string(),
                             kind,
-                            size: u64::from(e.uncompressed_size),
+                            size: Some(u64::from(e.uncompressed_size)),
                             packed: Some(u64::from(e.compressed_size)),
                             mtime: Some(Time::Dos(e.modified)),
                             mode: unix.map(|m| m & 0o7777),
@@ -224,6 +243,7 @@ impl<'a> Opened<'a> {
                                 METHOD_STORED => "Store",
                                 METHOD_DEFLATED => "Deflate",
                                 METHOD_DEFLATE64 => "Deflate64",
+                                METHOD_BZIP2 => "BZip2",
                                 _ => "Unknown",
                             }),
                             host_os: Some(host_os(e.version_made_by)),
@@ -260,7 +280,7 @@ impl<'a> Opened<'a> {
                                 EntryKind::HardLink => ItemKind::HardLink(target),
                                 _ => ItemKind::Special,
                             },
-                            size: e.size,
+                            size: Some(e.size),
                             packed: Some(e.size.next_multiple_of(512)),
                             mtime: Some(Time::Unix(e.mtime)),
                             mode: Some(e.mode & 0o7777),
@@ -289,7 +309,7 @@ impl<'a> Opened<'a> {
                 let item = Item {
                     path,
                     kind: ItemKind::File,
-                    size: u64::from(isize),
+                    size: Some(u64::from(isize)),
                     packed: Some(data.len() as u64),
                     mtime: (header.mtime != 0).then_some(Time::Unix(i64::from(header.mtime))),
                     mode: None,
@@ -308,6 +328,26 @@ impl<'a> Opened<'a> {
                 };
                 Ok(Self { kind, items: vec![item], source: Source::Gzip(data) })
             }
+            Kind::Bzip2 => {
+                if !bzip2::is_bzip2(data) {
+                    return Err(bzip2::Bzip2Error::NotBzip2.to_string());
+                }
+                let item = Item {
+                    path: bzip2_item_name(archive_name),
+                    kind: ItemKind::File,
+                    size: None,
+                    packed: Some(data.len() as u64),
+                    mtime: None,
+                    mode: None,
+                    crc: None,
+                    method: None,
+                    host_os: None,
+                    user: None,
+                    group: None,
+                    dos_attrib: None,
+                };
+                Ok(Self { kind, items: vec![item], source: Source::Bzip2(data) })
+            }
         }
     }
 
@@ -318,6 +358,7 @@ impl<'a> Opened<'a> {
             Source::Zip(zip) => zip.read(i).map(Cow::Owned).map_err(|e| e.to_string()),
             Source::Tar(tar) => Ok(Cow::Borrowed(tar.data(i))),
             Source::Gzip(data) => gzip::decompress(data).map(Cow::Owned).map_err(|e| e.to_string()),
+            Source::Bzip2(data) => bzip2::decompress(data).map(Cow::Owned).map_err(|e| e.to_string()),
         }
     }
 
@@ -354,5 +395,8 @@ mod tests {
         assert_eq!(gzip_item_name("b.tgz"), "b.tar");
         assert_eq!(gzip_item_name("c.GZ"), "c");
         assert_eq!(gzip_item_name("plain"), "plain");
+        assert_eq!(bzip2_item_name("x/a.tar.bz2"), "a.tar");
+        assert_eq!(bzip2_item_name("b.tbz2"), "b.tar");
+        assert_eq!(bzip2_item_name("c.bzip2"), "c");
     }
 }

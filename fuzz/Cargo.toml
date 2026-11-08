@@ -16,6 +16,8 @@ libfuzzer-sys = "0.4"
 # infback9 (in infback9/, built by build.rs against this zlib's header).
 flate2 = { version = "1", default-features = false, features = ["zlib"] }
 libz-sys = { version = "1", features = ["static"] }
+# C libbz2 1.0.8, built from the source bzip2-sys bundles.
+bzip2-sys = { version = "0.1", features = ["static"] }
 verified-deflate = { path = ".." }
 
 [build-dependencies]
@@ -86,6 +88,20 @@ bench = false
 [[bin]]
 name = "tar_roundtrip"
 path = "fuzz_targets/tar_roundtrip.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "bzip2_decode"
+path = "fuzz_targets/bzip2_decode.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "bzip2_roundtrip"
+path = "fuzz_targets/bzip2_roundtrip.rs"
 test = false
 doc = false
 bench = false

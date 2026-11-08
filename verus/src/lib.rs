@@ -19,7 +19,8 @@
 //!   panicking, and so does the streaming encoder.
 //! - `zip`, with `crc32`, `inflate` and their modules: the ZIP reader
 //!   returns on every byte string, without panicking, and so does reading
-//!   any entry of the archive it returns.
+//!   any entry of the archive it returns. Reading a bzip2 entry takes the
+//!   bzip2 decoder as given (`bzip2`), until it has a proof of its own.
 //! - `std_specs`: the few standard-library functions taken as given.
 //!
 //! Run with the Verus release named in `.github/workflows/verus.yml`:
@@ -30,6 +31,7 @@
 
 pub mod bitio;
 pub mod build_lengths;
+pub mod bzip2;
 pub mod crc32;
 pub mod deflate;
 pub mod error;
