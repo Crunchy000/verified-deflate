@@ -46,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [inflate, inflate64, compress, stream, zip_read, zip_roundtrip, gzip_zlib, tar_read, tar_roundtrip, bzip2_decode, bzip2_roundtrip]
+        target: [inflate, inflate64, compress, stream, zip_read, zip_roundtrip, gzip_zlib, tar_read, tar_roundtrip, bzip2_decode, bzip2_roundtrip, lzma_decode, xz_roundtrip]
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly
@@ -66,6 +66,8 @@ jobs:
           path: fuzz/corpus/${{ matrix.target }}
           key: fuzz-corpus-${{ matrix.target }}-${{ github.run_id }}
           restore-keys: fuzz-corpus-${{ matrix.target }}-
+      - name: Install liblzma, the LZMA reference
+        run: sudo apt-get update && sudo apt-get install -y liblzma-dev pkg-config
       - name: Add the seed inputs
         # inflate64 (Python) makes the Deflate64 seeds.
         run: |

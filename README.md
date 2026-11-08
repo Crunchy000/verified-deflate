@@ -19,18 +19,23 @@ Info-ZIP.
 - **bzip2**: a compressor and a decompressor that accepts exactly what
   libbz2 accepts (fuzzed against it), with an output limit, multiple
   streams and the old "randomised" blocks; also as ZIP method 12.
+- **LZMA, LZMA2 and xz**: `.xz` files (every check, the delta and all
+  eight branch filters, concatenated streams), `.lzma` files and raw
+  LZMA/LZMA2 streams, with a decoder that accepts exactly what liblzma
+  accepts (fuzzed against it); also as ZIP methods 14 and 95.
 - **tar archives**: a reader for ustar, pax and GNU archives (long names,
   base-256 numbers, links, devices), and a writer that falls back to pax
   headers for names, link targets and numbers that do not fit.
 - **A drop-in replacement for the [`deflate`] crate**: its whole API, checked
   by running `deflate`'s own test suite against this crate.
-- **ZIP archives**: writer and reader for stored, deflated and bzip2 entries,
+- **ZIP archives**: writer and reader for stored, deflated, bzip2, LZMA and xz entries,
   and reader for Deflate64 ones, with UTF-8 names, Unix permissions,
   timestamps and data descriptors. Every entry is checked against its
   CRC-32.
 - **`v7z`**, a command-line tool that takes 7-Zip's commands and switches
   (`a`, `x`, `e`, `l`, `t`, `d`; `-t`, `-mx`, `-o`, `-r`, `-y`, `-ao`,
-  `-si`/`-so`, `-i`/`-x`) and exit codes, for zip, tar, gzip and bzip2. A
+  `-si`/`-so`, `-i`/`-x`) and exit codes, for zip, tar, gzip, bzip2, xz
+  and lzma. A
   simpler tool, **`vzip`**, creates, extracts, lists and tests ZIP
   archives.
 - `#![forbid(unsafe_code)]`, zero dependencies, MSRV 1.83.
@@ -154,15 +159,16 @@ vzip extract -d /tmp/out out.zip
 ### `v7z`: the 7-Zip command line
 
 `v7z` follows 7-Zip's syntax, `v7z <command> [<switches>...] <archive>
-[<names>...]`, so scripts written for `7z` work with zip, tar, gzip and
-bzip2 archives:
+[<names>...]`, so scripts written for `7z` work with zip, tar, gzip,
+bzip2, xz and lzma archives:
 
 ```sh
 v7z a -tzip -mx9 out.zip src/ README.md   # create, or update in place
 v7z a out.tar src -snl                    # store symbolic links as links
 v7z a out.tar.gz out.tar                  # gzip holds exactly one file
-v7z a out.tar.bz2 out.tar                 # and so does bzip2
-v7z a -mm=BZip2 out.zip src               # bzip2 inside a zip
+v7z a out.tar.bz2 out.tar                 # and so do bzip2,
+v7z a -mx9 out.tar.xz out.tar             # xz and lzma
+v7z a -mm=BZip2 out.zip src               # bzip2 inside a zip (or LZMA, XZ)
 v7z l -slt out.zip                        # technical listing
 v7z t out.zip                             # test every entry's CRC
 v7z x out.zip -o/tmp/out -aos             # extract, keeping existing files
@@ -174,7 +180,7 @@ v7z x -so out.tar.gz | tar tf -
 
 | Command | | Switches |
 |---|---|---|
-| `a` | add (create or update) | `-t{zip,tar,gzip,bzip2}`, `-mx[N]`, `-mm={Deflate,Copy,BZip2}`, `-snl`, `-si[name]`, `-so` |
+| `a` | add (create or update) | `-t{zip,tar,gzip,bzip2,xz,lzma}`, `-mx[N]`, `-mm={Deflate,Copy,BZip2,LZMA,XZ}`, `-snl`, `-si[name]`, `-so` |
 | `x`, `e` | extract with / without paths | `-o{dir}`, `-ao{a,s,u,t}`, `-y`, `-so`, `-si` |
 | `l`, `t` | list, test | `-slt` |
 | `d` | delete entries | |
@@ -184,7 +190,7 @@ Names take wildcards (`*`, `?`), match from the archive's root, and with
 `-r` at any depth (`-r0`: wildcards only); `-i!`/`-x!` (and `@listfile`)
 add and remove names. An archive's type comes from `-t`, or else from its
 content when reading and its extension (`.zip`, `.tar`, `.gz`, `.tgz`,
-`.bz2`, `.tbz2`)
+`.bz2`, `.tbz2`, `.xz`, `.txz`, `.lzma`)
 when creating. Exit codes are 7-Zip's: 0 success, 1 warning, 2 fatal error
 (including any CRC or data error), 7 command-line error, 255 stopped.
 Switches that only affect 7-Zip's console or threads (`-bb`, `-bso`,
@@ -309,19 +315,30 @@ bzip2 at level 9, against the bzip2 1.0.8 program on the same machine
 size; on 5 MB of random bytes, 5.6 (7.0) and 21 (12). The block sort is
 SA-IS, so no input is slow to compress.
 
+xz against XZ Utils 5.4.5 (`xz -T1`), same files: on the 1.9 MB of text,
+levels 1 / 6 / 9 give 158,548 / 150,168 / 148,176 bytes (xz: 158,352 /
+138,020 / 138,020) at 28 / 19 / 11 MB/s (xz: 37 / 3.9 / 3.9), and
+decompression runs at 155–181 MB/s (xz: 172–195). Random data is stored
+in LZMA2's uncompressed chunks by both.
+
 ## Limitations
 
 - No ZIP64: archives and entries must be under 4 GiB, with fewer than
   65,535 entries. Larger archives are rejected, never misread.
 - No encryption or multi-disk archives. Methods 0 (stored), 8
-  (deflate) and 12 (bzip2) are read and written, and method 9
-  (Deflate64) is read; no others.
+  (deflate), 12 (bzip2), 14 (LZMA) and 95 (xz) are read and written,
+  and method 9 (Deflate64) is read; no others.
 - Decompression works on whole buffers; streaming is for compression only.
 - Deflate64 is read, not written. zlib preset dictionaries are not
   supported.
 - tar: GNU sparse files and multi-volume archives are listed but their
   data is not reassembled.
-- `v7z`: no `.7z` format yet (nor xz, lzma or the other 7-Zip formats),
+- LZMA and xz compression use liblzma's fast parser (as `xz -0` to `-3`
+  do) at every level, with a deeper match search at higher levels. At
+  `-6` and `-9` the output is about 9% larger than xz's on text, which
+  uses an optimal parser there, and is made about five times faster. The
+  RISC-V branch filter is decoded but not encoded.
+- `v7z`: no `.7z` format yet,
   no encryption (`-p`), and no `u`, `rn` or `h` commands. Without `-y` or
   `-ao`, an existing file prompts on the terminal; with no terminal input
   that stops extraction (exit 255).
@@ -342,13 +359,15 @@ SA-IS, so no input is slow to compress.
 | `src/gzip.rs`, `src/zlib.rs` | gzip and zlib readers |
 | `src/tar.rs` | tar reader and writer |
 | `src/bzip2.rs`, `src/bwt.rs` | bzip2 compressor and decompressor; the block sort (SA-IS) |
+| `src/lzma.rs`, `src/lzma2.rs`, `src/xz.rs` | LZMA (and `.lzma` files), LZMA2, and `.xz` files with CRC64 and SHA-256 |
+| `src/filters.rs` | Branch (BCJ) and delta filters |
 | `src/compat.rs`, `src/write.rs`, `src/gzip_header.rs` | The `deflate` crate's API: one-shot functions, streaming encoders, gzip headers |
 | `src/e2e.rs` | End-to-end Kani harnesses |
 | `verus/` | Verus proofs, over copies of library functions |
 | `.github/scripts/` | Per-harness Kani runner, coverage and mutation reports, Verus copy and mutant checks, used by CI |
 | `src/bin/v7z/` | 7-Zip-compatible command-line tool: argument parsing, archive access, name matching, commands |
 | `src/bin/vzip.rs` | Simple ZIP command-line tool |
-| `tests/` | zlib, gzip, tar, Deflate64, Info-ZIP, 7-Zip, CLI and robustness tests |
+| `tests/` | zlib, gzip, tar, bzip2, xz, Deflate64, Info-ZIP, 7-Zip, CLI and robustness tests |
 | `fuzz/` | Differential fuzz targets against zlib and its Deflate64 decoder (cargo-fuzz), with their own dependencies |
 | `tools/deflate-upstream/` | Runs the `deflate` crate's own tests against this crate |
 | `tools/kani-sample/` | Runs harnesses as randomised tests where Kani isn't installed |

@@ -12,6 +12,8 @@
 //! verified `crc32`.
 
 use crate::bzip2::{decompress_with_limit as bzip2_with_limit, Bzip2Error};
+use crate::lzma::{decompress_zip_entry as lzma_entry, LzmaError};
+use crate::xz::{decompress_with_limit as xz_with_limit, XzError};
 use crate::crc32::crc32;
 use crate::error::InflateError;
 use crate::inflate::{decompress_deflate64_with_limit, decompress_with_limit};
@@ -32,6 +34,10 @@ pub const METHOD_DEFLATED: u16 = 8;
 pub const METHOD_DEFLATE64: u16 = 9;
 /// Compression method 12, bzip2.
 pub const METHOD_BZIP2: u16 = 12;
+/// Compression method 14, LZMA.
+pub const METHOD_LZMA: u16 = 14;
+/// Compression method 95, xz.
+pub const METHOD_XZ: u16 = 95;
 const MAX_COMMENT: usize = 0xFFFF;
 
 /// Errors from reading or writing ZIP archives.
@@ -49,7 +55,7 @@ pub enum ZipError {
     /// The entry is encrypted.
     Encrypted,
     /// The entry uses a compression method other than stored, deflate,
-    /// Deflate64 or bzip2.
+    /// Deflate64, bzip2, LZMA or xz.
     UnsupportedMethod(u16),
     /// The entry's sizes are inconsistent with its data.
     SizeMismatch,
@@ -64,6 +70,10 @@ pub enum ZipError {
     Inflate(InflateError),
     /// The entry's bzip2 data is corrupt.
     Bzip2(Bzip2Error),
+    /// The entry's LZMA data is corrupt.
+    Lzma(LzmaError),
+    /// The entry's xz data is corrupt.
+    Xz(XzError),
     /// The entry name is empty, too long, absolute, or contains `..`,
     /// backslashes or NUL.
     InvalidName(String),
@@ -107,6 +117,44 @@ impl vstd::std_specs::convert::FromSpecImpl<Bzip2Error> for ZipError {
 
     open spec fn from_spec(e: Bzip2Error) -> Self {
         ZipError::Bzip2(e)
+    }
+}
+// @ghost-end
+
+impl From<LzmaError> for ZipError {
+    fn from(e: LzmaError) -> Self {
+        Self::Lzma(e)
+    }
+}
+
+// @ghost-begin
+/// What the conversion above returns, for `?`.
+impl vstd::std_specs::convert::FromSpecImpl<LzmaError> for ZipError {
+    open spec fn obeys_from_spec() -> bool {
+        true
+    }
+
+    open spec fn from_spec(e: LzmaError) -> Self {
+        ZipError::Lzma(e)
+    }
+}
+// @ghost-end
+
+impl From<XzError> for ZipError {
+    fn from(e: XzError) -> Self {
+        Self::Xz(e)
+    }
+}
+
+// @ghost-begin
+/// What the conversion above returns, for `?`.
+impl vstd::std_specs::convert::FromSpecImpl<XzError> for ZipError {
+    open spec fn obeys_from_spec() -> bool {
+        true
+    }
+
+    open spec fn from_spec(e: XzError) -> Self {
+        ZipError::Xz(e)
     }
 }
 // @ghost-end
@@ -528,6 +576,8 @@ impl<'a> ZipArchive<'a> {
             METHOD_DEFLATED => decompress_with_limit(raw, e.uncompressed_size as usize)?.data,
             METHOD_DEFLATE64 => decompress_deflate64_with_limit(raw, e.uncompressed_size as usize)?.data,
             METHOD_BZIP2 => bzip2_with_limit(raw, e.uncompressed_size as usize)?,
+            METHOD_LZMA => lzma_entry(raw, e.uncompressed_size as usize)?,
+            METHOD_XZ => xz_with_limit(raw, e.uncompressed_size as usize)?,
             m => return Err(ZipError::UnsupportedMethod(m)),
         };
         if out.len() != e.uncompressed_size as usize {
