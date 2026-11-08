@@ -132,11 +132,6 @@ impl Crc {
             self.byte(b);
         }
     }
-    fn run(&mut self, b: u8, n: usize) {
-        for _ in 0..n {
-            self.byte(b);
-        }
-    }
     const fn finish(self) -> u32 {
         !self.0
     }
@@ -363,7 +358,11 @@ impl DecodeTable {
                 return Ok(e & 0x1ff);
             }
         }
-        // libbz2's GET_MTF_VAL, a bit at a time.
+        self.decode_slow(bits)
+    }
+
+    /// libbz2's GET_MTF_VAL, a bit at a time.
+    fn decode_slow(&self, bits: &mut Bits<'_>) -> Result<u16, Bzip2Error> {
         let mut zn = self.min_len;
         let mut zvec = bits.read(zn)? as i32;
         loop {
@@ -626,48 +625,61 @@ fn read_block(
         return Err(Bzip2Error::Corrupt("origin pointer out of range"));
     }
 
-    // Inverse Burrows–Wheeler: link each row to the next, in the upper
-    // bits of `tt`.
+    let block = inverse_bwt(tt, &counts, orig_ptr, randomised)?;
+    let start = out.len();
+    rle1_decode(&block, out, max_output)?;
+    Ok(block_crc(&out[start..]))
+}
+
+/// Undoes the Burrows–Wheeler transform: `tt` holds the last column (one
+/// byte per entry) and `counts` how often each byte occurs in it, and the
+/// original block is the rotation at row `orig_ptr`. Each entry gets, in
+/// its upper bits, the row that follows it; walking those links from the
+/// origin spells the block. Randomised blocks have their bits flipped
+/// back.
+fn inverse_bwt(tt: &mut [u32], counts: &[u32; 256], orig_ptr: usize, randomised: bool) -> Result<Vec<u8>, Bzip2Error> {
+    let n = tt.len();
+    // Where each byte's rows start in the sorted first column.
     let mut start = [0u32; 256];
-    let mut sum = 0;
-    for (s, &c) in start.iter_mut().zip(&counts) {
-        *s = sum;
-        sum += c;
+    let mut sum = 0u32;
+    for c in 0..256 {
+        start[c] = sum;
+        sum = sum.wrapping_add(counts[c]);
     }
     for i in 0..n {
         let c = (tt[i] & 0xff) as usize;
-        tt[start[c] as usize] |= (i as u32) << 8;
+        let row = start[c] as usize;
+        // The counts are exact, so each byte's rows stay in range.
+        let slot = tt.get_mut(row).ok_or(Bzip2Error::Corrupt("byte counts do not match the block"))?;
+        *slot |= (i as u32) << 8;
         start[c] += 1;
     }
-    let mut t_pos = (tt[orig_ptr] >> 8) as usize;
+    let mut block = Vec::with_capacity(n);
     let mut rand = Randomiser::new();
-    let mut get = || {
-        let v = tt[t_pos];
-        t_pos = (v >> 8) as usize;
+    let mut pos = orig_ptr;
+    for _ in 0..n {
+        pos = (*tt.get(pos).ok_or(Bzip2Error::Corrupt("origin pointer out of range"))? >> 8) as usize;
+        let v = *tt.get(pos).ok_or(Bzip2Error::Corrupt("broken row link"))?;
         let b = v as u8;
-        if randomised {
-            b ^ rand.next()
-        } else {
-            b
-        }
-    };
+        block.push(if randomised { b ^ rand.next() } else { b });
+    }
+    Ok(block)
+}
 
-    // Undo the initial run-length step: after four equal bytes, a count
-    // of further copies.
-    let mut crc = Crc::new();
+/// Undoes the initial run-length step onto `out`: after four equal bytes
+/// comes a count (0–255) of further copies. At most `max_output` bytes
+/// end up in `out`. A block may not end between a run of four and its
+/// count.
+fn rle1_decode(block: &[u8], out: &mut Vec<u8>, max_output: usize) -> Result<(), Bzip2Error> {
     let mut last = 0u8;
     let mut run = 0;
-    let mut i = 0;
-    while i < n {
-        let b = get();
-        i += 1;
+    for &b in block {
         if run == 4 {
             let extra = usize::from(b);
-            if extra > max_output - out.len() {
+            if extra > max_output.saturating_sub(out.len()) {
                 return Err(Bzip2Error::OutputLimitExceeded);
             }
             out.resize(out.len() + extra, last);
-            crc.run(last, extra);
             run = 0;
             continue;
         }
@@ -681,12 +693,47 @@ fn read_block(
             return Err(Bzip2Error::OutputLimitExceeded);
         }
         out.push(b);
-        crc.byte(b);
     }
     if run == 4 {
         return Err(Bzip2Error::Corrupt("block ends inside a run"));
     }
-    Ok(crc.finish())
+    Ok(())
+}
+
+/// The initial run-length step, on `data` from its start: runs of 4–255
+/// equal bytes become four bytes and a count of the rest; shorter runs
+/// stay. Stops once `block` holds `limit` bytes or more (each run adds at
+/// most 5), and returns how much of `data` it used.
+fn rle1_encode(data: &[u8], block: &mut Vec<u8>, limit: usize) -> usize {
+    let mut i = 0;
+    while i < data.len() && block.len() < limit {
+        let b = data[i];
+        let mut run = 1;
+        while run < 255 && i + run < data.len() && data[i + run] == b {
+            run += 1;
+        }
+        if run >= 4 {
+            block.extend_from_slice(&[b, b, b, b, (run - 4) as u8]);
+        } else {
+            block.resize(block.len() + run, b);
+        }
+        i += run;
+    }
+    i
+}
+
+/// Appends a run of `zeros` (at least 1) move-to-front zeros in bzip2's
+/// bijective base 2: RUNA for digit 1, RUNB for digit 2, least
+/// significant first, so the run is the sum of digit × 2^position.
+fn push_zero_run(syms: &mut Vec<u16>, zeros: usize) {
+    let mut z = zeros - 1;
+    loop {
+        syms.push(if z & 1 == 1 { RUNB } else { RUNA });
+        if z < 2 {
+            break;
+        }
+        z = (z - 2) / 2;
+    }
 }
 
 /// Decompresses a bzip2 file: every stream, concatenated, as `bzip2 -d`
@@ -783,19 +830,7 @@ fn compress_inner(data: &[u8], level: u8, randomise: bool) -> Vec<u8> {
     while i < data.len() {
         block.clear();
         let start = i;
-        while i < data.len() && block.len() < block_limit {
-            let b = data[i];
-            let mut run = 1;
-            while run < 255 && i + run < data.len() && data[i + run] == b {
-                run += 1;
-            }
-            if run >= 4 {
-                block.extend_from_slice(&[b, b, b, b, (run - 4) as u8]);
-            } else {
-                block.resize(block.len() + run, b);
-            }
-            i += run;
-        }
+        i += rle1_encode(&data[i..], &mut block, block_limit);
         let crc = block_crc(&data[start..i]);
         stream_crc = combine(stream_crc, crc);
         if randomise {
@@ -835,14 +870,7 @@ fn write_block(w: &mut BitOut, block: &[u8], crc: u32, randomised: bool) {
     let mut zeros = 0usize;
     let flush = |syms: &mut Vec<u16>, zeros: &mut usize| {
         if *zeros > 0 {
-            let mut z = *zeros - 1;
-            loop {
-                syms.push(if z & 1 == 1 { RUNB } else { RUNA });
-                if z < 2 {
-                    break;
-                }
-                z = (z - 2) / 2;
-            }
+            push_zero_run(syms, *zeros);
             *zeros = 0;
         }
     };
@@ -1016,6 +1044,185 @@ fn choose_tables(syms: &[u16], alpha_size: usize) -> (usize, Vec<u8>, Vec<[u8; M
         }
     }
     (n_groups, selectors, lengths)
+}
+
+#[cfg(kani)]
+mod proofs {
+    use super::*;
+
+    /// The CRC of `data` by its definition: the polynomial 0x04C11DB7
+    /// applied bit by bit, most significant first, from all ones, then
+    /// inverted.
+    fn crc_bitwise(data: &[u8]) -> u32 {
+        let mut c = 0xFFFF_FFFFu32;
+        for &b in data {
+            c ^= u32::from(b) << 24;
+            for _ in 0..8 {
+                c = if c & 0x8000_0000 != 0 { (c << 1) ^ 0x04C1_1DB7 } else { c << 1 };
+            }
+        }
+        !c
+    }
+
+    /// Every CRC table entry is eight steps of the definition.
+    #[kani::proof]
+    #[kani::unwind(9)]
+    fn crc_table_matches_definition() {
+        let b: u8 = kani::any();
+        let mut c = u32::from(b) << 24;
+        for _ in 0..8 {
+            c = if c & 0x8000_0000 != 0 { (c << 1) ^ 0x04C1_1DB7 } else { c << 1 };
+        }
+        assert_eq!(CRC_TABLE[b as usize], c);
+    }
+
+    /// One table step equals eight bitwise steps from any register, so the
+    /// CRC of every input equals the definition's.
+    #[kani::proof]
+    #[kani::unwind(9)]
+    fn crc_step_matches_definition() {
+        let mut c = Crc(kani::any());
+        let b: u8 = kani::any();
+        let mut r = c.0 ^ (u32::from(b) << 24);
+        for _ in 0..8 {
+            r = if r & 0x8000_0000 != 0 { (r << 1) ^ 0x04C1_1DB7 } else { r << 1 };
+        }
+        c.byte(b);
+        assert_eq!(c.0, r);
+    }
+
+    /// Whole CRCs of up to three bytes equal the definition.
+    #[kani::proof]
+    #[kani::unwind(9)]
+    fn crc_matches_definition() {
+        let data: [u8; 3] = kani::any();
+        let n: usize = kani::any_where(|&n: &usize| n <= 3);
+        assert_eq!(block_crc(&data[..n]), crc_bitwise(&data[..n]));
+    }
+
+    /// Every run of 1–4096 zeros is coded in bijective base 2 (RUNA = 1,
+    /// RUNB = 2, least significant digit first) in at most 12 symbols, and
+    /// summing digit × 2^position, as the decoder does, gives the run back.
+    #[kani::proof]
+    #[kani::unwind(14)]
+    fn zero_runs_round_trip() {
+        let zeros: usize = kani::any_where(|&z: &usize| (1..=4096).contains(&z));
+        let mut syms = Vec::new();
+        push_zero_run(&mut syms, zeros);
+        assert!(!syms.is_empty() && syms.len() <= 12);
+        let mut run = 0usize;
+        let mut weight = 1usize;
+        for &sym in &syms {
+            assert!(sym == RUNA || sym == RUNB);
+            run += weight << sym;
+            weight <<= 1;
+        }
+        assert_eq!(run, zeros);
+    }
+
+    /// Bits written most significant first read back the same, for any two
+    /// fields of 1–32 bits.
+    #[kani::proof]
+    #[kani::unwind(10)]
+    fn bits_round_trip() {
+        let k1: u32 = kani::any_where(|&k: &u32| (1..=32).contains(&k));
+        let k2: u32 = kani::any_where(|&k: &u32| (1..=32).contains(&k));
+        let v1: u32 = kani::any_where(|&v: &u32| k1 == 32 || v >> k1 == 0);
+        let v2: u32 = kani::any_where(|&v: &u32| k2 == 32 || v >> k2 == 0);
+        let mut w = BitOut { out: Vec::new(), acc: 0, n: 0 };
+        w.write(v1, k1);
+        w.write(v2, k2);
+        let bytes = w.finish();
+        assert_eq!(bytes.len() as u32, (k1 + k2).div_ceil(8));
+        let mut r = Bits::new(&bytes);
+        assert_eq!(r.read(k1), Ok(v1));
+        assert_eq!(r.read(k2), Ok(v2));
+        assert_eq!(r.consumed(), bytes.len());
+    }
+
+    /// The lookup table never disagrees with libbz2's bit-by-bit decoding:
+    /// for any code lengths (1–20, even incomplete or over-subscribed) of a
+    /// four-symbol alphabet and any input, the two give the same symbol, or
+    /// both an error, using the same bits.
+    #[kani::proof]
+    #[kani::unwind(1030)]
+    #[kani::solver(kissat)]
+    fn decode_table_matches_bit_by_bit_decoding() {
+        let lengths: [u8; 4] = kani::any();
+        let lengths = lengths.map(|l| l % 20 + 1);
+        let t = DecodeTable::new(&lengths);
+        let input: [u8; 3] = kani::any();
+        let mut fast = Bits::new(&input);
+        let mut slow = Bits::new(&input);
+        let a = t.decode(&mut fast);
+        let b = t.decode_slow(&mut slow);
+        assert_eq!(a, b);
+        if a.is_ok() {
+            assert_eq!(fast.n, slow.n);
+            assert_eq!(fast.pos, slow.pos);
+        }
+    }
+
+    /// The run-length step round-trips for every input of up to eight
+    /// bytes over a two-byte alphabet (all run shapes up to length 8), and
+    /// its output never ends between a run of four and its count.
+    #[kani::proof]
+    #[kani::unwind(10)]
+    fn rle1_round_trips() {
+        let data: [u8; 8] = kani::any();
+        let data = data.map(|b| b & 1);
+        let n: usize = kani::any_where(|&n: &usize| n <= 8);
+        let mut block = Vec::new();
+        assert_eq!(rle1_encode(&data[..n], &mut block, usize::MAX), n);
+        let mut out = Vec::new();
+        assert_eq!(rle1_decode(&block, &mut out, usize::MAX), Ok(()));
+        assert_eq!(out.as_slice(), &data[..n]);
+    }
+
+    /// Runs of every length up to 600 split at 255 and come back whole,
+    /// with the block holding five bytes per 255 or fewer.
+    #[kani::proof]
+    #[kani::unwind(602)]
+    fn long_runs_round_trip() {
+        let len: usize = kani::any_where(|&n: &usize| (1..=600).contains(&n));
+        let data = vec![7u8; len];
+        let mut block = Vec::new();
+        assert_eq!(rle1_encode(&data, &mut block, usize::MAX), len);
+        assert!(block.len() <= 5 * len.div_ceil(255));
+        let mut out = Vec::new();
+        assert_eq!(rle1_decode(&block, &mut out, usize::MAX), Ok(()));
+        assert_eq!(out, data);
+    }
+
+    /// The decoder's inverse transform undoes the encoder's block sort for
+    /// every block of up to four bytes over a three-byte alphabet.
+    #[kani::proof]
+    #[kani::unwind(260)]
+    fn inverse_bwt_undoes_bwt() {
+        let s: [u8; 4] = kani::any();
+        let s = s.map(|b| b % 3);
+        let n: usize = kani::any_where(|&n: &usize| (1..=4).contains(&n));
+        let (last, orig) = crate::bwt::bwt(&s[..n]);
+        let mut counts = [0u32; 256];
+        let mut tt: Vec<u32> = Vec::new();
+        for &b in &last {
+            counts[b as usize] += 1;
+            tt.push(u32::from(b));
+        }
+        assert_eq!(inverse_bwt(&mut tt, &counts, orig, false).unwrap(), &s[..n]);
+    }
+
+    /// Compressing then decompressing gives the input back, for every
+    /// input of up to two bytes.
+    #[kani::proof]
+    #[kani::unwind(260)]
+    #[kani::solver(kissat)]
+    fn compress_round_trips() {
+        let data: [u8; 2] = kani::any();
+        let n: usize = kani::any_where(|&n: &usize| n <= 2);
+        let packed = compress(&data[..n], 1);
+        assert_eq!(decompress(&packed).unwrap().as_slice(), &data[..n]);
+    }
 }
 
 #[cfg(test)]

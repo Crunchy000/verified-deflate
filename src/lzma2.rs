@@ -194,6 +194,66 @@ pub fn compress(data: &[u8], opts: &LzmaOptions) -> Vec<u8> {
     out
 }
 
+#[cfg(kani)]
+mod proofs {
+    use super::*;
+    use crate::lzma::LzmaProps;
+
+    /// The property byte for a dictionary size is the smallest that covers
+    /// it, for every size.
+    #[kani::proof]
+    #[kani::unwind(42)]
+    fn dictionary_byte_is_the_smallest_cover() {
+        let d: u32 = kani::any();
+        let b = dict_size_byte(d);
+        assert!(b <= 40);
+        assert!(dict_size_from_byte(b).unwrap() >= d);
+        if b > 0 {
+            assert!(dict_size_from_byte(b - 1).unwrap() < d);
+        }
+    }
+
+    /// Dictionary sizes grow with their byte, from 4 KiB, and bytes past
+    /// 40 are invalid.
+    #[kani::proof]
+    fn dictionary_sizes_increase() {
+        let b: u8 = kani::any();
+        match dict_size_from_byte(b) {
+            None => assert!(b > 40),
+            Some(d) => {
+                assert!(d >= 4096);
+                if b < 40 {
+                    assert!(dict_size_from_byte(b + 1).unwrap() > d);
+                }
+            }
+        }
+    }
+
+    /// LZMA2 round-trips every input of up to three bytes.
+    #[kani::proof]
+    #[kani::unwind(10)]
+    fn compress_round_trips() {
+        let data: [u8; 3] = kani::any();
+        let n: usize = kani::any_where(|&n: &usize| n <= 3);
+        let opts = LzmaOptions { props: LzmaProps { lc: 0, lp: 0, pb: 0, dict_size: 4096 }, nice_len: 8, depth: 2 };
+        let packed = compress(&data[..n], &opts);
+        let d = decompress_with_limit(&packed, 4096, 16).unwrap();
+        assert_eq!(d.data.as_slice(), &data[..n]);
+        assert_eq!(d.consumed, packed.len());
+    }
+
+    /// On any ten bytes, decoding returns (no panic) within the limit.
+    #[kani::proof]
+    #[kani::unwind(28)]
+    fn decoding_never_panics() {
+        let input: [u8; 10] = kani::any();
+        let limit: usize = kani::any_where(|&l: &usize| l <= 6);
+        if let Ok(d) = decompress_with_limit(&input, 4096, limit) {
+            assert!(d.data.len() <= limit && d.consumed <= input.len());
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

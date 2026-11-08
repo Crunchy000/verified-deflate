@@ -451,19 +451,7 @@ pub(crate) fn decode_stream(
             // Match with a new distance.
             len = rc.len(&mut m.len, pos_state);
             m.state = after_match(state);
-            let slot = rc.tree(&mut m.dist_slot[dist_state(len)], 6);
-            let dist = if slot < 4 {
-                slot
-            } else {
-                let footer = (slot >> 1) - 1;
-                let base = (2 | (slot & 1)) << footer;
-                if slot < END_POS_MODEL_INDEX {
-                    base + rc.reverse_tree(&mut m.dist_special, (base - slot) as usize, footer)
-                } else {
-                    let high = rc.direct(footer - ALIGN_BITS) << ALIGN_BITS;
-                    base + high + rc.reverse_tree(&mut m.dist_align, 0, ALIGN_BITS)
-                }
-            };
+            let dist = decode_distance(&mut rc, m, len);
             if dist == u32::MAX {
                 if !marker_ok {
                     return Err(LzmaError::Corrupt("unexpected end marker"));
@@ -537,6 +525,24 @@ pub(crate) fn decode_stream(
                 LzmaError::OutputLimitExceeded
             });
         }
+    }
+}
+
+/// A match distance (minus one) for a match of `len` bytes: its slot,
+/// then the bits below the slot's top two, through the special, direct
+/// and alignment models. All ones is the end marker.
+fn decode_distance(rc: &mut RangeDecoder<'_>, m: &mut Model, len: usize) -> u32 {
+    let slot = rc.tree(&mut m.dist_slot[dist_state(len)], 6);
+    if slot < 4 {
+        return slot;
+    }
+    let footer = (slot >> 1) - 1;
+    let base = (2 | (slot & 1)) << footer;
+    if slot < END_POS_MODEL_INDEX {
+        base + rc.reverse_tree(&mut m.dist_special, (base - slot) as usize, footer)
+    } else {
+        let high = rc.direct(footer - ALIGN_BITS) << ALIGN_BITS;
+        base + high + rc.reverse_tree(&mut m.dist_align, 0, ALIGN_BITS)
     }
 }
 
@@ -778,35 +784,45 @@ struct MatchFinder<'a> {
     head: Vec<u32>,
     chain: Vec<u32>,
     hash_mask: usize,
+    hash2_mask: usize,
+    hash3_shift: u32,
 }
 
 const NONE: u32 = u32::MAX;
+/// Bits of the two- and three-byte hash tables, at most.
 const HASH2_BITS: u32 = 10;
 const HASH3_BITS: u32 = 16;
 
 impl<'a> MatchFinder<'a> {
     fn new(data: &'a [u8], dict_size: usize, depth: usize, nice_len: usize) -> Self {
         let window = dict_size.min(data.len()).max(1);
-        let hash_bits = (usize::BITS - window.leading_zeros()).clamp(16, 24);
+        // Tables no larger than the input needs: a few bits more than its
+        // length's, up to 2^24 for the four-byte hash.
+        let bits = usize::BITS - window.leading_zeros();
+        let hash_bits = (bits + 2).clamp(4, 24);
+        let hash2_bits = hash_bits.min(HASH2_BITS);
+        let hash3_bits = hash_bits.min(HASH3_BITS);
         Self {
             data,
             pos: 0,
             dict_size,
             depth: depth.max(1),
             nice_len: nice_len.clamp(MATCH_LEN_MIN, MATCH_LEN_MAX),
-            hash2: vec![NONE; 1 << HASH2_BITS],
-            hash3: vec![NONE; 1 << HASH3_BITS],
+            hash2: vec![NONE; 1 << hash2_bits],
+            hash3: vec![NONE; 1 << hash3_bits],
             head: vec![NONE; 1 << hash_bits],
             chain: vec![NONE; window],
             hash_mask: (1 << hash_bits) - 1,
+            hash2_mask: (1 << hash2_bits) - 1,
+            hash3_shift: 32 - hash3_bits,
         }
     }
 
     fn hashes(&self, p: usize) -> (usize, usize, usize) {
         let d = self.data;
-        let h2 = (usize::from(d[p]) | usize::from(d[p + 1]) << 8) & ((1 << HASH2_BITS) - 1);
+        let h2 = (usize::from(d[p]) | usize::from(d[p + 1]) << 8) & self.hash2_mask;
         let v3 = u32::from(d[p]) | u32::from(d[p + 1]) << 8 | u32::from(d[p + 2]) << 16;
-        let h3 = (v3.wrapping_mul(0x9E37_79B1) >> (32 - HASH3_BITS)) as usize;
+        let h3 = (v3.wrapping_mul(0x9E37_79B1) >> self.hash3_shift) as usize;
         let v4 = v3 | u32::from(d[p + 3]) << 24;
         let h4 = (v4.wrapping_mul(0x9E37_79B1) >> 8) as usize & self.hash_mask;
         (h2, h3, h4)
@@ -1218,6 +1234,147 @@ pub fn compress_file(data: &[u8], opts: &LzmaOptions) -> Vec<u8> {
     out.extend_from_slice(&(data.len() as u64).to_le_bytes());
     out.extend(compress_raw(data, opts, false));
     out
+}
+
+#[cfg(kani)]
+mod proofs {
+    use super::*;
+
+    /// A model with `lc` = `lp` = `pb` = 0, the smallest.
+    fn tiny() -> (LzmaProps, Model) {
+        let p = LzmaProps { lc: 0, lp: 0, pb: 0, dict_size: 4096 };
+        (p, Model::new(&p))
+    }
+
+    /// Every distance has the slot the decoder rebuilds it from: below 4
+    /// the distance itself, otherwise its two top bits' place, with the
+    /// distance between the slot's base and the next.
+    #[kani::proof]
+    fn distance_slots_cover_every_distance() {
+        let d: u32 = kani::any();
+        let slot = dist_slot(d);
+        assert!(slot < 64);
+        if slot < 4 {
+            assert_eq!(d, slot);
+        } else {
+            let footer = (slot >> 1) - 1;
+            let base = (2 | (slot & 1)) << footer;
+            assert!(base <= d && u64::from(d - base) < 1u64 << footer);
+        }
+    }
+
+    /// The properties byte holds `lc`, `lp` and `pb` exactly, and every
+    /// valid byte decodes to them in range.
+    #[kani::proof]
+    fn properties_byte_round_trips() {
+        let (lc, lp, pb): (u8, u8, u8) = (kani::any(), kani::any(), kani::any());
+        kani::assume(lc <= 8 && lp <= 4 && pb <= 4);
+        let p = LzmaProps { lc, lp, pb, dict_size: kani::any() };
+        assert_eq!(LzmaProps::from_byte(p.byte(), p.dict_size), Ok(p));
+        let b: u8 = kani::any();
+        match LzmaProps::from_byte(b, 0) {
+            Ok(q) => assert!(b < 225 && q.lc <= 8 && q.lp <= 4 && q.pb <= 4 && q.byte() == b),
+            Err(_) => assert!(b >= 225),
+        }
+    }
+
+    /// The range coder decodes what it encodes: bits with adaptive
+    /// probabilities, a bit tree, a reverse bit tree and direct bits, in
+    /// any combination of values. Its stream starts with the 0 byte the
+    /// decoder requires.
+    #[kani::proof]
+    #[kani::unwind(10)]
+    fn range_coder_round_trips() {
+        let bits: [bool; 3] = kani::any();
+        let tree: u32 = kani::any_where(|&v: &u32| v < 8);
+        let rev: u32 = kani::any_where(|&v: &u32| v < 16);
+        let direct: u32 = kani::any_where(|&v: &u32| v < 64);
+        let mut probs = [PROB_INIT; 3];
+        let mut tree_probs = [PROB_INIT; 8];
+        let mut rev_probs = [PROB_INIT; 16];
+        let mut rc = RangeEncoder::new();
+        for (p, &b) in probs.iter_mut().zip(&bits) {
+            rc.bit(p, u32::from(b));
+        }
+        rc.tree(&mut tree_probs, 3, tree);
+        rc.reverse_tree(&mut rev_probs, 0, 4, rev);
+        rc.direct(direct, 6);
+        let out = rc.finish();
+        assert_eq!(out[0], 0);
+        let mut probs = [PROB_INIT; 3];
+        let mut tree_probs = [PROB_INIT; 8];
+        let mut rev_probs = [PROB_INIT; 16];
+        let mut d = RangeDecoder::new(&out).unwrap();
+        for (p, &b) in probs.iter_mut().zip(&bits) {
+            assert_eq!(d.bit(p), u32::from(b));
+        }
+        assert_eq!(d.tree(&mut tree_probs, 3), tree);
+        assert_eq!(d.reverse_tree(&mut rev_probs, 0, 4), rev);
+        assert_eq!(d.direct(6), direct);
+        assert!(!d.overrun);
+    }
+
+    /// Every match length (2–273) at every position state round-trips
+    /// through the length coder.
+    #[kani::proof]
+    #[kani::unwind(10)]
+    fn lengths_round_trip() {
+        let len: usize = kani::any_where(|&l: &usize| (2..=MATCH_LEN_MAX).contains(&l));
+        let ps: usize = kani::any_where(|&p: &usize| p < POS_STATES_MAX);
+        let mut m = LenModel::new();
+        let mut rc = RangeEncoder::new();
+        rc.len(&mut m, len, ps);
+        let out = rc.finish();
+        let mut m = LenModel::new();
+        let mut d = RangeDecoder::new(&out).unwrap();
+        assert_eq!(d.len(&mut m, ps), len);
+    }
+
+    /// Every distance, the end marker's included, round-trips through the
+    /// distance coder for every length class.
+    #[kani::proof]
+    #[kani::unwind(28)]
+    fn distances_round_trip() {
+        let dist: u32 = kani::any();
+        let len: usize = kani::any_where(|&l: &usize| (2..=6).contains(&l));
+        let (_, mut m) = tiny();
+        let mut rc = RangeEncoder::new();
+        encode_distance(&mut rc, &mut m, dist, len);
+        let out = rc.finish();
+        let (_, mut m) = tiny();
+        let mut d = RangeDecoder::new(&out).unwrap();
+        assert_eq!(decode_distance(&mut d, &mut m, len), dist);
+    }
+
+    /// Compressing then decompressing gives every input of up to three
+    /// bytes back, with and without the end marker.
+    #[kani::proof]
+    #[kani::unwind(10)]
+    fn compress_round_trips() {
+        let data: [u8; 3] = kani::any();
+        let n: usize = kani::any_where(|&n: &usize| n <= 3);
+        let marker: bool = kani::any();
+        let opts = LzmaOptions { props: LzmaProps { lc: 0, lp: 0, pb: 0, dict_size: 4096 }, nice_len: 8, depth: 2 };
+        let raw = compress_raw(&data[..n], &opts, marker);
+        let size = (!marker).then_some(n as u64);
+        let d = decompress_raw(&raw, &opts.props, size, 16).unwrap();
+        assert_eq!(d.data.as_slice(), &data[..n]);
+        assert_eq!(d.consumed, raw.len());
+    }
+
+    /// On any eight bytes, with or without a known size, decoding returns
+    /// (no panic) and never produces more than the limit.
+    #[kani::proof]
+    #[kani::unwind(28)]
+    fn decoding_never_panics() {
+        let input: [u8; 8] = kani::any();
+        let (p, _) = tiny();
+        let size: Option<u64> = if kani::any() { Some(kani::any_where(|&s: &u64| s <= 6)) } else { None };
+        let limit: usize = kani::any_where(|&l: &usize| l <= 6);
+        if let Ok(d) = decompress_raw(&input, &p, size, limit) {
+            assert!(d.data.len() <= limit && d.consumed <= input.len());
+        }
+    }
 }
 
 #[cfg(test)]

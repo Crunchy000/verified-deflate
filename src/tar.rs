@@ -492,8 +492,11 @@ fn put_octal(field: &mut [u8], v: u64) -> bool {
     if digits < 22 && v >= 1u64 << (3 * digits) {
         return false;
     }
-    let s = format!("{v:0digits$o}");
-    field[..digits].copy_from_slice(s.as_bytes());
+    let mut x = v;
+    for d in field[..digits].iter_mut().rev() {
+        *d = b'0' + (x & 7) as u8;
+        x >>= 3;
+    }
     field[digits] = 0;
     true
 }
@@ -613,10 +616,9 @@ impl TarWriter {
 
     fn finish_header(&self, h: &mut [u8; BLOCK]) {
         h[148..156].copy_from_slice(b"        ");
-        let sum: u32 = h.iter().map(|&b| u32::from(b)).sum();
-        let s = format!("{sum:06o}");
-        h[148..154].copy_from_slice(s.as_bytes());
-        h[154] = 0;
+        let sum: u64 = h.iter().map(|&b| u64::from(b)).sum();
+        // Six digits and a NUL, then the space; the sum of 512 bytes fits.
+        put_octal(&mut h[148..155], sum);
         h[155] = b' ';
     }
 
@@ -683,6 +685,87 @@ impl TarWriter {
     pub fn finish(mut self) -> Vec<u8> {
         self.out.extend_from_slice(&[0; 2 * BLOCK]);
         self.out
+    }
+}
+
+#[cfg(kani)]
+mod proofs {
+    use super::*;
+
+    /// Octal fields hold exactly the numbers that fit, and read back.
+    #[kani::proof]
+    #[kani::unwind(13)]
+    fn octal_numbers_round_trip() {
+        let v: u64 = kani::any();
+        let mut f8 = [0u8; 8];
+        assert_eq!(put_octal(&mut f8, v), v < 1 << 21);
+        if v < 1 << 21 {
+            assert_eq!(number(&f8, 0), Ok(v));
+        }
+        let mut f12 = [0u8; 12];
+        assert_eq!(put_octal(&mut f12, v), v < 1 << 33);
+        if v < 1 << 33 {
+            assert_eq!(number(&f12, 0), Ok(v));
+        }
+    }
+
+    /// Base-256 fields read as their big-endian value, whatever it is;
+    /// numbers past 64 bits are errors, not wrapped.
+    #[kani::proof]
+    #[kani::unwind(13)]
+    fn base256_numbers_read_exactly() {
+        let v: u64 = kani::any();
+        let mut f = [0u8; 12];
+        f[0] = 0x80;
+        f[4..].copy_from_slice(&v.to_be_bytes());
+        assert_eq!(number(&f, 0), Ok(v));
+        let high: u8 = kani::any_where(|&b: &u8| b != 0);
+        f[3] = high;
+        assert!(number(&f, 0).is_err());
+    }
+
+    /// Number fields never panic, whatever they hold.
+    #[kani::proof]
+    #[kani::unwind(13)]
+    fn numbers_never_panic() {
+        let f: [u8; 12] = kani::any();
+        let n: usize = kani::any_where(|&n: &usize| n <= 12);
+        let _ = number(&f[..n], 0);
+    }
+
+    /// The writer's header checksum is one the reader accepts, for any
+    /// header contents.
+    #[kani::proof]
+    #[kani::unwind(520)]
+    fn written_checksums_check() {
+        let mut h: [u8; BLOCK] = kani::any();
+        TarWriter::new().finish_header(&mut h);
+        assert_eq!(checksum_ok(&h, 0), Ok(true));
+    }
+
+    /// Paths made safe stay relative and never climb: for every path of
+    /// up to six bytes from `a`, `/`, `.` and NUL, the result has no empty,
+    /// `.` or `..` component and no NUL, and only paths with `..` or a NUL
+    /// or nothing but separators are refused.
+    #[kani::proof]
+    #[kani::unwind(8)]
+    fn safe_paths_stay_inside() {
+        let raw: [u8; 6] = kani::any();
+        let raw = raw.map(|b| [b'a', b'/', b'.', 0][usize::from(b % 4)]);
+        let n: usize = kani::any_where(|&n: &usize| n <= 6);
+        let path = &raw[..n];
+        let parts: Vec<&[u8]> = path.split(|&b| b == b'/').collect();
+        let climbs = parts.iter().any(|p| *p == b"..") || path.contains(&0);
+        let empty = parts.iter().all(|p| p.is_empty() || *p == b".");
+        match safe_path(path) {
+            Some(s) => {
+                assert!(!climbs && !empty);
+                for c in s.split('/') {
+                    assert!(!c.is_empty() && c != "." && c != ".." && !c.contains('\0'));
+                }
+            }
+            None => assert!(climbs || empty),
+        }
     }
 }
 

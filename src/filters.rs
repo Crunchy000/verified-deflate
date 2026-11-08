@@ -378,6 +378,87 @@ pub fn delta_encode(buf: &mut [u8], distance: usize) {
     }
 }
 
+#[cfg(kani)]
+mod proofs {
+    use super::*;
+
+    /// Decoding undoes encoding, for every buffer of up to `N` bytes and
+    /// every start offset the filter allows.
+    fn round_trip<const N: usize>(f: BranchFilter) {
+        let data: [u8; N] = kani::any();
+        let n: usize = kani::any_where(|&n: &usize| n <= N);
+        let start: u32 = kani::any::<u32>() & !(f.alignment() - 1);
+        let mut buf = data;
+        assert!(f.encode(&mut buf[..n], start));
+        f.decode(&mut buf[..n], start);
+        assert_eq!(buf, data);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn x86_round_trips() {
+        round_trip::<12>(BranchFilter::X86);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn powerpc_round_trips() {
+        round_trip::<12>(BranchFilter::PowerPc);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(36)]
+    fn ia64_round_trips() {
+        round_trip::<32>(BranchFilter::Ia64);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn arm_round_trips() {
+        round_trip::<12>(BranchFilter::Arm);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn armthumb_round_trips() {
+        round_trip::<12>(BranchFilter::ArmThumb);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn sparc_round_trips() {
+        round_trip::<12>(BranchFilter::Sparc);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn arm64_round_trips() {
+        round_trip::<12>(BranchFilter::Arm64);
+    }
+
+    /// The RISC-V decoder (which has no encoder here) never panics on any
+    /// buffer of up to 20 bytes at any start.
+    #[kani::proof]
+    #[kani::unwind(22)]
+    fn riscv_decoding_never_panics() {
+        let mut data: [u8; 20] = kani::any();
+        let n: usize = kani::any_where(|&n: &usize| n <= 20);
+        BranchFilter::RiscV.decode(&mut data[..n], kani::any());
+    }
+
+    /// Delta decoding undoes delta encoding, for every distance.
+    #[kani::proof]
+    #[kani::unwind(10)]
+    fn delta_round_trips() {
+        let data: [u8; 8] = kani::any();
+        let dist: usize = kani::any_where(|&d: &usize| (1..=256).contains(&d));
+        let mut buf = data;
+        delta_encode(&mut buf, dist);
+        delta_decode(&mut buf, dist);
+        assert_eq!(buf, data);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

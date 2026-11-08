@@ -261,6 +261,70 @@ fn sais(t: &[u32], sa: &mut [u32], k: usize) {
     induce(t, sa, &stype, &counts);
 }
 
+#[cfg(kani)]
+mod proofs {
+    use super::*;
+
+    /// Lexicographic comparison of two suffixes.
+    fn suffix_less(t: &[u32], a: usize, b: usize) -> bool {
+        t[a..] < t[b..]
+    }
+
+    /// SA-IS sorts every string of up to five symbols from a three-symbol
+    /// alphabet (with its sentinel): the result is a permutation, in
+    /// strictly increasing suffix order.
+    #[kani::proof]
+    #[kani::unwind(8)]
+    fn suffix_array_sorts() {
+        let body: [u32; 5] = kani::any();
+        let body = body.map(|c| c % 3 + 1);
+        let n: usize = kani::any_where(|&n: &usize| n <= 5);
+        let mut t = body[..n].to_vec();
+        t.push(0);
+        let sa = suffix_array(&t, 4);
+        assert_eq!(sa.len(), t.len());
+        let mut seen = [false; 6];
+        for &p in &sa {
+            assert!((p as usize) < t.len() && !seen[p as usize]);
+            seen[p as usize] = true;
+        }
+        for i in 1..sa.len() {
+            assert!(suffix_less(&t, sa[i - 1] as usize, sa[i] as usize));
+        }
+    }
+
+    fn rotation(s: &[u8], i: usize) -> Vec<u8> {
+        let mut r = s[i..].to_vec();
+        r.extend_from_slice(&s[..i]);
+        r
+    }
+
+    /// `least_rotation` finds a smallest rotation, and `period` the
+    /// shortest repeating unit, for every string of up to five bytes over a
+    /// three-byte alphabet.
+    #[kani::proof]
+    #[kani::unwind(8)]
+    fn rotation_and_period_are_right() {
+        let s: [u8; 5] = kani::any();
+        let s = s.map(|b| b % 3);
+        let n: usize = kani::any_where(|&n: &usize| (1..=5).contains(&n));
+        let s = &s[..n];
+        let r = least_rotation(s);
+        assert!(r < n);
+        for k in 0..n {
+            assert!(rotation(s, r) <= rotation(s, k));
+        }
+        let p = period(s);
+        assert!(p >= 1 && n % p == 0);
+        for i in 0..n {
+            assert_eq!(s[i], s[i % p]);
+        }
+        for q in 1..p {
+            assert!(n % q != 0 || (0..n).any(|i| s[i] != s[i % q]));
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

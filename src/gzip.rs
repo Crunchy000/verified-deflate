@@ -260,6 +260,34 @@ pub fn trailer(data: &[u8]) -> [u8; 8] {
     [crc[0], crc[1], crc[2], crc[3], len[0], len[1], len[2], len[3]]
 }
 
+#[cfg(kani)]
+mod proofs {
+    use super::*;
+
+    /// The header parser never panics on any sixteen bytes, and reports a
+    /// header length within them.
+    #[kani::proof]
+    #[kani::unwind(18)]
+    fn header_parsing_never_panics() {
+        let b: [u8; 16] = kani::any();
+        let n: usize = kani::any_where(|&n: &usize| n <= 16);
+        if let Ok((_, len)) = parse_header(&b[..n]) {
+            assert!(len <= n && len >= 10);
+        }
+    }
+
+    /// The trailer is the CRC-32 and the length, little-endian.
+    #[kani::proof]
+    #[kani::unwind(6)]
+    fn trailer_is_crc_and_length() {
+        let data: [u8; 4] = kani::any();
+        let n: usize = kani::any_where(|&n: &usize| n <= 4);
+        let t = trailer(&data[..n]);
+        assert_eq!(u32::from_le_bytes([t[0], t[1], t[2], t[3]]), crc32(&data[..n]));
+        assert_eq!(u32::from_le_bytes([t[4], t[5], t[6], t[7]]), n as u32);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

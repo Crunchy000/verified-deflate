@@ -177,6 +177,15 @@ jobs:
           - { module: "inflate::proofs::", file: src/inflate.rs, flags: "-Z stubbing --no-memory-safety-checks" }
           - { module: "zip::proofs::", file: src/zip.rs }
           - { module: "e2e::", file: src/e2e.rs, flags: "-Z stubbing --no-memory-safety-checks" }
+          - { module: "bzip2::proofs::", file: src/bzip2.rs }
+          - { module: "bwt::proofs::", file: src/bwt.rs }
+          - { module: "lzma::proofs::", file: src/lzma.rs }
+          - { module: "lzma2::proofs::", file: src/lzma2.rs }
+          - { module: "filters::proofs::", file: src/filters.rs }
+          - { module: "xz::proofs::", file: src/xz.rs }
+          - { module: "sevenz::proofs::", file: src/sevenz.rs }
+          - { module: "tar::proofs::", file: src/tar.rs }
+          - { module: "gzip::proofs::", file: src/gzip.rs }
     steps:
       - name: Select
         id: sel

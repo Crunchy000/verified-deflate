@@ -1392,6 +1392,84 @@ fn write_files_info(out: &mut Vec<u8>, items: &[WriteItem]) {
     out.push(K_END as u8);
 }
 
+#[cfg(kani)]
+mod proofs {
+    use super::*;
+
+    /// Every 64-bit number round-trips through 7z's variable-length form,
+    /// using exactly the bytes written (one to nine).
+    #[kani::proof]
+    #[kani::unwind(10)]
+    fn numbers_round_trip() {
+        let v: u64 = kani::any();
+        let mut b = Vec::new();
+        write_number(&mut b, v);
+        assert!(!b.is_empty() && b.len() <= 9);
+        let mut r = Reader { b: &b, pos: 0 };
+        assert_eq!(r.number(), Ok(v));
+        assert_eq!(r.pos, b.len());
+    }
+
+    /// Reading a number never panics and stays within the data.
+    #[kani::proof]
+    #[kani::unwind(10)]
+    fn numbers_are_read_safely() {
+        let b: [u8; 9] = kani::any();
+        let n: usize = kani::any_where(|&n: &usize| n <= 9);
+        let mut r = Reader { b: &b[..n], pos: 0 };
+        if r.number().is_ok() {
+            assert!(r.pos <= n);
+        }
+    }
+
+    /// Bit vectors round-trip, most significant bit first.
+    #[kani::proof]
+    #[kani::unwind(14)]
+    fn bit_vectors_round_trip() {
+        let bits: [bool; 12] = kani::any();
+        let n: usize = kani::any_where(|&n: &usize| n <= 12);
+        let v = bit_vector(&bits[..n]);
+        assert_eq!(v.len(), n.div_ceil(8));
+        let mut r = Reader { b: &v, pos: 0 };
+        assert_eq!(r.bits(n).unwrap().as_slice(), &bits[..n]);
+    }
+
+    /// Modification times round-trip through FILETIME, from 1601 to the
+    /// year 30000.
+    #[kani::proof]
+    fn times_round_trip() {
+        let t: i64 = kani::any_where(|&t: &i64| (-11_644_473_600..=883_000_000_000).contains(&t));
+        let o = EntryOptions { mtime: Some(t), unix_mode: None };
+        let e = SevenZEntry {
+            name: String::new(),
+            has_stream: false,
+            is_dir: false,
+            is_anti: false,
+            size: 0,
+            crc: None,
+            mtime: o.filetime(),
+            attributes: None,
+            folder: None,
+        };
+        assert_eq!(e.mtime_unix(), Some(t));
+    }
+
+    /// BCJ2 decoding never panics on any small streams and produces exactly
+    /// the size asked for, or an error.
+    #[kani::proof]
+    #[kani::unwind(10)]
+    fn bcj2_never_panics() {
+        let main: [u8; 6] = kani::any();
+        let call: [u8; 4] = kani::any();
+        let jump: [u8; 4] = kani::any();
+        let rc: [u8; 7] = kani::any();
+        let size: usize = kani::any_where(|&s: &usize| s <= 8);
+        if let Ok(out) = bcj2_decode(&main, &call, &jump, &rc, size) {
+            assert_eq!(out.len(), size);
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

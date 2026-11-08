@@ -715,6 +715,71 @@ pub fn compress_with(data: &[u8], opts: &XzOptions) -> Vec<u8> {
     out
 }
 
+#[cfg(kani)]
+mod proofs {
+    use super::*;
+
+    /// Every CRC64 table entry is eight steps of the reflected definition,
+    /// and one table step equals eight bitwise steps from any register.
+    #[kani::proof]
+    #[kani::unwind(9)]
+    fn crc64_matches_definition() {
+        let b: u8 = kani::any();
+        let mut c = u64::from(b);
+        for _ in 0..8 {
+            c = if c & 1 != 0 { (c >> 1) ^ 0xC96C_5795_D787_0F42 } else { c >> 1 };
+        }
+        assert_eq!(CRC64_TABLE[b as usize], c);
+        let r: u64 = kani::any();
+        let mut bitwise = r ^ u64::from(b);
+        for _ in 0..8 {
+            bitwise = if bitwise & 1 != 0 { (bitwise >> 1) ^ 0xC96C_5795_D787_0F42 } else { bitwise >> 1 };
+        }
+        assert_eq!(CRC64_TABLE[((r as u8) ^ b) as usize] ^ (r >> 8), bitwise);
+    }
+
+    /// Every integer up to 2^63 − 1 is written in its shortest form and
+    /// read back, using exactly the bytes written.
+    #[kani::proof]
+    #[kani::unwind(11)]
+    fn integers_round_trip() {
+        let v: u64 = kani::any_where(|&v: &u64| v <= VLI_MAX);
+        let mut b = Vec::new();
+        write_vli(&mut b, v);
+        assert!(!b.is_empty() && b.len() <= 9);
+        assert!(b.len() == 1 || *b.last().unwrap() != 0);
+        let mut pos = 0;
+        assert_eq!(read_vli(&b, &mut pos, b.len()), Ok(v));
+        assert_eq!(pos, b.len());
+    }
+
+    /// Reading integers never panics, stays within its field, and refuses
+    /// a needless trailing zero byte.
+    #[kani::proof]
+    #[kani::unwind(11)]
+    fn integers_are_read_safely() {
+        let b: [u8; 10] = kani::any();
+        let end: usize = kani::any_where(|&e: &usize| e <= 10);
+        let mut pos = 0;
+        if let Ok(v) = read_vli(&b, &mut pos, end) {
+            assert!(pos <= end && pos >= 1 && v <= VLI_MAX);
+            assert!(pos == 1 || b[pos - 1] != 0);
+        }
+    }
+
+    /// Check types: their IDs round-trip and their sizes are as specified.
+    #[kani::proof]
+    fn checks_are_consistent() {
+        let id: u8 = kani::any_where(|&i: &u8| i < 16);
+        let c = Check::from_id(id);
+        assert_eq!(c.id(), id);
+        assert!([0, 4, 8, 16, 32, 64].contains(&c.size()));
+        assert_eq!(Check::Crc32.size(), 4);
+        assert_eq!(Check::Crc64.size(), 8);
+        assert_eq!(Check::Sha256.size(), 32);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
