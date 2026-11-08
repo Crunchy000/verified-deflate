@@ -213,10 +213,15 @@ fn list(ctx: &mut Ctx) -> Result<(), Fatal> {
     if ctx.args.technical {
         ctx.say("----------\n");
         for item in &chosen {
+            // 7-Zip has no Folder line for 7z, whose attributes say it.
+            let folder = if opened.kind == Kind::SevenZ {
+                String::new()
+            } else {
+                format!("Folder = {}\n", if item.is_dir() { '+' } else { '-' })
+            };
             let mut s = format!(
-                "Path = {}\nFolder = {}\nSize = {}\n",
+                "Path = {}\n{folder}Size = {}\n",
                 item.path,
-                if item.is_dir() { '+' } else { '-' },
                 item.size.map(|n| n.to_string()).unwrap_or_default()
             );
             if let Some(p) = item.packed {

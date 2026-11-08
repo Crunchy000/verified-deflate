@@ -94,7 +94,12 @@ fn zip_and_tar_round_trip_with_every_command() {
         // -slt technical listing.
         let o = v7z(&["l", "-slt", archive, "a.txt"], &dir);
         let t = text(&o);
-        assert!(t.contains("Path = a.txt\nFolder = -\nSize = 20\n"), "{t}");
+        let want = if archive.ends_with(".7z") {
+            "Path = a.txt\nSize = 20\n"
+        } else {
+            "Path = a.txt\nFolder = -\nSize = 20\n"
+        };
+        assert!(t.contains(want), "{t}");
         // a on an existing archive updates it: a new file is added, a
         // changed one replaced, the rest kept.
         fs::write(dir.join("src/a.txt"), b"changed").unwrap();
