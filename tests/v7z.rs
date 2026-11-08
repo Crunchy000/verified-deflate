@@ -403,10 +403,14 @@ fn agrees_with_7zip() {
                 .collect();
             assert_eq!(got, files, "7z x {archive}");
         }
-        // Both list the same items.
-        let theirs = slt_items(&String::from_utf8_lossy(&run(sz, &["l", "-slt", archive], &dir).stdout));
-        let ours = slt_items(&String::from_utf8_lossy(&v7z(&["l", "-slt", archive], &dir).stdout));
-        assert_eq!(ours, theirs, "l -slt {archive}");
+        // Both list the same items. (7-Zip's bzip2 listing has no Path
+        // line, as the format stores no name; ours gives the name it
+        // extracts to.)
+        if !archive.ends_with(".bz2") {
+            let theirs = slt_items(&String::from_utf8_lossy(&run(sz, &["l", "-slt", archive], &dir).stdout));
+            let ours = slt_items(&String::from_utf8_lossy(&v7z(&["l", "-slt", archive], &dir).stdout));
+            assert_eq!(ours, theirs, "l -slt {archive}");
+        }
     }
     // 7-Zip's, read by us: zip at three levels, with Deflate64 and with
     // bzip2, tar, gzip and bzip2.
@@ -441,9 +445,11 @@ fn agrees_with_7zip() {
                 .collect();
             assert_eq!(got, files, "v7z x {archive}");
         }
-        let theirs = slt_items(&String::from_utf8_lossy(&run(sz, &["l", "-slt", archive], &dir).stdout));
-        let ours = slt_items(&String::from_utf8_lossy(&v7z(&["l", "-slt", archive], &dir).stdout));
-        assert_eq!(ours, theirs, "l -slt {archive}");
+        if !archive.ends_with(".bz2") {
+            let theirs = slt_items(&String::from_utf8_lossy(&run(sz, &["l", "-slt", archive], &dir).stdout));
+            let ours = slt_items(&String::from_utf8_lossy(&v7z(&["l", "-slt", archive], &dir).stdout));
+            assert_eq!(ours, theirs, "l -slt {archive}");
+        }
     }
     // A damaged archive is a fatal error (2) for both.
     let mut bytes = fs::read(dir.join("7z9.zip")).unwrap();
