@@ -1,8 +1,9 @@
 //! ZIP archives (PKWARE APPNOTE 6.3): writing and reading archives whose
-//! entries are stored, DEFLATE- or bzip2-compressed.
+//! entries are stored, or compressed with DEFLATE, bzip2, LZMA or xz.
 //!
-//! Supported: methods 0 (stored), 8 (deflate) and 12 (bzip2), reading
-//! method 9 (Deflate64, which Windows and 7-Zip use for large entries),
+//! Supported: methods 0 (stored), 8 (deflate), 12 (bzip2), 14 (LZMA) and
+//! 95 (xz), and reading method 9 (Deflate64, which Windows and 7-Zip use
+//! for large entries),
 //! UTF-8 names (flag bit 11),
 //! Unix permissions, DOS timestamps, data descriptors when reading.
 //! Not supported: ZIP64 (archives or entries of 4 GiB and more, or 65535+
@@ -14,6 +15,8 @@ use crate::crc32::crc32;
 use crate::deflate::{compress_with, CompressOptions, Strategy};
 use crate::error::InflateError;
 use crate::inflate::{decompress_deflate64_with_limit, decompress_with_limit};
+use crate::lzma::{decompress_zip_entry as lzma_entry, LzmaError};
+use crate::xz::{decompress_with_limit as xz_with_limit, XzError};
 use core::fmt;
 use std::collections::BTreeSet;
 
@@ -34,6 +37,10 @@ pub const METHOD_DEFLATED: u16 = 8;
 pub const METHOD_DEFLATE64: u16 = 9;
 /// Compression method 12, bzip2.
 pub const METHOD_BZIP2: u16 = 12;
+/// Compression method 14, LZMA.
+pub const METHOD_LZMA: u16 = 14;
+/// Compression method 95, xz.
+pub const METHOD_XZ: u16 = 95;
 const MAX_COMMENT: usize = 0xFFFF;
 
 /// Errors from reading or writing ZIP archives.
@@ -53,7 +60,7 @@ pub enum ZipError {
     /// The entry is encrypted.
     Encrypted,
     /// The entry uses a compression method other than stored, deflate,
-    /// Deflate64 or bzip2.
+    /// Deflate64, bzip2, LZMA or xz.
     UnsupportedMethod(u16),
     /// The entry's sizes are inconsistent with its data.
     SizeMismatch,
@@ -68,6 +75,10 @@ pub enum ZipError {
     Inflate(InflateError),
     /// The entry's bzip2 data is corrupt.
     Bzip2(Bzip2Error),
+    /// The entry's LZMA data is corrupt.
+    Lzma(LzmaError),
+    /// The entry's xz data is corrupt.
+    Xz(XzError),
     /// The entry name is empty, too long, absolute, or contains `..`,
     /// backslashes or NUL.
     InvalidName(String),
@@ -93,6 +104,8 @@ impl fmt::Display for ZipError {
             }
             Self::Inflate(e) => write!(f, "corrupt compressed data: {e}"),
             Self::Bzip2(e) => write!(f, "{e}"),
+            Self::Lzma(e) => write!(f, "{e}"),
+            Self::Xz(e) => write!(f, "{e}"),
             Self::InvalidName(n) => write!(f, "invalid entry name {n:?}"),
             Self::DuplicateName(n) => write!(f, "duplicate entry name {n:?}"),
             Self::NotFound => f.write_str("no such entry"),
@@ -105,6 +118,8 @@ impl std::error::Error for ZipError {
         match self {
             Self::Inflate(e) => Some(e),
             Self::Bzip2(e) => Some(e),
+            Self::Lzma(e) => Some(e),
+            Self::Xz(e) => Some(e),
             _ => None,
         }
     }
@@ -119,6 +134,18 @@ impl From<InflateError> for ZipError {
 impl From<Bzip2Error> for ZipError {
     fn from(e: Bzip2Error) -> Self {
         Self::Bzip2(e)
+    }
+}
+
+impl From<LzmaError> for ZipError {
+    fn from(e: LzmaError) -> Self {
+        Self::Lzma(e)
+    }
+}
+
+impl From<XzError> for ZipError {
+    fn from(e: XzError) -> Self {
+        Self::Xz(e)
     }
 }
 
@@ -585,6 +612,11 @@ pub enum Method {
     /// bzip2 (method 12), with blocks of 100,000 × the level bytes. 7-Zip,
     /// Info-ZIP `unzip` 6 and libarchive read it; Windows Explorer does not.
     Bzip2,
+    /// LZMA (method 14), at the level's settings. 7-Zip and libarchive
+    /// read it.
+    Lzma,
+    /// xz (method 95). 7-Zip and libarchive read it.
+    Xz,
 }
 
 /// Per-entry settings for [`ZipWriter`].
@@ -627,6 +659,9 @@ struct EntryMeta {
     modified: DosDateTime,
     external_attr: u32,
     version_made_by: u16,
+    /// General purpose flag bits 1 and 2: the method's options (for LZMA,
+    /// bit 1 says the stream ends with a marker).
+    method_flags: u16,
 }
 
 /// Builds a ZIP archive in memory.
@@ -655,18 +690,19 @@ impl ZipWriter {
     }
 
     fn add_entry(&mut self, name: &str, payload: &[u8], meta: EntryMeta) -> Result<(), ZipError> {
-        let EntryMeta { method, crc, uncompressed, modified, external_attr, version_made_by } = meta;
+        let EntryMeta { method, crc, uncompressed, modified, external_attr, version_made_by, method_flags } = meta;
         let local_offset = field32(self.out.len())?;
         let compressed_size = field32(payload.len())?;
         let uncompressed_size = field32(uncompressed)?;
         check_entry_end(self.out.len(), name.len(), payload.len())?;
-        let flags = if name.is_ascii() { 0 } else { FLAG_UTF8 };
+        let flags = (if name.is_ascii() { 0 } else { FLAG_UTF8 }) | (method_flags & 6);
         let (mod_time, mod_date) = modified.to_dos();
         let name_len = name.len() as u16;
         // The APPNOTE version that introduced the method.
         let version_needed = match method {
             METHOD_DEFLATE64 => 21,
             METHOD_BZIP2 => 46,
+            METHOD_LZMA | METHOD_XZ => 63,
             _ => VERSION_NEEDED,
         };
         LocalHeader {
@@ -734,6 +770,16 @@ impl ZipWriter {
                     let ok = !opts.verify || bzip2_with_limit(&c, data.len()).is_ok_and(|d| d == data);
                     (METHOD_BZIP2, if ok { c } else { data.to_vec() })
                 }
+                Method::Lzma => {
+                    let c = crate::lzma::compress_zip_entry(data, opts.level);
+                    let ok = !opts.verify || lzma_entry(&c, data.len()).is_ok_and(|d| d == data);
+                    (METHOD_LZMA, if ok { c } else { data.to_vec() })
+                }
+                Method::Xz => {
+                    let c = crate::xz::compress(data, opts.level);
+                    let ok = !opts.verify || xz_with_limit(&c, data.len()).is_ok_and(|d| d == data);
+                    (METHOD_XZ, if ok { c } else { data.to_vec() })
+                }
             };
             if c.len() < data.len() {
                 Some((method, c))
@@ -748,6 +794,7 @@ impl ZipWriter {
             modified: opts.modified,
             external_attr: (0o100_000 | (opts.unix_mode & 0o7777)) << 16,
             version_made_by: VERSION_MADE_BY,
+            method_flags: 0,
         };
         match compressed {
             Some((method, c)) => self.add_entry(name, &c, EntryMeta { method, ..meta }),
@@ -774,6 +821,7 @@ impl ZipWriter {
             modified: opts.modified,
             external_attr,
             version_made_by: VERSION_MADE_BY,
+            method_flags: 0,
         };
         self.add_entry(&name, &[], meta)
     }
@@ -792,6 +840,7 @@ impl ZipWriter {
             modified: opts.modified,
             external_attr: (0o120_000 | (opts.unix_mode & 0o7777)) << 16,
             version_made_by: VERSION_MADE_BY,
+            method_flags: 0,
         };
         self.add_entry(name, target.as_bytes(), meta)
     }
@@ -811,6 +860,7 @@ impl ZipWriter {
             modified: e.modified,
             external_attr: e.external_attr,
             version_made_by: e.version_made_by,
+            method_flags: e.flags,
         };
         self.add_entry(name, raw, meta)
     }
@@ -1032,6 +1082,8 @@ impl<'a> ZipArchive<'a> {
             METHOD_DEFLATED => decompress_with_limit(raw, e.uncompressed_size as usize)?.data,
             METHOD_DEFLATE64 => decompress_deflate64_with_limit(raw, e.uncompressed_size as usize)?.data,
             METHOD_BZIP2 => bzip2_with_limit(raw, e.uncompressed_size as usize)?,
+            METHOD_LZMA => lzma_entry(raw, e.uncompressed_size as usize)?,
+            METHOD_XZ => xz_with_limit(raw, e.uncompressed_size as usize)?,
             m => return Err(ZipError::UnsupportedMethod(m)),
         };
         if out.len() != e.uncompressed_size as usize {
@@ -1105,6 +1157,49 @@ mod tests {
         let mut bad = zip.clone();
         bad[60] ^= 0x40;
         assert!(ZipArchive::parse(&bad).unwrap().read(0).is_err());
+    }
+
+    #[test]
+    fn lzma_and_xz_entries_round_trip() {
+        let text = b"lzma and xz in a zip, ".repeat(500);
+        for (method, id) in [(Method::Lzma, METHOD_LZMA), (Method::Xz, METHOD_XZ)] {
+            let opts = FileOptions { method, level: 6, ..FileOptions::default() };
+            let mut w = ZipWriter::new();
+            w.add_file("text", &text, &opts).unwrap();
+            let zip = w.finish().unwrap();
+            let a = ZipArchive::parse(&zip).unwrap();
+            assert_eq!(a.entries()[0].method, id);
+            assert_eq!(u16_at(&zip, 4), 63);
+            assert_eq!(a.read(0).unwrap(), text);
+            let mut bad = zip.clone();
+            bad[80] ^= 0x40;
+            assert!(ZipArchive::parse(&bad).unwrap().read(0).is_err());
+        }
+        // An LZMA entry ending with a marker (flag bit 1), as 7-Zip can
+        // write it, reads too, and copying keeps the flag.
+        let props = crate::lzma::LzmaProps::new(1 << 16);
+        let opts = crate::lzma::LzmaOptions { props, nice_len: 64, depth: 16 };
+        let mut raw = vec![9, 20, 5, 0];
+        raw.extend_from_slice(&props.to_bytes());
+        raw.extend(crate::lzma::compress_raw(&text, &opts, true));
+        let mut w = ZipWriter::new();
+        let meta = EntryMeta {
+            method: METHOD_LZMA,
+            crc: crc32(&text),
+            uncompressed: text.len(),
+            modified: DosDateTime::EPOCH,
+            external_attr: 0,
+            version_made_by: VERSION_MADE_BY,
+            method_flags: 2,
+        };
+        w.add_entry("eos", &raw, meta).unwrap();
+        let zip = w.finish().unwrap();
+        let a = ZipArchive::parse(&zip).unwrap();
+        assert_eq!(a.read(0).unwrap(), text);
+        let mut w = ZipWriter::new();
+        w.copy_entry(&a, 0).unwrap();
+        let copy = w.finish().unwrap();
+        assert_eq!(ZipArchive::parse(&copy).unwrap().entries()[0].flags & 2, 2);
     }
 
     #[test]

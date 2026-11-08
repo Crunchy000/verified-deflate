@@ -79,7 +79,7 @@ jobs:
           components: clippy, rustfmt
       - name: Install the interop tools (Info-ZIP, 7-Zip, Python's inflate64)
         run: |
-          sudo apt-get install -y zip unzip 7zip bzip2
+          sudo apt-get install -y zip unzip 7zip bzip2 xz-utils
           sudo python3 -m pip install --break-system-packages "inflate64>=1,<2"
       - name: Format
         run: .github/scripts/run-and-report.sh fmt cargo fmt --all --check
@@ -142,7 +142,7 @@ jobs:
           targets: ${{ matrix.target }}
       - name: Install the cross toolchain and the interop tools
         run: |
-          sudo apt-get update && sudo apt-get install -y zip unzip 7zip bzip2 ${{ matrix.packages }}
+          sudo apt-get update && sudo apt-get install -y zip unzip 7zip bzip2 xz-utils ${{ matrix.packages }}
           sudo python3 -m pip install --break-system-packages "inflate64>=1,<2"
       - name: Tests (including zlib, Deflate64, unzip and Info-ZIP interop)
         run: .github/scripts/run-and-report.sh tests-${{ matrix.target }} cargo test --release --target ${{ matrix.target }}

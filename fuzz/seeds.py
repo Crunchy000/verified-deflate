@@ -8,7 +8,10 @@ an archive comment and an empty archive. For `gzip_zlib`: gzip and zlib
 streams, with header fields and two members. For `tar_read`: archives in
 each of tarfile's formats. For `bzip2_decode`: bzip2 streams at levels 1,
 5 and 9, and two streams concatenated, and for `zip_read` an archive with
-bzip2 (method 12) entries. If the `inflate64` package is
+bzip2 (method 12) entries. For `lzma_decode`: raw LZMA1 and LZMA2 streams,
+`.lzma` files and `.xz` files with each check and with filters, each
+behind the byte that selects its form, and for `zip_read` an archive with
+LZMA (method 14) entries. If the `inflate64` package is
 installed, also Deflate64 streams for `inflate64`, and archives with
 Deflate64 (method 9) entries for `zip_read`. The other targets build their
 own inputs. Files go to fuzz/corpus/<target>/, named by content, so running
@@ -19,6 +22,7 @@ usage: seeds.py [fuzz directory]
 import bz2
 import hashlib
 import io
+import lzma
 import os
 import random
 import gzip
@@ -115,6 +119,24 @@ def main(root):
     put(root, "bzip2_decode", bz2.compress(samples[2], 1) + bz2.compress(samples[4], 9))
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_BZIP2) as z:
+        z.writestr("fox.txt", samples[4])
+        z.writestr("random", samples[5])
+    put(root, "zip_read", buf.getvalue())
+
+    # LZMA in each form, behind the byte lzma_decode reads to pick it.
+    lzma1 = [{"id": lzma.FILTER_LZMA1, "lc": 3, "lp": 0, "pb": 2, "dict_size": 1 << 16}]
+    lzma2 = [{"id": lzma.FILTER_LZMA2, "dict_size": 1 << 16}]
+    for data in samples:
+        put(root, "lzma_decode", b"\x00\x5d" + lzma.compress(data, format=lzma.FORMAT_RAW, filters=lzma1))
+        put(root, "lzma_decode", b"\x01\x00" + lzma.compress(data, format=lzma.FORMAT_RAW, filters=lzma2))
+        put(root, "lzma_decode", b"\x02" + lzma.compress(data, format=lzma.FORMAT_ALONE))
+        put(root, "lzma_decode", b"\x03" + lzma.compress(data, check=lzma.CHECK_CRC32, preset=1))
+    for check in (lzma.CHECK_NONE, lzma.CHECK_CRC64, lzma.CHECK_SHA256):
+        put(root, "lzma_decode", b"\x03" + lzma.compress(samples[4], check=check))
+    for f in (lzma.FILTER_X86, lzma.FILTER_ARM, lzma.FILTER_DELTA):
+        put(root, "lzma_decode", b"\x03" + lzma.compress(samples[5], filters=[{"id": f}, {"id": lzma.FILTER_LZMA2, "preset": 1}]))
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_LZMA) as z:
         z.writestr("fox.txt", samples[4])
         z.writestr("random", samples[5])
     put(root, "zip_read", buf.getvalue())

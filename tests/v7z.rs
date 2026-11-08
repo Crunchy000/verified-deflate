@@ -218,6 +218,53 @@ fn bzip2_holds_one_file() {
 }
 
 #[test]
+fn xz_and_lzma_hold_one_file() {
+    let dir = fresh("v7z-xz");
+    let data = b"xz me, lzma me ".repeat(5000);
+    fs::write(dir.join("src/data.txt"), &data).unwrap();
+    for (archive, decode) in [
+        ("d.txt.xz", verified_deflate::xz::decompress as fn(&[u8]) -> Result<Vec<u8>, _>),
+        ("d.txt.lzma", |b: &[u8]| {
+            verified_deflate::lzma::decompress(b).map_err(|_| verified_deflate::xz::XzError::NotXz)
+        }),
+    ] {
+        for mx in ["-mx0", "-mx9"] {
+            let o = v7z(&["a", archive, "src/data.txt", mx], &dir);
+            assert_eq!(code(&o), 0, "{}", text(&o));
+            assert_eq!(decode(&fs::read(dir.join(archive)).unwrap()).unwrap(), data, "{archive} {mx}");
+            fs::remove_file(dir.join(archive)).unwrap();
+        }
+        assert_eq!(code(&v7z(&["a", archive, "src/data.txt"], &dir)), 0);
+        // Named after the archive; the size comes from the index or header.
+        let o = v7z(&["l", "-slt", archive], &dir);
+        assert!(text(&o).contains(&format!("Path = d.txt\nFolder = -\nSize = {}\n", data.len())), "{}", text(&o));
+        let o = v7z(&["e", archive, &format!("-o{archive}.out")], &dir);
+        assert_eq!(code(&o), 0, "{}", text(&o));
+        assert_eq!(fs::read(dir.join(format!("{archive}.out/d.txt"))).unwrap(), data);
+        // Found by content without the extension; damage is fatal.
+        fs::copy(dir.join(archive), dir.join("noext")).unwrap();
+        assert_eq!(code(&v7z(&["t", "noext"], &dir)), 0, "{archive} without its extension");
+        let mut bad = fs::read(dir.join(archive)).unwrap();
+        let n = bad.len();
+        bad[n / 2] ^= 1;
+        fs::write(dir.join("bad"), &bad).unwrap();
+        assert_eq!(
+            code(&v7z(&["t", "bad", &format!("-t{}", if archive.ends_with("xz") { "xz" } else { "lzma" })], &dir)),
+            2
+        );
+    }
+    // LZMA and xz inside a zip.
+    for m in ["LZMA", "XZ"] {
+        let zip = format!("{m}.zip");
+        let o = v7z(&["a", &format!("-mm={m}"), &zip, "src/data.txt"], &dir);
+        assert_eq!(code(&o), 0, "{}", text(&o));
+        assert!(text(&v7z(&["l", "-slt", &zip], &dir)).contains(&format!("Method = {m}")));
+        assert_eq!(code(&v7z(&["t", &zip], &dir)), 0);
+    }
+    let _ = fs::remove_dir_all(&dir);
+}
+
+#[test]
 fn overwrite_modes() {
     let dir = fresh("v7z-ow");
     fs::write(dir.join("src/f.txt"), b"archived").unwrap();
@@ -374,7 +421,9 @@ fn agrees_with_7zip() {
     let dir = fresh("v7z-7zip");
     let files = make_tree(&dir.join("src"));
     // gzip and bzip2 hold one file.
-    let single = |archive: &str| archive.ends_with(".gz") || archive.ends_with(".bz2");
+    let single = |archive: &str| [".gz", ".bz2", ".xz", ".lzma"].iter().any(|e| archive.ends_with(e));
+    // 7-Zip lists no path for formats that store no name.
+    let nameless = |archive: &str| [".bz2", ".xz", ".lzma"].iter().any(|e| archive.ends_with(e));
     // Ours, read by 7-Zip.
     for (archive, method) in [
         ("ours.zip", None),
@@ -382,6 +431,10 @@ fn agrees_with_7zip() {
         ("ours.tar", None),
         ("ours.gz", None),
         ("ours.bz2", None),
+        ("ours.xz", None),
+        ("ours.lzma", None),
+        ("ours-lzma.zip", Some("-mm=LZMA")),
+        ("ours-xz.zip", Some("-mm=XZ")),
     ] {
         let mut args = vec!["a", archive, if single(archive) { "src/sub/b.bin" } else { "src" }];
         args.extend(method);
@@ -393,8 +446,8 @@ fn agrees_with_7zip() {
         assert_eq!(code(&o), 0, "7z x {archive}: {}", text(&o));
         if archive.ends_with(".gz") {
             assert_eq!(fs::read(dir.join(&out).join("b.bin")).unwrap(), files["sub/b.bin"]);
-        } else if archive.ends_with(".bz2") {
-            // 7-Zip names a bzip2 file's item after the archive.
+        } else if nameless(archive) {
+            // 7-Zip names the item after the archive.
             assert_eq!(fs::read(dir.join(&out).join("ours")).unwrap(), files["sub/b.bin"]);
         } else {
             let got: BTreeMap<String, Vec<u8>> = read_tree(&dir.join(&out))
@@ -403,10 +456,10 @@ fn agrees_with_7zip() {
                 .collect();
             assert_eq!(got, files, "7z x {archive}");
         }
-        // Both list the same items. (7-Zip's bzip2 listing has no Path
-        // line, as the format stores no name; ours gives the name it
-        // extracts to.)
-        if !archive.ends_with(".bz2") {
+        // Both list the same items. (7-Zip's bzip2, xz and lzma listings
+        // have no Path line, as the formats store no name; ours gives the
+        // name it extracts to.)
+        if !nameless(archive) {
             let theirs = slt_items(&String::from_utf8_lossy(&run(sz, &["l", "-slt", archive], &dir).stdout));
             let ours = slt_items(&String::from_utf8_lossy(&v7z(&["l", "-slt", archive], &dir).stdout));
             assert_eq!(ours, theirs, "l -slt {archive}");
@@ -422,6 +475,8 @@ fn agrees_with_7zip() {
         ("7z.tar", vec!["-ttar"]),
         ("7z.gz", vec!["-tgzip"]),
         ("7z.bz2", vec!["-tbzip2", "-mx9"]),
+        ("7zlzma.zip", vec!["-tzip", "-mm=LZMA"]),
+        ("7z.xz", vec!["-txz", "-mx9"]),
     ] {
         let mut a = vec!["a"];
         a.extend(&args);
@@ -436,7 +491,7 @@ fn agrees_with_7zip() {
         assert_eq!(code(&o), 0, "v7z x {archive}: {}", text(&o));
         if archive.ends_with(".gz") {
             assert_eq!(fs::read(dir.join(&out).join("b.bin")).unwrap(), files["sub/b.bin"]);
-        } else if archive.ends_with(".bz2") {
+        } else if nameless(archive) {
             assert_eq!(fs::read(dir.join(&out).join("7z")).unwrap(), files["sub/b.bin"]);
         } else {
             let got: BTreeMap<String, Vec<u8>> = read_tree(&dir.join(&out))
@@ -445,7 +500,7 @@ fn agrees_with_7zip() {
                 .collect();
             assert_eq!(got, files, "v7z x {archive}");
         }
-        if !archive.ends_with(".bz2") {
+        if !nameless(archive) {
             let theirs = slt_items(&String::from_utf8_lossy(&run(sz, &["l", "-slt", archive], &dir).stdout));
             let ours = slt_items(&String::from_utf8_lossy(&v7z(&["l", "-slt", archive], &dir).stdout));
             assert_eq!(ours, theirs, "l -slt {archive}");

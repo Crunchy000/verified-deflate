@@ -1,5 +1,5 @@
 //! `v7z`: 7-Zip's command line (`7z`) for the formats verified-deflate
-//! handles: zip, tar, gzip and bzip2. The commands `a`, `d`, `e`, `l`, `t` and
+//! handles: zip, tar, gzip, bzip2, xz and lzma. The commands `a`, `d`, `e`, `l`, `t` and
 //! `x` and the common switches work as in 7-Zip, with 7-Zip's exit codes,
 //! so scripts written for `7z` work with `v7z` on these formats.
 
@@ -18,13 +18,13 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use verified_deflate::gzip_header::{ExtraFlags, FileSystemType, GzBuilder};
 use verified_deflate::tar::{TarOptions, TarWriter};
 use verified_deflate::zip::{DosDateTime, FileOptions, Method, ZipWriter};
-use verified_deflate::{bzip2, gzip};
+use verified_deflate::{bzip2, gzip, lzma, xz};
 use verified_deflate::{compress_with, CompressOptions, Strategy};
 
 const BANNER: &str = concat!(
     "\nv7z ",
     env!("CARGO_PKG_VERSION"),
-    " (verified-deflate) : the 7-Zip command line for zip, tar, gzip and bzip2\n"
+    " (verified-deflate) : the 7-Zip command line for zip, tar, gzip, bzip2 and xz\n"
 );
 
 const USAGE: &str = "
@@ -45,14 +45,14 @@ Usage: v7z <command> [<switches>...] <archive_name> [<file_names>...] [@listfile
   -i[r[-|0]]{@listfile|!wildcard} : Include filenames
   -m{Parameters} : set compression Method
     -mx[N] : set compression level: -mx1 (fastest) ... -mx9 (ultra)
-    -mm={Copy|Deflate|BZip2} : set method (zip)
+    -mm={Copy|Deflate|BZip2|LZMA|XZ} : set method (zip)
   -o{Directory} : set Output directory
   -r[-|0] : Recurse subdirectories for name search
   -si[{name}] : read data from stdin
   -slt : show technical information for l (List) command
   -snl : store symbolic links as links
   -so : write data to stdout
-  -t{Type} : Set type of archive (zip, tar, gzip, bzip2)
+  -t{Type} : Set type of archive (zip, tar, gzip, bzip2, xz, lzma)
   -x[r[-|0]]{@listfile|!wildcard} : eXclude filenames
   -y : assume Yes on all queries
 ";
@@ -139,9 +139,9 @@ fn main() -> ExitCode {
 
 fn info(ctx: &mut Ctx) {
     ctx.say(
-        "\nFormats:\n  zip   read write  zip jar   methods Store Deflate BZip2, and Deflate64 (read)\n  \
+        "\nFormats:\n  zip   read write  zip jar   methods Store Deflate BZip2 LZMA XZ, and Deflate64 (read)\n  \
          tar   read write  tar       ustar, pax, GNU\n  gzip  read write  gz gzip tgz tpz\n  \
-         bzip2 read write  bz2 bzip2 tbz2 tbz\n",
+         bzip2 read write  bz2 bzip2 tbz2 tbz\n  xz    read write  xz txz\n  lzma  read write  lzma\n",
     );
 }
 
@@ -572,6 +572,9 @@ fn compression(ctx: &Ctx, kind: Kind) -> Result<(u8, Method), Fatal> {
         (Kind::Zip | Kind::Gzip | Kind::Tar, None | Some("deflate")) => Ok((level, Method::Deflate)),
         (Kind::Zip, Some("copy")) => Ok((0, Method::Deflate)),
         (Kind::Zip, Some("bzip2")) => Ok((bzip2_level, Method::Bzip2)),
+        (Kind::Zip, Some("lzma")) => Ok((level, Method::Lzma)),
+        (Kind::Zip, Some("xz")) => Ok((level, Method::Xz)),
+        (Kind::Xz, None | Some("lzma2")) | (Kind::Lzma, None | Some("lzma")) => Ok((level, Method::Lzma)),
         (Kind::Bzip2, None | Some("bzip2")) => Ok((bzip2_level.max(1), Method::Bzip2)),
         (_, Some(m)) => Err(Fatal(format!("method {m} is not supported for {}", kind.name()), EXIT_USAGE)),
     }
@@ -607,7 +610,7 @@ fn add(ctx: &mut Ctx) -> Result<(), Fatal> {
         Some(t) => Kind::from_type(t).map_err(|m| Fatal(m, EXIT_USAGE))?,
         None => Kind::from_extension(&archive).ok_or_else(|| {
             Fatal(
-                format!("{archive}: the 7z format is not supported yet; name the archive .zip, .tar, .gz or .bz2, or use -t"),
+                format!("{archive}: the 7z format is not supported yet; name the archive .zip, .tar, .gz, .bz2 or .xz, or use -t"),
                 EXIT_USAGE,
             )
         })?,
@@ -648,7 +651,7 @@ fn add(ctx: &mut Ctx) -> Result<(), Fatal> {
         None
     };
     let old = match &existing {
-        Some(data) if !matches!(kind, Kind::Gzip | Kind::Bzip2) => {
+        Some(data) if !matches!(kind, Kind::Gzip | Kind::Bzip2 | Kind::Xz | Kind::Lzma) => {
             let opened = open(ctx, "Open", &archive, data)?;
             if opened.kind != kind {
                 return Err(fatal(format!("{archive} is a {} archive, not {}", opened.kind.name(), kind.name())));
@@ -669,6 +672,14 @@ fn add(ctx: &mut Ctx) -> Result<(), Fatal> {
         Kind::Bzip2 => {
             let (_, data, _) = single_file(ctx, kind, &inputs, stdin_data.as_ref())?;
             bzip2::compress(&data, level)
+        }
+        Kind::Xz => {
+            let (_, data, _) = single_file(ctx, kind, &inputs, stdin_data.as_ref())?;
+            xz::compress(&data, level)
+        }
+        Kind::Lzma => {
+            let (_, data, _) = single_file(ctx, kind, &inputs, stdin_data.as_ref())?;
+            lzma::compress(&data, level)
         }
     };
     write_archive(ctx, &archive, &bytes)?;
@@ -860,7 +871,7 @@ fn delete(ctx: &mut Ctx) -> Result<(), Fatal> {
             }
             w.finish()
         }
-        Kind::Gzip | Kind::Bzip2 => {
+        Kind::Gzip | Kind::Bzip2 | Kind::Xz | Kind::Lzma => {
             return Err(fatal(format!("{} archives do not support deleting", opened.kind.name())))
         }
     };

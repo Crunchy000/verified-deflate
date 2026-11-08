@@ -2,9 +2,11 @@
 
 Coverage-guided differential fuzzing with [cargo-fuzz] (libFuzzer). The
 references are C zlib, through `flate2`; for Deflate64, zlib's
-`infback9`, vendored in `infback9/` (see its README); and for bzip2, C
-libbz2 1.0.8, built from the source the `bzip2-sys` crate bundles. This
-crate is separate from the library, which keeps no dependencies.
+`infback9`, vendored in `infback9/` (see its README); for bzip2, C
+libbz2 1.0.8, built from the source the `bzip2-sys` crate bundles; and
+for LZMA and xz, the system's liblzma (install `liblzma-dev`; without it
+`lzma-sys` builds its bundled, older XZ Utils). This crate is separate
+from the library, which keeps no dependencies.
 
 | Target | Checks |
 |---|---|
@@ -19,6 +21,8 @@ crate is separate from the library, which keeps no dependencies.
 | `tar_roundtrip` | Archives the tar writer makes from any entries and metadata read back exactly, including what needs pax headers. |
 | `bzip2_decode` | On arbitrary bytes, the bzip2 decoder and libbz2 accept the same streams, with the same output and bytes consumed. Each input is tried again with its CRCs rewritten to match its blocks, so changes inside blocks meet the structural checks instead of a CRC. |
 | `bzip2_roundtrip` | The bzip2 encoder at every level, plain and with "randomised" blocks: libbz2 and this crate decode what it writes to the input. |
+| `lzma_decode` | On arbitrary bytes, as a raw LZMA1 stream, a raw LZMA2 stream, a `.lzma` file or an `.xz` stream (the first byte picks), the decoders and liblzma accept the same streams, with the same output and bytes consumed. |
+| `xz_roundtrip` | The `.xz` encoder at every level, with every check and any delta and branch filters, and the `.lzma` encoder: liblzma and this crate decode what they write to the input. |
 
 To run one locally (nightly Rust):
 

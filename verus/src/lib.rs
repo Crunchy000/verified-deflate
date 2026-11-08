@@ -19,8 +19,9 @@
 //!   panicking, and so does the streaming encoder.
 //! - `zip`, with `crc32`, `inflate` and their modules: the ZIP reader
 //!   returns on every byte string, without panicking, and so does reading
-//!   any entry of the archive it returns. Reading a bzip2 entry takes the
-//!   bzip2 decoder as given (`bzip2`), until it has a proof of its own.
+//!   any entry of the archive it returns. Reading a bzip2, LZMA or xz
+//!   entry takes that decoder as given (`bzip2`, `lzma`, `xz`), until it
+//!   has a proof of its own.
 //! - `std_specs`: the few standard-library functions taken as given.
 //!
 //! Run with the Verus release named in `.github/workflows/verus.yml`:
@@ -38,8 +39,10 @@ pub mod error;
 pub mod huffman_decode;
 pub mod inflate;
 pub mod limit_depths;
+pub mod lzma;
 pub mod lz77;
 pub mod name_is_safe;
 pub mod std_specs;
 pub mod tables;
+pub mod xz;
 pub mod zip;

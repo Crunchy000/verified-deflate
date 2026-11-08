@@ -18,6 +18,10 @@ flate2 = { version = "1", default-features = false, features = ["zlib"] }
 libz-sys = { version = "1", features = ["static"] }
 # C libbz2 1.0.8, built from the source bzip2-sys bundles.
 bzip2-sys = { version = "0.1", features = ["static"] }
+# C liblzma: the system's (XZ Utils 5.8 on the CI image), found through
+# pkg-config, so the reference is current rather than lzma-sys's bundled 5.2.
+lzma-sys = "0.1"
+
 verified-deflate = { path = ".." }
 
 [build-dependencies]
@@ -102,6 +106,20 @@ bench = false
 [[bin]]
 name = "bzip2_roundtrip"
 path = "fuzz_targets/bzip2_roundtrip.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "lzma_decode"
+path = "fuzz_targets/lzma_decode.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "xz_roundtrip"
+path = "fuzz_targets/xz_roundtrip.rs"
 test = false
 doc = false
 bench = false

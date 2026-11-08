@@ -3,8 +3,10 @@
 
 use std::borrow::Cow;
 use verified_deflate::tar::{EntryKind, TarArchive};
-use verified_deflate::zip::{DosDateTime, ZipArchive, METHOD_BZIP2, METHOD_DEFLATE64, METHOD_DEFLATED, METHOD_STORED};
-use verified_deflate::{bzip2, gzip};
+use verified_deflate::zip::{
+    DosDateTime, ZipArchive, METHOD_BZIP2, METHOD_DEFLATE64, METHOD_DEFLATED, METHOD_LZMA, METHOD_STORED, METHOD_XZ,
+};
+use verified_deflate::{bzip2, gzip, lzma, xz};
 
 /// An archive format.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -13,6 +15,8 @@ pub enum Kind {
     Tar,
     Gzip,
     Bzip2,
+    Xz,
+    Lzma,
 }
 
 impl Kind {
@@ -23,6 +27,8 @@ impl Kind {
             Kind::Tar => "tar",
             Kind::Gzip => "gzip",
             Kind::Bzip2 => "bzip2",
+            Kind::Xz => "xz",
+            Kind::Lzma => "lzma",
         }
     }
 
@@ -33,7 +39,9 @@ impl Kind {
             "tar" => Ok(Kind::Tar),
             "gzip" | "gz" => Ok(Kind::Gzip),
             "bzip2" | "bz2" => Ok(Kind::Bzip2),
-            "7z" | "xz" | "lzma" | "wim" => Err(format!("archive type {t} is not supported yet")),
+            "xz" => Ok(Kind::Xz),
+            "lzma" => Ok(Kind::Lzma),
+            "7z" => Err(format!("archive type {t} is not supported yet")),
             other => Err(format!("unsupported archive type: {other}")),
         }
     }
@@ -53,6 +61,10 @@ impl Kind {
             Some(Kind::Gzip)
         } else if [".bz2", ".bzip2", ".tbz2", ".tbz"].iter().any(|e| lower.ends_with(e)) {
             Some(Kind::Bzip2)
+        } else if lower.ends_with(".xz") || lower.ends_with(".txz") {
+            Some(Kind::Xz)
+        } else if lower.ends_with(".lzma") {
+            Some(Kind::Lzma)
         } else {
             None
         }
@@ -66,12 +78,27 @@ impl Kind {
             Some(Kind::Gzip)
         } else if bzip2::is_bzip2(data) {
             Some(Kind::Bzip2)
+        } else if xz::is_xz(data) {
+            Some(Kind::Xz)
         } else if verified_deflate::tar::is_tar(data) {
             Some(Kind::Tar)
+        } else if looks_like_lzma(data) {
+            Some(Kind::Lzma)
         } else {
             None
         }
     }
+}
+
+/// Whether `data` looks like a `.lzma` file, which has no magic number:
+/// valid properties, a dictionary of 2^n or 2^n + 2^(n−1) bytes, a size
+/// that is unknown or under 256 GiB (liblzma's tests), and a range coder
+/// that starts with 0.
+fn looks_like_lzma(data: &[u8]) -> bool {
+    let Ok((props, size)) = lzma::parse_header(data) else { return false };
+    let d = props.dict_size;
+    let tidy = d == u32::MAX || (d >= 4096 && (d.is_power_of_two() || (d / 3).is_power_of_two() && d % 3 == 0));
+    props.lc + props.lp <= 4 && tidy && size.is_none_or(|n| n < 1 << 38) && data.get(13) == Some(&0)
 }
 
 /// When an item was last modified.
@@ -167,6 +194,8 @@ enum Source<'a> {
     Tar(TarArchive<'a>),
     Gzip(&'a [u8]),
     Bzip2(&'a [u8]),
+    Xz(&'a [u8]),
+    Lzma(&'a [u8]),
 }
 
 /// An archive opened for reading.
@@ -198,6 +227,11 @@ fn gzip_item_name(archive_name: &str) -> String {
 /// (`.tbz2` becomes `.tar`).
 fn bzip2_item_name(archive_name: &str) -> String {
     item_name(archive_name, &[(".tbz2", ".tar"), (".tbz", ".tar"), (".bzip2", ""), (".bz2", "")])
+}
+
+/// The name of an xz or lzma file's item (`.txz` becomes `.tar`).
+fn xz_item_name(archive_name: &str) -> String {
+    item_name(archive_name, &[(".txz", ".tar"), (".xz", ""), (".lzma", "")])
 }
 
 fn item_name(archive_name: &str, extensions: &[(&str, &str)]) -> String {
@@ -244,6 +278,8 @@ impl<'a> Opened<'a> {
                                 METHOD_DEFLATED => "Deflate",
                                 METHOD_DEFLATE64 => "Deflate64",
                                 METHOD_BZIP2 => "BZip2",
+                                METHOD_LZMA => "LZMA",
+                                METHOD_XZ => "XZ",
                                 _ => "Unknown",
                             }),
                             host_os: Some(host_os(e.version_made_by)),
@@ -348,6 +384,32 @@ impl<'a> Opened<'a> {
                 };
                 Ok(Self { kind, items: vec![item], source: Source::Bzip2(data) })
             }
+            Kind::Xz | Kind::Lzma => {
+                let (size, method) = if kind == Kind::Xz {
+                    if !xz::is_xz(data) {
+                        return Err(xz::XzError::NotXz.to_string());
+                    }
+                    (xz::uncompressed_size(data), "LZMA2")
+                } else {
+                    (lzma::parse_header(data).map_err(|e| e.to_string())?.1, "LZMA")
+                };
+                let item = Item {
+                    path: xz_item_name(archive_name),
+                    kind: ItemKind::File,
+                    size,
+                    packed: Some(data.len() as u64),
+                    mtime: None,
+                    mode: None,
+                    crc: None,
+                    method: Some(method),
+                    host_os: None,
+                    user: None,
+                    group: None,
+                    dos_attrib: None,
+                };
+                let source = if kind == Kind::Xz { Source::Xz(data) } else { Source::Lzma(data) };
+                Ok(Self { kind, items: vec![item], source })
+            }
         }
     }
 
@@ -359,6 +421,8 @@ impl<'a> Opened<'a> {
             Source::Tar(tar) => Ok(Cow::Borrowed(tar.data(i))),
             Source::Gzip(data) => gzip::decompress(data).map(Cow::Owned).map_err(|e| e.to_string()),
             Source::Bzip2(data) => bzip2::decompress(data).map(Cow::Owned).map_err(|e| e.to_string()),
+            Source::Xz(data) => xz::decompress(data).map(Cow::Owned).map_err(|e| e.to_string()),
+            Source::Lzma(data) => lzma::decompress(data).map(Cow::Owned).map_err(|e| e.to_string()),
         }
     }
 
@@ -398,5 +462,10 @@ mod tests {
         assert_eq!(bzip2_item_name("x/a.tar.bz2"), "a.tar");
         assert_eq!(bzip2_item_name("b.tbz2"), "b.tar");
         assert_eq!(bzip2_item_name("c.bzip2"), "c");
+        assert_eq!(xz_item_name("d.tar.xz"), "d.tar");
+        assert_eq!(xz_item_name("e.txz"), "e.tar");
+        assert_eq!(xz_item_name("f.lzma"), "f");
+        assert!(looks_like_lzma(&lzma::compress(b"hello", 6)));
+        assert!(!looks_like_lzma(b"hello, this is plain text"));
     }
 }
