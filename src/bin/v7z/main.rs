@@ -1,5 +1,5 @@
 //! `v7z`: 7-Zip's command line (`7z`) for the formats verified-deflate
-//! handles: zip, tar, gzip, bzip2, xz and lzma. The commands `a`, `d`, `e`, `l`, `t` and
+//! handles: 7z, zip, tar, gzip, bzip2, xz and lzma. The commands `a`, `d`, `e`, `l`, `t` and
 //! `x` and the common switches work as in 7-Zip, with 7-Zip's exit codes,
 //! so scripts written for `7z` work with `v7z` on these formats.
 
@@ -16,16 +16,14 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use verified_deflate::gzip_header::{ExtraFlags, FileSystemType, GzBuilder};
+use verified_deflate::sevenz::{EntryOptions, SevenZWriter};
 use verified_deflate::tar::{TarOptions, TarWriter};
 use verified_deflate::zip::{DosDateTime, FileOptions, Method, ZipWriter};
 use verified_deflate::{bzip2, gzip, lzma, xz};
 use verified_deflate::{compress_with, CompressOptions, Strategy};
 
-const BANNER: &str = concat!(
-    "\nv7z ",
-    env!("CARGO_PKG_VERSION"),
-    " (verified-deflate) : the 7-Zip command line for zip, tar, gzip, bzip2 and xz\n"
-);
+const BANNER: &str =
+    concat!("\nv7z ", env!("CARGO_PKG_VERSION"), " (verified-deflate) : the 7-Zip command line, without encryption\n");
 
 const USAGE: &str = "
 Usage: v7z <command> [<switches>...] <archive_name> [<file_names>...] [@listfile]
@@ -45,14 +43,15 @@ Usage: v7z <command> [<switches>...] <archive_name> [<file_names>...] [@listfile
   -i[r[-|0]]{@listfile|!wildcard} : Include filenames
   -m{Parameters} : set compression Method
     -mx[N] : set compression level: -mx1 (fastest) ... -mx9 (ultra)
-    -mm={Copy|Deflate|BZip2|LZMA|XZ} : set method (zip)
+    -mhc=off : leave the 7z header uncompressed
+    -mm={Copy|Deflate|BZip2|LZMA|XZ} : set method (zip; 7z: LZMA2 or Copy)
   -o{Directory} : set Output directory
   -r[-|0] : Recurse subdirectories for name search
   -si[{name}] : read data from stdin
   -slt : show technical information for l (List) command
   -snl : store symbolic links as links
   -so : write data to stdout
-  -t{Type} : Set type of archive (zip, tar, gzip, bzip2, xz, lzma)
+  -t{Type} : Set type of archive (7z, zip, tar, gzip, bzip2, xz, lzma)
   -x[r[-|0]]{@listfile|!wildcard} : eXclude filenames
   -y : assume Yes on all queries
 ";
@@ -139,7 +138,8 @@ fn main() -> ExitCode {
 
 fn info(ctx: &mut Ctx) {
     ctx.say(
-        "\nFormats:\n  zip   read write  zip jar   methods Store Deflate BZip2 LZMA XZ, and Deflate64 (read)\n  \
+        "\nFormats:\n  7z    read write  7z        methods LZMA2 Copy, and LZMA Deflate Deflate64 BZip2 BCJ BCJ2 Delta (read)\n  \
+         zip   read write  zip jar   methods Store Deflate BZip2 LZMA XZ, and Deflate64 (read)\n  \
          tar   read write  tar       ustar, pax, GNU\n  gzip  read write  gz gzip tgz tpz\n  \
          bzip2 read write  bz2 bzip2 tbz2 tbz\n  xz    read write  xz txz\n  lzma  read write  lzma\n",
     );
@@ -213,10 +213,15 @@ fn list(ctx: &mut Ctx) -> Result<(), Fatal> {
     if ctx.args.technical {
         ctx.say("----------\n");
         for item in &chosen {
+            // 7-Zip has no Folder line for 7z, whose attributes say it.
+            let folder = if opened.kind == Kind::SevenZ {
+                String::new()
+            } else {
+                format!("Folder = {}\n", if item.is_dir() { '+' } else { '-' })
+            };
             let mut s = format!(
-                "Path = {}\nFolder = {}\nSize = {}\n",
+                "Path = {}\n{folder}Size = {}\n",
                 item.path,
-                if item.is_dir() { '+' } else { '-' },
                 item.size.map(|n| n.to_string()).unwrap_or_default()
             );
             if let Some(p) = item.packed {
@@ -235,7 +240,7 @@ fn list(ctx: &mut Ctx) -> Result<(), Fatal> {
                     s += &format!("CRC = {c:08X}\n");
                 }
             }
-            if let Some(m) = item.method {
+            if let Some(m) = &item.method {
                 s += &format!("Method = {m}\n");
             }
             if let Some(os) = item.host_os {
@@ -574,7 +579,10 @@ fn compression(ctx: &Ctx, kind: Kind) -> Result<(u8, Method), Fatal> {
         (Kind::Zip, Some("bzip2")) => Ok((bzip2_level, Method::Bzip2)),
         (Kind::Zip, Some("lzma")) => Ok((level, Method::Lzma)),
         (Kind::Zip, Some("xz")) => Ok((level, Method::Xz)),
-        (Kind::Xz, None | Some("lzma2")) | (Kind::Lzma, None | Some("lzma")) => Ok((level, Method::Lzma)),
+        (Kind::Xz | Kind::SevenZ, None | Some("lzma2")) | (Kind::Lzma, None | Some("lzma")) => {
+            Ok((level, Method::Lzma))
+        }
+        (Kind::SevenZ, Some("copy")) => Ok((0, Method::Lzma)),
         (Kind::Bzip2, None | Some("bzip2")) => Ok((bzip2_level.max(1), Method::Bzip2)),
         (_, Some(m)) => Err(Fatal(format!("method {m} is not supported for {}", kind.name()), EXIT_USAGE)),
     }
@@ -605,16 +613,17 @@ fn same_name(a: &str, b: &str) -> bool {
 }
 
 fn add(ctx: &mut Ctx) -> Result<(), Fatal> {
-    let archive = ctx.args.archive.clone().ok_or_else(|| fatal("Cannot find archive name"))?;
+    let mut archive = ctx.args.archive.clone().ok_or_else(|| fatal("Cannot find archive name"))?;
+    // As in 7-Zip, 7z is the default, and a name without an extension
+    // gets `.7z`.
     let kind = match &ctx.args.kind {
         Some(t) => Kind::from_type(t).map_err(|m| Fatal(m, EXIT_USAGE))?,
-        None => Kind::from_extension(&archive).ok_or_else(|| {
-            Fatal(
-                format!("{archive}: the 7z format is not supported yet; name the archive .zip, .tar, .gz, .bz2 or .xz, or use -t"),
-                EXIT_USAGE,
-            )
-        })?,
+        None => Kind::from_extension(&archive).unwrap_or(Kind::SevenZ),
     };
+    let base = archive.rsplit(['/', '\\']).next().unwrap_or(&archive);
+    if kind == Kind::SevenZ && !ctx.args.stdout && !base.contains('.') {
+        archive.push_str(".7z");
+    }
     let (level, method) = compression(ctx, kind)?;
     let exclude = Selector { names: Vec::new(), exclude: ctx.args.exclude.clone() };
     // The inputs: files from disk, or (-si) standard input.
@@ -668,6 +677,7 @@ fn add(ctx: &mut Ctx) -> Result<(), Fatal> {
     let bytes = match kind {
         Kind::Zip => build_zip(ctx, old.as_ref(), &inputs, stdin_data.as_ref(), &new_names, level, method)?,
         Kind::Tar => build_tar(ctx, old.as_ref(), &inputs, stdin_data.as_ref(), &new_names)?,
+        Kind::SevenZ => build_7z(ctx, old.as_ref(), &inputs, stdin_data.as_ref(), &new_names, level)?,
         Kind::Gzip => build_gzip(ctx, &inputs, stdin_data.as_ref(), level)?,
         Kind::Bzip2 => {
             let (_, data, _) = single_file(ctx, kind, &inputs, stdin_data.as_ref())?;
@@ -810,6 +820,50 @@ fn build_tar(
     Ok(w.finish())
 }
 
+fn build_7z(
+    ctx: &mut Ctx,
+    old: Option<&Opened>,
+    inputs: &[Input],
+    stdin: Option<&(String, Vec<u8>)>,
+    new_names: &[String],
+    level: u8,
+) -> Result<Vec<u8>, Fatal> {
+    let mut w = SevenZWriter::new();
+    if let Some(o) = old {
+        if let Some(a) = o.sevenz() {
+            for (i, e) in a.entries().iter().enumerate() {
+                if !new_names.iter().any(|n| same_name(n, &e.name)) {
+                    let data = o.read(i).map_err(|m| fatal(format!("{} : {m}", e.name)))?;
+                    w.add_entry(e, &data);
+                }
+            }
+        }
+    }
+    if let Some((name, data)) = stdin {
+        if name.is_empty() {
+            return Err(Fatal("-si needs a name for a 7z entry, as in -sidata.txt".into(), EXIT_USAGE));
+        }
+        let now = SystemTime::now().duration_since(UNIX_EPOCH).map_or(0, |d| d.as_secs() as i64);
+        w.add_file(name, data, &EntryOptions { mtime: Some(now), unix_mode: Some(0o644) })
+            .map_err(|e| fatal(e.to_string()))?;
+    }
+    for input in inputs {
+        let o = EntryOptions { mtime: Some(mtime_of(&input.meta)), unix_mode: Some(unix_meta(&input.meta).0) };
+        let r = match &input.kind {
+            InputKind::Dir => w.add_directory(&input.name, &o),
+            InputKind::Symlink(t) => w.add_symlink(&input.name, t, &o),
+            InputKind::File => match read_input(ctx, input) {
+                Some(data) => w.add_file(&input.name, &data, &o),
+                None => continue,
+            },
+        };
+        if let Err(e) = r {
+            ctx.warnings.push(format!("{} : {e}", input.name));
+        }
+    }
+    Ok(w.finish_with(level, ctx.args.header_compression))
+}
+
 /// The one file a gzip or bzip2 archive holds: its name (without
 /// directories), data and modification time.
 fn single_file(
@@ -870,6 +924,15 @@ fn delete(ctx: &mut Ctx) -> Result<(), Fatal> {
                 w.copy_entry(tar, i);
             }
             w.finish()
+        }
+        Kind::SevenZ => {
+            let a = opened.sevenz().expect("a 7z archive");
+            let mut w = SevenZWriter::new();
+            for (i, e) in a.entries().iter().enumerate().filter(|&(i, _)| !doomed[i]) {
+                let data = opened.read(i).map_err(|m| fatal(format!("{} : {m}", e.name)))?;
+                w.add_entry(e, &data);
+            }
+            w.finish_with(compression(ctx, Kind::SevenZ)?.0, ctx.args.header_compression)
         }
         Kind::Gzip | Kind::Bzip2 | Kind::Xz | Kind::Lzma => {
             return Err(fatal(format!("{} archives do not support deleting", opened.kind.name())))

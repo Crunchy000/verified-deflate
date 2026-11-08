@@ -46,6 +46,11 @@ weakest:
    `lc`/`lp`/`pb`. On 36,000 damaged raw LZMA1, raw LZMA2, `.lzma` and
    `.xz` streams the decoders accepted exactly the 2,807 liblzma
    accepted, with the same output and length used (CI runs a sample).
+   7z archives from 7-Zip, with every method the reader supports (LZMA2
+   at three levels, LZMA, Copy, BZip2, Deflate, Deflate64, BCJ, BCJ2,
+   Delta, ARM64, non-solid, plain headers), read exactly, and 7-Zip
+   tests and extracts the archives this crate writes. Damaged archives
+   are refused or read with every CRC matching.
    Coverage-guided fuzzing compares the decoder and every encoder with C
    zlib, the Deflate64 decoder with zlib's `infback9`, the bzip2 decoder
    and encoder with C libbz2, and the LZMA decoders and encoders with C
@@ -520,7 +525,7 @@ harness timed out. By file, after:
 
 ## Fuzzing
 
-`fuzz/` holds thirteen [cargo-fuzz] targets. libFuzzer evolves inputs
+`fuzz/` holds fifteen [cargo-fuzz] targets. libFuzzer evolves inputs
 toward new code paths, with debug assertions and overflow checks on. The
 reference is C zlib, through `flate2`. For Deflate64 it is zlib's
 `infback9`, Mark Adler's Deflate64 decoder, which is vendored in
@@ -544,6 +549,8 @@ header. For bzip2 it is C libbz2 1.0.8, built from the source the
 | `bzip2_roundtrip` | The bzip2 encoder at every level, plain and with "randomised" blocks: libbz2 and this crate decode what it writes to the input. |
 | `lzma_decode` | Arbitrary bytes as a raw LZMA1 stream, a raw LZMA2 stream, a `.lzma` file or an `.xz` stream (the first byte picks): this crate and liblzma accept the same streams, with the same output and bytes consumed. Inputs liblzma will not try (`lc + lp` over 4, which this crate allows as 7-Zip does, or a dictionary over its memory limit) are skipped. |
 | `xz_roundtrip` | The `.xz` encoder at every level, with every check and up to three delta or branch filters, and the `.lzma` encoder: liblzma and this crate decode what they write to the input. |
+| `sevenz_read` | The 7z reader on arbitrary bytes, and on archives the writer makes with up to eight bytes changed, with the header CRCs made to match: it never panics, and every entry that reads has its recorded size and CRC. |
+| `sevenz_roundtrip` | Archives the 7z writer makes from any entries, at any level, with the header compressed or not, read back exactly. Refused names are unsafe. |
 
 `.github/workflows/fuzz.yml` runs each target for a minute on every push
 and pull request that touches the code. It also runs each for 20 minutes
@@ -616,8 +623,9 @@ The gaps, stated precisely:
   cost compression ratio, never validity.
 - **Compression ratio and speed** are not correctness properties and are
   not verified.
-- **bzip2** (`bzip2`, and the block sort in `bwt`) and **LZMA, LZMA2
-  and xz** (`lzma`, `lzma2`, `xz`, `filters`) have no proofs yet. They
+- **bzip2** (`bzip2`, and the block sort in `bwt`), **LZMA, LZMA2
+  and xz** (`lzma`, `lzma2`, `xz`, `filters`) and **7z** (`sevenz`) have
+  no proofs yet. They
   are checked by tests against libbz2, liblzma, the bzip2 and xz
   programs and 7-Zip, and by differential fuzzing against C libbz2 and
   liblzma.

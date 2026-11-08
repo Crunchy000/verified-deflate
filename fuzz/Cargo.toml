@@ -123,3 +123,17 @@ path = "fuzz_targets/xz_roundtrip.rs"
 test = false
 doc = false
 bench = false
+
+[[bin]]
+name = "sevenz_read"
+path = "fuzz_targets/sevenz_read.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "sevenz_roundtrip"
+path = "fuzz_targets/sevenz_roundtrip.rs"
+test = false
+doc = false
+bench = false

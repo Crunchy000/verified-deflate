@@ -66,7 +66,7 @@ fn fresh(tag: &str) -> PathBuf {
 
 #[test]
 fn zip_and_tar_round_trip_with_every_command() {
-    for archive in ["t.zip", "t.tar"] {
+    for archive in ["t.zip", "t.tar", "t.7z"] {
         let dir = fresh(&format!("v7z-rt-{archive}"));
         let files = make_tree(&dir.join("src"));
         // a: from inside src, so names are relative to it.
@@ -94,7 +94,12 @@ fn zip_and_tar_round_trip_with_every_command() {
         // -slt technical listing.
         let o = v7z(&["l", "-slt", archive, "a.txt"], &dir);
         let t = text(&o);
-        assert!(t.contains("Path = a.txt\nFolder = -\nSize = 20\n"), "{t}");
+        let want = if archive.ends_with(".7z") {
+            "Path = a.txt\nSize = 20\n"
+        } else {
+            "Path = a.txt\nFolder = -\nSize = 20\n"
+        };
+        assert!(t.contains(want), "{t}");
         // a on an existing archive updates it: a new file is added, a
         // changed one replaced, the rest kept.
         fs::write(dir.join("src/a.txt"), b"changed").unwrap();
@@ -214,6 +219,35 @@ fn bzip2_holds_one_file() {
     let o = v7z(&["x", "bz.zip", "-ozout"], &dir);
     assert_eq!(code(&o), 0);
     assert_eq!(fs::read(dir.join("zout/src/data.txt")).unwrap(), data);
+    let _ = fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn sevenz_is_the_default() {
+    let dir = fresh("v7z-7z");
+    let files = make_tree(&dir.join("src"));
+    // No extension and no -t: a 7z archive, named with .7z.
+    let o = v7z(&["a", "backup", "src"], &dir);
+    assert_eq!(code(&o), 0, "{}", text(&o));
+    let bytes = fs::read(dir.join("backup.7z")).unwrap();
+    assert!(bytes.starts_with(&verified_deflate::sevenz::SIGNATURE));
+    let o = v7z(&["l", "-slt", "backup.7z"], &dir);
+    assert!(text(&o).contains("Type = 7z") && text(&o).contains("Method = LZMA2:"), "{}", text(&o));
+    // Detected by content.
+    fs::copy(dir.join("backup.7z"), dir.join("noext")).unwrap();
+    let o = v7z(&["x", "noext", "-oout"], &dir);
+    assert_eq!(code(&o), 0, "{}", text(&o));
+    let got: BTreeMap<String, Vec<u8>> = read_tree(&dir.join("out"))
+        .into_iter()
+        .map(|(k, v)| (k.strip_prefix("src/").unwrap().to_string(), v))
+        .collect();
+    assert_eq!(got, files);
+    // Damage is fatal.
+    let mut bad = bytes.clone();
+    let n = bad.len();
+    bad[n / 2] ^= 1;
+    fs::write(dir.join("bad.7z"), &bad).unwrap();
+    assert_eq!(code(&v7z(&["t", "bad.7z"], &dir)), 2);
     let _ = fs::remove_dir_all(&dir);
 }
 
@@ -378,8 +412,11 @@ fn errors_have_7zip_exit_codes() {
     let o = v7z(&["a", "w.zip", "src/f", "src/nope"], &dir);
     assert_eq!(code(&o), 1, "{}", text(&o));
     assert!(dir.join("w.zip").exists());
-    // No archive type for a name without an extension (7-Zip would make .7z).
-    assert_eq!(code(&v7z(&["a", "noext", "src/f"], &dir)), 7);
+    // A name without an extension makes a 7z archive, as in 7-Zip; an
+    // unknown -t is a command-line error.
+    assert_eq!(code(&v7z(&["a", "noext", "src/f"], &dir)), 0);
+    assert!(dir.join("noext.7z").exists());
+    assert_eq!(code(&v7z(&["a", "-tcab", "x", "src/f"], &dir)), 7);
     let _ = fs::remove_dir_all(&dir);
 }
 
@@ -426,6 +463,9 @@ fn agrees_with_7zip() {
     let nameless = |archive: &str| [".bz2", ".xz", ".lzma"].iter().any(|e| archive.ends_with(e));
     // Ours, read by 7-Zip.
     for (archive, method) in [
+        ("ours.7z", None),
+        ("ours-mx9.7z", Some("-mx9")),
+        ("ours-copy.7z", Some("-mx0")),
         ("ours.zip", None),
         ("ours-bzip2.zip", Some("-mm=BZip2")),
         ("ours.tar", None),
@@ -468,6 +508,19 @@ fn agrees_with_7zip() {
     // 7-Zip's, read by us: zip at three levels, with Deflate64 and with
     // bzip2, tar, gzip and bzip2.
     for (archive, args) in [
+        ("7z.7z", vec!["-t7z"]),
+        ("7z-mx1.7z", vec!["-t7z", "-mx1"]),
+        ("7z-mx9.7z", vec!["-t7z", "-mx9"]),
+        ("7z-nonsolid.7z", vec!["-t7z", "-ms=off"]),
+        ("7z-plainheader.7z", vec!["-t7z", "-mhc=off"]),
+        ("7z-lzma.7z", vec!["-t7z", "-m0=LZMA"]),
+        ("7z-copy.7z", vec!["-t7z", "-m0=Copy"]),
+        ("7z-bzip2.7z", vec!["-t7z", "-m0=BZip2"]),
+        ("7z-deflate.7z", vec!["-t7z", "-m0=Deflate"]),
+        ("7z-deflate64.7z", vec!["-t7z", "-m0=Deflate64"]),
+        ("7z-bcj2.7z", vec!["-t7z", "-mf=BCJ2"]),
+        ("7z-delta.7z", vec!["-t7z", "-mf=Delta:4"]),
+        ("7z-arm64.7z", vec!["-t7z", "-mf=ARM64"]),
         ("7z1.zip", vec!["-tzip", "-mx1"]),
         ("7z9.zip", vec!["-tzip", "-mx9"]),
         ("7z64.zip", vec!["-tzip", "-mm=Deflate64"]),

@@ -67,6 +67,8 @@ pub struct Args {
     pub level: Option<u8>,
     /// `-mm={Method}`.
     pub method: Option<String>,
+    /// `-mhc=off`: leave the 7z header uncompressed.
+    pub header_compression: bool,
     /// `-o{Dir}`.
     pub out_dir: Option<PathBuf>,
     pub recurse: Recurse,
@@ -152,6 +154,7 @@ pub fn parse(argv: &[String]) -> Result<Args, UsageError> {
         kind: None,
         level: None,
         method: None,
+        header_compression: true,
         out_dir: None,
         recurse: Recurse::No,
         overwrite: Overwrite::Ask,
@@ -221,6 +224,15 @@ pub fn parse(argv: &[String]) -> Result<Args, UsageError> {
                     a.level = Some(n);
                 } else if let Some(v) = m.strip_prefix("m=").or_else(|| m.strip_prefix("0=")) {
                     a.method = Some(v.to_string());
+                } else if let Some(v) = m.strip_prefix("hc=").or_else(|| m.strip_prefix("hc")) {
+                    a.header_compression = match v {
+                        "" | "on" | "+" => true,
+                        "off" | "-" => false,
+                        _ => return Err(UsageError(format!("incorrect switch: {arg}"))),
+                    };
+                } else if ["s", "f", "qs", "tm", "tc", "ta"].iter().any(|p| m.starts_with(p)) {
+                    // Solid mode, filters, sorting and which times to
+                    // store: archives are always solid, without filters.
                 } else {
                     return Err(UsageError(format!("unsupported method parameter: {arg}")));
                 }
