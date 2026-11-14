@@ -75,6 +75,15 @@ pub(crate) fn decode_into(
             if input.len() - pos < 4 {
                 return Err(LzmaError::Truncated);
             }
+            proof { // @ghost-begin
+                let c = control;
+                let x = input[pos as int];
+                let y = input[pos + 1];
+                assert((((c & 0x1F) as usize) << 16 | (x as usize) << 8 | y as usize) < 0x20_0000) by (bit_vector);
+                let z = input[pos + 2];
+                let w = input[pos + 3];
+                assert(((z as usize) << 8 | w as usize) < 0x1_0000) by (bit_vector);
+            } // @ghost-end
             let unpacked =
                 (((control & 0x1F) as usize) << 16 | (input[pos] as usize) << 8 | input[pos + 1] as usize) + 1;
             let packed = ((input[pos + 2] as usize) << 8 | input[pos + 3] as usize) + 1;
@@ -128,6 +137,11 @@ pub(crate) fn decode_into(
             if input.len() - pos < 2 {
                 return Err(LzmaError::Truncated);
             }
+            proof { // @ghost-begin
+                let x = input[pos as int];
+                let y = input[pos + 1];
+                assert(((x as usize) << 8 | y as usize) < 0x1_0000) by (bit_vector);
+            } // @ghost-end
             let n = ((input[pos] as usize) << 8 | input[pos + 1] as usize) + 1;
             pos += 2;
             if input.len() - pos < n {

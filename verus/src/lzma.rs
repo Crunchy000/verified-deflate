@@ -200,7 +200,7 @@ const IS_REP0_LONG: usize = IS_REP2 + STATES;
 const DIST_SLOT: usize = IS_REP0_LONG + STATES * POS_STATES_MAX;
 const DIST_SPECIAL: usize = DIST_SLOT + DIST_STATES * DIST_SLOTS;
 const DIST_ALIGN: usize = DIST_SPECIAL + 1 + FULL_DISTANCES - END_POS_MODEL_INDEX as usize;
-const LEN: usize = DIST_ALIGN + (1 << ALIGN_BITS);
+const LEN: usize = DIST_ALIGN + 16;
 const REP_LEN: usize = LEN + LEN_PROBS;
 const LITERAL: usize = REP_LEN + LEN_PROBS;
 
@@ -229,6 +229,7 @@ impl Model {
         &&& self.lp <= 4
         &&& self.pb <= 4
         &&& self.probs@.len() == LITERAL + 0x300 * p2((self.lc + self.lp) as nat)
+        &&& self.probs@.len() <= 4_000_000
         &&& probs_ok(self.probs@)
         &&& self.state < 12
     }
@@ -268,6 +269,8 @@ impl Model {
                     s <= 12,
             ;
             lemma_shl_usize_u32(s as u32);
+            lemma_p2_mono(s as nat, 12);
+            lemma_p2_small();
         } // @ghost-end
         Self {
             lc: props.lc as u32,
@@ -508,7 +511,7 @@ impl<'a> RangeDecoder<'a> {
         requires // @ghost
             old(self).wf(), // @ghost
             1 <= bits <= 8, // @ghost
-            base + p2(bits as nat) <= old(probs)@.len(), // @ghost
+            base + p2(bits as nat) <= old(probs)@.len() <= 4_000_000, // @ghost
             probs_ok(old(probs)@), // @ghost
         ensures // @ghost
             final(self).wf(), // @ghost
@@ -531,7 +534,7 @@ impl<'a> RangeDecoder<'a> {
                 self.data == old(self).data, // @ghost
                 old(self).overrun ==> self.overrun, // @ghost
                 probs@.len() == old(probs)@.len(), // @ghost
-                base + p2(bits as nat) <= probs@.len(), // @ghost
+                base + p2(bits as nat) <= probs@.len() <= 4_000_000, // @ghost
                 probs_ok(probs@), // @ghost
             decreases bits - k, // @ghost
         {
@@ -561,7 +564,7 @@ impl<'a> RangeDecoder<'a> {
         requires // @ghost
             old(self).wf(), // @ghost
             bits <= 8, // @ghost
-            base + p2(bits as nat) <= old(probs)@.len(), // @ghost
+            base + p2(bits as nat) <= old(probs)@.len() <= 4_000_000, // @ghost
             probs_ok(old(probs)@), // @ghost
         ensures // @ghost
             final(self).wf(), // @ghost
@@ -586,7 +589,7 @@ impl<'a> RangeDecoder<'a> {
                 self.data == old(self).data, // @ghost
                 old(self).overrun ==> self.overrun, // @ghost
                 probs@.len() == old(probs)@.len(), // @ghost
-                base + p2(bits as nat) <= probs@.len(), // @ghost
+                base + p2(bits as nat) <= probs@.len() <= 4_000_000, // @ghost
                 probs_ok(probs@), // @ghost
             decreases bits - i, // @ghost
         {
@@ -602,14 +605,16 @@ impl<'a> RangeDecoder<'a> {
                 assert(p2((i + 1) as nat) == 2 * p2(i as nat));
                 lemma_shl_u32(i);
                 let s = sym;
-                let bb = b;
                 let ii = i;
-                assert(s | (bb << ii) == s + bb * (1u32 << ii)) by (bit_vector)
-                    requires
-                        ii < 8,
-                        bb <= 1,
-                        s < (1u32 << ii),
-                ;
+                if b == 0 {
+                    assert(s | (0u32 << ii) == s) by (bit_vector);
+                } else {
+                    assert(s | (1u32 << ii) == s + (1u32 << ii)) by (bit_vector)
+                        requires
+                            ii < 8,
+                            s < (1u32 << ii),
+                    ;
+                }
             } // @ghost-end
             m = (m << 1) | b as usize;
             sym |= b << i;
@@ -671,7 +676,7 @@ impl<'a> RangeDecoder<'a> {
     fn len(&mut self, probs: &mut Vec<u16>, base: usize, pos_state: usize) -> (r: usize)
         requires // @ghost
             old(self).wf(), // @ghost
-            base + LEN_PROBS <= old(probs)@.len(), // @ghost
+            base + LEN_PROBS <= old(probs)@.len() <= 4_000_000, // @ghost
             pos_state < 16, // @ghost
             probs_ok(old(probs)@), // @ghost
         ensures // @ghost
@@ -813,7 +818,7 @@ pub(crate) fn decode_stream(
                         m.wf(), // @ghost
                         rc.wf(), // @ghost
                         rc.data == input, // @ghost
-                        base + 0x300 <= m.probs@.len(), // @ghost
+                        base + 0x300 <= m.probs@.len() <= 4_000_000, // @ghost
                     ensures // @ghost
                         1 <= sym < 0x200, // @ghost
                     decreases 0x200 - sym, // @ghost
@@ -847,7 +852,7 @@ pub(crate) fn decode_stream(
                     m.wf(), // @ghost
                     rc.wf(), // @ghost
                     rc.data == input, // @ghost
-                    base + 0x300 <= m.probs@.len(), // @ghost
+                    base + 0x300 <= m.probs@.len() <= 4_000_000, // @ghost
                 decreases 0x200 - sym, // @ghost
             {
                 let b = rc.bit(&mut m.probs, base + sym);

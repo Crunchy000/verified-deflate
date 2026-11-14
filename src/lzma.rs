@@ -158,8 +158,8 @@ const DIST_SLOT: usize = IS_REP0_LONG + STATES * POS_STATES_MAX;
 const DIST_SPECIAL: usize = DIST_SLOT + DIST_STATES * DIST_SLOTS;
 /// The four lowest bits of larger distances.
 const DIST_ALIGN: usize = DIST_SPECIAL + 1 + FULL_DISTANCES - END_POS_MODEL_INDEX as usize;
-/// The match length coder.
-const LEN: usize = DIST_ALIGN + (1 << ALIGN_BITS);
+/// The match length coder (after the 16 = 2^ALIGN_BITS alignment probabilities).
+const LEN: usize = DIST_ALIGN + 16;
 /// The repeated-match length coder.
 const REP_LEN: usize = LEN + LEN_PROBS;
 /// Literals: 0x300 per context, 2^(lc + lp) contexts.
