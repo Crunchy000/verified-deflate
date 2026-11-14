@@ -605,7 +605,7 @@ impl DecodeTable {
                 decreases 21 - zn, // @ghost
             {
                 proof { // @ghost-begin
-                    let sh = FAST_BITS - zn;
+                    let sh: u32 = (FAST_BITS - zn) as u32;
                     assert(code >> sh <= code) by (bit_vector);
                 } // @ghost-end
                 let zvec = (code >> (FAST_BITS - zn)) as i32;
@@ -880,6 +880,7 @@ pub fn read_stream(input: &[u8], max_output: usize) -> (r: Result<Bzip2Stream, B
 }
 
 #[verifier::loop_isolation(false)] // @ghost
+#[verifier::allow_complex_invariants] // @ghost
 #[verifier::spinoff_prover] // @ghost
 fn read_block(
     bits: &mut Bits<'_>,
