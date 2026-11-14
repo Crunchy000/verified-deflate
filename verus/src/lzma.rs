@@ -303,7 +303,7 @@ impl Model {
             let pv = prev as usize;
             let sh: u32 = (8 - lc) as u32;
             let s: u32 = (lc + lp) as u32;
-            assert(((pos & ((1usize << lp) - 1)) << lc) + (pv >> sh) < (1usize << s)) by (bit_vector)
+            assert(((pos & (((1usize << lp) - 1) as usize)) << lc) + (pv >> sh) < (1usize << s)) by (bit_vector)
                 requires
                     lc <= 8,
                     lp <= 4,
@@ -328,7 +328,7 @@ impl Model {
     {
         proof { // @ghost-begin
             let pb = self.pb;
-            assert((pos & ((1usize << pb) - 1)) < 16) by (bit_vector)
+            assert((pos & (((1usize << pb) - 1) as usize)) < 16) by (bit_vector)
                 requires
                     pb <= 4,
             ;
@@ -825,9 +825,10 @@ pub(crate) fn decode_stream(
                     let match_bit = (match_byte >> 7) & 1;
                     match_byte <<= 1;
                     proof { // @ghost-begin
-                        assert((1 + match_bit) << 8 <= 512) by (bit_vector)
+                        let t: usize = (1 + match_bit) as usize;
+                        assert(t << 8 <= 512) by (bit_vector)
                             requires
-                                match_bit <= 1,
+                                t <= 2,
                         ;
                     } // @ghost-end
                     let b = rc.bit(&mut m.probs, base + ((1 + match_bit) << 8) + sym) as usize;
