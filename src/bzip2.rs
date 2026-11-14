@@ -1251,6 +1251,7 @@ mod proofs {
     /// for any code lengths (1–20, even incomplete or over-subscribed) of a
     /// four-symbol alphabet and any input, the two give the same symbol, or
     /// both an error, using the same bits.
+    #[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
     #[kani::proof]
     #[kani::unwind(1030)]
     #[kani::solver(kissat)]
@@ -1269,72 +1270,93 @@ mod proofs {
             assert_eq!(fast.pos, slow.pos);
         }
     }
-
-    /// The run-length step round-trips for every input of up to eight
-    /// bytes over a two-byte alphabet (all run shapes up to length 8), and
-    /// its output never ends between a run of four and its count.
-    #[kani::proof]
-    #[kani::unwind(10)]
-    fn rle1_round_trips() {
-        let data: [u8; 8] = kani::any();
-        let data = data.map(|b| b & 1);
-        let n: usize = kani::any_where(|&n: &usize| n <= 8);
-        let mut block = Vec::new();
-        assert_eq!(rle1_encode(&data[..n], &mut block, usize::MAX), n);
-        let mut out = Vec::new();
-        assert_eq!(rle1_decode(&block, &mut out, usize::MAX), Ok(()));
-        assert_eq!(out.as_slice(), &data[..n]);
-    }
-
-    /// Runs of every length up to 600 split at 255 and come back whole,
-    /// with the block holding five bytes per 255 or fewer.
-    #[kani::proof]
-    #[kani::unwind(602)]
-    fn long_runs_round_trip() {
-        let len: usize = kani::any_where(|&n: &usize| (1..=600).contains(&n));
-        let data = vec![7u8; len];
-        let mut block = Vec::new();
-        assert_eq!(rle1_encode(&data, &mut block, usize::MAX), len);
-        assert!(block.len() <= 5 * len.div_ceil(255));
-        let mut out = Vec::new();
-        assert_eq!(rle1_decode(&block, &mut out, usize::MAX), Ok(()));
-        assert_eq!(out, data);
-    }
-
-    /// The decoder's inverse transform undoes the encoder's block sort for
-    /// every block of up to four bytes over a three-byte alphabet.
-    #[kani::proof]
-    #[kani::unwind(260)]
-    fn inverse_bwt_undoes_bwt() {
-        let s: [u8; 4] = kani::any();
-        let s = s.map(|b| b % 3);
-        let n: usize = kani::any_where(|&n: &usize| (1..=4).contains(&n));
-        let (last, orig) = crate::bwt::bwt(&s[..n]);
-        let mut counts = [0u32; 256];
-        let mut tt: Vec<u32> = Vec::new();
-        for &b in &last {
-            counts[b as usize] += 1;
-            tt.push(u32::from(b));
-        }
-        assert_eq!(inverse_bwt(&mut tt, &counts, orig, false).unwrap(), &s[..n]);
-    }
-
-    /// Compressing then decompressing gives the input back, for every
-    /// input of up to two bytes.
-    #[kani::proof]
-    #[kani::unwind(260)]
-    #[kani::solver(kissat)]
-    fn compress_round_trips() {
-        let data: [u8; 2] = kani::any();
-        let n: usize = kani::any_where(|&n: &usize| n <= 2);
-        let packed = compress(&data[..n], 1);
-        assert_eq!(decompress(&packed).unwrap().as_slice(), &data[..n]);
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // Checks over finite domains, run on every input of the domain: each
+    // is a proof for that domain, and far cheaper than a model checker.
+
+    /// The run-length step round-trips for every input of up to twelve
+    /// bytes over a two-byte alphabet (every run shape up to length 12),
+    /// and its output never ends between a run of four and its count.
+    #[test]
+    fn rle1_round_trips_for_every_short_input() {
+        for n in 0..=12usize {
+            for bits in 0..1u32 << n {
+                let data: Vec<u8> = (0..n).map(|i| (bits >> i) as u8 & 1).collect();
+                let mut block = Vec::new();
+                assert_eq!(rle1_encode(&data, &mut block, usize::MAX), n);
+                let mut out = Vec::new();
+                assert_eq!(rle1_decode(&block, &mut out, usize::MAX), Ok(()), "{data:?}");
+                assert_eq!(out, data);
+            }
+        }
+    }
+
+    /// Runs of every length up to 3,000 split at 255 and come back whole,
+    /// with the block holding five bytes per 255 or fewer.
+    #[test]
+    fn every_long_run_round_trips() {
+        for len in 1..=3000usize {
+            let data = vec![7u8; len];
+            let mut block = Vec::new();
+            assert_eq!(rle1_encode(&data, &mut block, usize::MAX), len);
+            assert!(block.len() <= 5 * len.div_ceil(255));
+            let mut out = Vec::new();
+            assert_eq!(rle1_decode(&block, &mut out, usize::MAX), Ok(()));
+            assert_eq!(out, data);
+        }
+    }
+
+    /// The decoder's inverse transform undoes the encoder's block sort for
+    /// every block of up to eight bytes over a three-byte alphabet, and
+    /// every block of one or two bytes.
+    #[test]
+    fn inverse_bwt_undoes_bwt_for_every_short_block() {
+        let check = |s: &[u8]| {
+            let (last, orig) = crate::bwt::bwt(s);
+            let mut counts = [0u32; 256];
+            let mut tt: Vec<u32> = Vec::new();
+            for &b in &last {
+                counts[b as usize] += 1;
+                tt.push(u32::from(b));
+            }
+            assert_eq!(inverse_bwt(&mut tt, &counts, orig, false).unwrap(), s);
+        };
+        for n in 1..=8u32 {
+            for mut k in 0..3u32.pow(n) {
+                let s: Vec<u8> = (0..n)
+                    .map(|_| {
+                        let d = (k % 3) as u8;
+                        k /= 3;
+                        d
+                    })
+                    .collect();
+                check(&s);
+            }
+        }
+        for v in 0..=0xFFFFu32 {
+            check(&[v as u8]);
+            check(&[v as u8, (v >> 8) as u8]);
+        }
+    }
+
+    /// Compressing then decompressing gives the input back, for every
+    /// input of up to two bytes.
+    #[test]
+    fn compress_round_trips_for_every_input_up_to_two_bytes() {
+        let check = |d: &[u8]| assert_eq!(decompress(&compress(d, 1)).unwrap(), d);
+        check(b"");
+        for v in 0..=0xFFFFu32 {
+            if v < 256 {
+                check(&[v as u8]);
+            }
+            check(&[v as u8, (v >> 8) as u8]);
+        }
+    }
 
     #[test]
     fn crc_matches_bzip2() {

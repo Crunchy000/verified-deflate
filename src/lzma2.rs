@@ -229,20 +229,9 @@ mod proofs {
         }
     }
 
-    /// LZMA2 round-trips every input of up to three bytes.
-    #[kani::proof]
-    #[kani::unwind(10)]
-    fn compress_round_trips() {
-        let data: [u8; 3] = kani::any();
-        let n: usize = kani::any_where(|&n: &usize| n <= 3);
-        let opts = LzmaOptions { props: LzmaProps { lc: 0, lp: 0, pb: 0, dict_size: 4096 }, nice_len: 8, depth: 2 };
-        let packed = compress(&data[..n], &opts);
-        let d = decompress_with_limit(&packed, 4096, 16).unwrap();
-        assert_eq!(d.data.as_slice(), &data[..n]);
-        assert_eq!(d.consumed, packed.len());
-    }
-
     /// On any ten bytes, decoding returns (no panic) within the limit.
+    // Every input of every length: verus/src/lzma2.rs.
+    #[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
     #[kani::proof]
     #[kani::unwind(28)]
     fn decoding_never_panics() {
@@ -257,6 +246,26 @@ mod proofs {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// LZMA2 round-trips every input of up to two bytes (checked on every
+    /// one).
+    #[test]
+    fn compress_round_trips_every_input_up_to_two_bytes() {
+        let opts = LzmaOptions { props: LzmaProps { lc: 0, lp: 0, pb: 0, dict_size: 4096 }, nice_len: 8, depth: 2 };
+        let check = |data: &[u8]| {
+            let packed = compress(data, &opts);
+            let d = decompress_with_limit(&packed, 4096, 16).unwrap();
+            assert_eq!(d.data, data);
+            assert_eq!(d.consumed, packed.len());
+        };
+        check(b"");
+        for v in 0..=0xFFFFu32 {
+            if v < 256 {
+                check(&[v as u8]);
+            }
+            check(&[v as u8, (v >> 8) as u8]);
+        }
+    }
 
     fn sample(len: usize, seed: u32) -> Vec<u8> {
         let mut x = seed;

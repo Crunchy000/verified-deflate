@@ -732,46 +732,65 @@ mod proofs {
         let n: usize = kani::any_where(|&n: &usize| n <= 12);
         let _ = number(&f[..n], 0);
     }
-
-    /// The writer's header checksum is one the reader accepts, for any
-    /// header contents.
-    #[kani::proof]
-    #[kani::unwind(520)]
-    fn written_checksums_check() {
-        let mut h: [u8; BLOCK] = kani::any();
-        TarWriter::new().finish_header(&mut h);
-        assert_eq!(checksum_ok(&h, 0), Ok(true));
-    }
-
-    /// Paths made safe stay relative and never climb: for every path of
-    /// up to six bytes from `a`, `/`, `.` and NUL, the result has no empty,
-    /// `.` or `..` component and no NUL, and only paths with `..` or a NUL
-    /// or nothing but separators are refused.
-    #[kani::proof]
-    #[kani::unwind(8)]
-    fn safe_paths_stay_inside() {
-        let raw: [u8; 6] = kani::any();
-        let raw = raw.map(|b| [b'a', b'/', b'.', 0][usize::from(b % 4)]);
-        let n: usize = kani::any_where(|&n: &usize| n <= 6);
-        let path = &raw[..n];
-        let parts: Vec<&[u8]> = path.split(|&b| b == b'/').collect();
-        let climbs = parts.iter().any(|p| *p == b"..") || path.contains(&0);
-        let empty = parts.iter().all(|p| p.is_empty() || *p == b".");
-        match safe_path(path) {
-            Some(s) => {
-                assert!(!climbs && !empty);
-                for c in s.split('/') {
-                    assert!(!c.is_empty() && c != "." && c != ".." && !c.contains('\0'));
-                }
-            }
-            None => assert!(climbs || empty),
-        }
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Paths made safe stay relative and never climb: for every path of
+    /// up to eight bytes from `a`, `/`, `.` and NUL (checked on every one),
+    /// the result has no empty, `.` or `..` component and no NUL, and only
+    /// paths with `..` or a NUL or nothing but separators are refused.
+    #[test]
+    fn safe_paths_stay_inside_for_every_short_path() {
+        for n in 0..=8u32 {
+            for mut k in 0..4u32.pow(n) {
+                let path: Vec<u8> = (0..n)
+                    .map(|_| {
+                        let c = [b'a', b'/', b'.', 0][(k % 4) as usize];
+                        k /= 4;
+                        c
+                    })
+                    .collect();
+                let parts: Vec<&[u8]> = path.split(|&b| b == b'/').collect();
+                let climbs = parts.iter().any(|p| *p == b"..") || path.contains(&0);
+                let empty = parts.iter().all(|p| p.is_empty() || *p == b".");
+                match safe_path(&path) {
+                    Some(s) => {
+                        assert!(!climbs && !empty, "{path:?}");
+                        for c in s.split('/') {
+                            assert!(!c.is_empty() && c != "." && c != ".." && !c.contains('\0'), "{path:?}");
+                        }
+                    }
+                    None => assert!(climbs || empty, "{path:?}"),
+                }
+            }
+        }
+    }
+
+    /// The writer's header checksum is one the reader accepts, for any
+    /// header contents. Both sides depend on the header only through the
+    /// sum of its bytes outside the checksum field, so it is enough to
+    /// check every possible sum (0 to 504 × 255), each with a header that
+    /// has it.
+    #[test]
+    fn written_checksums_check_for_every_sum() {
+        let w = TarWriter::new();
+        for sum in 0..=504 * 255u32 {
+            let mut h = [0u8; BLOCK];
+            let mut left = sum;
+            for (i, b) in h.iter_mut().enumerate() {
+                if !(148..156).contains(&i) {
+                    *b = left.min(255) as u8;
+                    left -= u32::from(*b);
+                }
+            }
+            assert_eq!(left, 0);
+            w.finish_header(&mut h);
+            assert_eq!(checksum_ok(&h, 0), Ok(true), "sum {sum}");
+        }
+    }
 
     fn opts() -> TarOptions {
         TarOptions { mode: 0o640, mtime: 1_700_000_000, uid: 1000, gid: 100, uname: "u".into(), gname: "g".into() }

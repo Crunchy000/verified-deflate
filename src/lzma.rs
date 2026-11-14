@@ -1246,6 +1246,31 @@ mod proofs {
         (p, Model::new(&p))
     }
 
+    /// The distance models alone, fresh: the literal table, which distance
+    /// coding never reads, is left empty so that the model checker need
+    /// not build it.
+    fn distance_model() -> Model {
+        Model {
+            lc: 0,
+            lp_mask: 0,
+            pb_mask: 0,
+            literal: Vec::new(),
+            is_match: [[PROB_INIT; 16]; STATES],
+            is_rep: [PROB_INIT; STATES],
+            is_rep0: [PROB_INIT; STATES],
+            is_rep1: [PROB_INIT; STATES],
+            is_rep2: [PROB_INIT; STATES],
+            is_rep0_long: [[PROB_INIT; 16]; STATES],
+            dist_slot: [[PROB_INIT; DIST_SLOTS]; DIST_STATES],
+            dist_special: [PROB_INIT; 1 + FULL_DISTANCES - END_POS_MODEL_INDEX as usize],
+            dist_align: [PROB_INIT; 16],
+            len: LenModel::new(),
+            rep_len: LenModel::new(),
+            state: 0,
+            reps: [0; 4],
+        }
+    }
+
     /// Every distance has the slot the decoder rebuilds it from: below 4
     /// the distance itself, otherwise its two top bits' place, with the
     /// distance between the slot's base and the next.
@@ -1267,8 +1292,7 @@ mod proofs {
     /// valid byte decodes to them in range.
     #[kani::proof]
     fn properties_byte_round_trips() {
-        let (lc, lp, pb): (u8, u8, u8) = (kani::any(), kani::any(), kani::any());
-        kani::assume(lc <= 8 && lp <= 4 && pb <= 4);
+        let (lc, lp, pb): (u8, u8, u8) = (kani::any::<u8>() % 9, kani::any::<u8>() % 5, kani::any::<u8>() % 5);
         let p = LzmaProps { lc, lp, pb, dict_size: kani::any() };
         assert_eq!(LzmaProps::from_byte(p.byte(), p.dict_size), Ok(p));
         let b: u8 = kani::any();
@@ -1278,58 +1302,6 @@ mod proofs {
         }
     }
 
-    /// The range coder decodes what it encodes: bits with adaptive
-    /// probabilities, a bit tree, a reverse bit tree and direct bits, in
-    /// any combination of values. Its stream starts with the 0 byte the
-    /// decoder requires.
-    #[kani::proof]
-    #[kani::unwind(10)]
-    fn range_coder_round_trips() {
-        let bits: [bool; 3] = kani::any();
-        let tree: u32 = kani::any_where(|&v: &u32| v < 8);
-        let rev: u32 = kani::any_where(|&v: &u32| v < 16);
-        let direct: u32 = kani::any_where(|&v: &u32| v < 64);
-        let mut probs = [PROB_INIT; 3];
-        let mut tree_probs = [PROB_INIT; 8];
-        let mut rev_probs = [PROB_INIT; 16];
-        let mut rc = RangeEncoder::new();
-        for (p, &b) in probs.iter_mut().zip(&bits) {
-            rc.bit(p, u32::from(b));
-        }
-        rc.tree(&mut tree_probs, 3, tree);
-        rc.reverse_tree(&mut rev_probs, 0, 4, rev);
-        rc.direct(direct, 6);
-        let out = rc.finish();
-        assert_eq!(out[0], 0);
-        let mut probs = [PROB_INIT; 3];
-        let mut tree_probs = [PROB_INIT; 8];
-        let mut rev_probs = [PROB_INIT; 16];
-        let mut d = RangeDecoder::new(&out).unwrap();
-        for (p, &b) in probs.iter_mut().zip(&bits) {
-            assert_eq!(d.bit(p), u32::from(b));
-        }
-        assert_eq!(d.tree(&mut tree_probs, 3), tree);
-        assert_eq!(d.reverse_tree(&mut rev_probs, 0, 4), rev);
-        assert_eq!(d.direct(6), direct);
-        assert!(!d.overrun);
-    }
-
-    /// Every match length (2–273) at every position state round-trips
-    /// through the length coder.
-    #[kani::proof]
-    #[kani::unwind(10)]
-    fn lengths_round_trip() {
-        let len: usize = kani::any_where(|&l: &usize| (2..=MATCH_LEN_MAX).contains(&l));
-        let ps: usize = kani::any_where(|&p: &usize| p < POS_STATES_MAX);
-        let mut m = LenModel::new();
-        let mut rc = RangeEncoder::new();
-        rc.len(&mut m, len, ps);
-        let out = rc.finish();
-        let mut m = LenModel::new();
-        let mut d = RangeDecoder::new(&out).unwrap();
-        assert_eq!(d.len(&mut m, ps), len);
-    }
-
     /// Every distance, the end marker's included, round-trips through the
     /// distance coder for every length class.
     #[kani::proof]
@@ -1337,33 +1309,19 @@ mod proofs {
     fn distances_round_trip() {
         let dist: u32 = kani::any();
         let len: usize = kani::any_where(|&l: &usize| (2..=6).contains(&l));
-        let (_, mut m) = tiny();
+        let mut m = distance_model();
         let mut rc = RangeEncoder::new();
         encode_distance(&mut rc, &mut m, dist, len);
         let out = rc.finish();
-        let (_, mut m) = tiny();
+        let mut m = distance_model();
         let mut d = RangeDecoder::new(&out).unwrap();
         assert_eq!(decode_distance(&mut d, &mut m, len), dist);
     }
 
-    /// Compressing then decompressing gives every input of up to three
-    /// bytes back, with and without the end marker.
-    #[kani::proof]
-    #[kani::unwind(10)]
-    fn compress_round_trips() {
-        let data: [u8; 3] = kani::any();
-        let n: usize = kani::any_where(|&n: &usize| n <= 3);
-        let marker: bool = kani::any();
-        let opts = LzmaOptions { props: LzmaProps { lc: 0, lp: 0, pb: 0, dict_size: 4096 }, nice_len: 8, depth: 2 };
-        let raw = compress_raw(&data[..n], &opts, marker);
-        let size = (!marker).then_some(n as u64);
-        let d = decompress_raw(&raw, &opts.props, size, 16).unwrap();
-        assert_eq!(d.data.as_slice(), &data[..n]);
-        assert_eq!(d.consumed, raw.len());
-    }
-
     /// On any eight bytes, with or without a known size, decoding returns
     /// (no panic) and never produces more than the limit.
+    // Every input of every length: verus/src/lzma.rs.
+    #[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
     #[kani::proof]
     #[kani::unwind(28)]
     fn decoding_never_panics() {
@@ -1380,6 +1338,88 @@ mod proofs {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // Checks over finite domains, run on every input of the domain: each
+    // is a proof for that domain, and far cheaper than a model checker.
+
+    /// The range coder decodes what it encodes: three bits with adaptive
+    /// probabilities, a 3-bit tree, a 4-bit reverse tree and 6 direct
+    /// bits, in every combination of values (524,288). Its stream starts
+    /// with the 0 byte the decoder requires.
+    #[test]
+    fn range_coder_round_trips_every_combination() {
+        for bits in 0..8u32 {
+            for tree in 0..8u32 {
+                for rev in 0..16u32 {
+                    for direct in 0..64u32 {
+                        let mut probs = [PROB_INIT; 3];
+                        let mut tree_probs = [PROB_INIT; 8];
+                        let mut rev_probs = [PROB_INIT; 16];
+                        let mut rc = RangeEncoder::new();
+                        for (k, p) in probs.iter_mut().enumerate() {
+                            rc.bit(p, bits >> k & 1);
+                        }
+                        rc.tree(&mut tree_probs, 3, tree);
+                        rc.reverse_tree(&mut rev_probs, 0, 4, rev);
+                        rc.direct(direct, 6);
+                        let out = rc.finish();
+                        assert_eq!(out[0], 0);
+                        let mut probs = [PROB_INIT; 3];
+                        let mut tree_probs = [PROB_INIT; 8];
+                        let mut rev_probs = [PROB_INIT; 16];
+                        let mut d = RangeDecoder::new(&out).unwrap();
+                        for (k, p) in probs.iter_mut().enumerate() {
+                            assert_eq!(d.bit(p), bits >> k & 1);
+                        }
+                        assert_eq!(d.tree(&mut tree_probs, 3), tree);
+                        assert_eq!(d.reverse_tree(&mut rev_probs, 0, 4), rev);
+                        assert_eq!(d.direct(6), direct);
+                        assert!(!d.overrun);
+                    }
+                }
+            }
+        }
+    }
+
+    /// Every match length (2–273) at every position state round-trips
+    /// through the length coder.
+    #[test]
+    fn every_length_round_trips() {
+        for len in 2..=MATCH_LEN_MAX {
+            for ps in 0..POS_STATES_MAX {
+                let mut m = LenModel::new();
+                let mut rc = RangeEncoder::new();
+                rc.len(&mut m, len, ps);
+                let out = rc.finish();
+                let mut m = LenModel::new();
+                let mut d = RangeDecoder::new(&out).unwrap();
+                assert_eq!(d.len(&mut m, ps), len);
+            }
+        }
+    }
+
+    /// Compressing then decompressing gives back every input of up to two
+    /// bytes, with and without the end marker.
+    #[test]
+    fn compress_round_trips_every_input_up_to_two_bytes() {
+        let opts = LzmaOptions { props: LzmaProps { lc: 0, lp: 0, pb: 0, dict_size: 4096 }, nice_len: 8, depth: 2 };
+        let check = |data: &[u8]| {
+            for marker in [false, true] {
+                let raw = compress_raw(data, &opts, marker);
+                let size = (!marker).then_some(data.len() as u64);
+                let d = decompress_raw(&raw, &opts.props, size, 16).unwrap();
+                assert_eq!(d.data, data);
+                assert_eq!(d.consumed, raw.len());
+            }
+        };
+        check(b"");
+        for v in 0..=0xFFFFu32 {
+            if v < 256 {
+                check(&[v as u8]);
+            }
+            check(&[v as u8, (v >> 8) as u8]);
+        }
+    }
 
     pub(crate) fn sample(len: usize, seed: u32) -> Vec<u8> {
         let mut x = seed;

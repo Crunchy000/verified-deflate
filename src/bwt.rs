@@ -292,42 +292,44 @@ mod proofs {
             assert!(suffix_less(&t, sa[i - 1] as usize, sa[i] as usize));
         }
     }
-
-    fn rotation(s: &[u8], i: usize) -> Vec<u8> {
-        let mut r = s[i..].to_vec();
-        r.extend_from_slice(&s[..i]);
-        r
-    }
-
-    /// `least_rotation` finds a smallest rotation, and `period` the
-    /// shortest repeating unit, for every string of up to five bytes over a
-    /// three-byte alphabet.
-    #[kani::proof]
-    #[kani::unwind(8)]
-    fn rotation_and_period_are_right() {
-        let s: [u8; 5] = kani::any();
-        let s = s.map(|b| b % 3);
-        let n: usize = kani::any_where(|&n: &usize| (1..=5).contains(&n));
-        let s = &s[..n];
-        let r = least_rotation(s);
-        assert!(r < n);
-        for k in 0..n {
-            assert!(rotation(s, r) <= rotation(s, k));
-        }
-        let p = period(s);
-        assert!(p >= 1 && n % p == 0);
-        for i in 0..n {
-            assert_eq!(s[i], s[i % p]);
-        }
-        for q in 1..p {
-            assert!(n % q != 0 || (0..n).any(|i| s[i] != s[i % q]));
-        }
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// `least_rotation` finds a smallest rotation, and `period` the
+    /// shortest repeating unit, for every string of up to nine bytes over
+    /// a three-byte alphabet (checked on every one).
+    #[test]
+    fn rotation_and_period_are_right_for_every_short_string() {
+        let rotation = |s: &[u8], i: usize| -> Vec<u8> { s[i..].iter().chain(&s[..i]).copied().collect() };
+        for n in 1..=9u32 {
+            for mut k in 0..3u32.pow(n) {
+                let s: Vec<u8> = (0..n)
+                    .map(|_| {
+                        let d = (k % 3) as u8;
+                        k /= 3;
+                        d
+                    })
+                    .collect();
+                let n = s.len();
+                let r = least_rotation(&s);
+                assert!(r < n);
+                for k in 0..n {
+                    assert!(rotation(&s, r) <= rotation(&s, k), "{s:?}");
+                }
+                let p = period(&s);
+                assert!(p >= 1 && n % p == 0);
+                for i in 0..n {
+                    assert_eq!(s[i], s[i % p]);
+                }
+                for q in 1..p {
+                    assert!(n % q != 0 || (0..n).any(|i| s[i] != s[i % q]));
+                }
+            }
+        }
+    }
 
     fn naive_bwt(s: &[u8]) -> (Vec<u8>, Vec<usize>) {
         let n = s.len();

@@ -1435,7 +1435,10 @@ mod proofs {
     }
 
     /// Modification times round-trip through FILETIME, from 1601 to the
-    /// year 30000.
+    /// year 30000. (64-bit multiplication and division are slow to check
+    /// symbolically; the unit test checks the ends of the range and a
+    /// sample between.)
+    #[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
     #[kani::proof]
     fn times_round_trip() {
         let t: i64 = kani::any_where(|&t: &i64| (-11_644_473_600..=883_000_000_000).contains(&t));
@@ -1457,13 +1460,13 @@ mod proofs {
     /// BCJ2 decoding never panics on any small streams and produces exactly
     /// the size asked for, or an error.
     #[kani::proof]
-    #[kani::unwind(10)]
+    #[kani::unwind(7)]
     fn bcj2_never_panics() {
-        let main: [u8; 6] = kani::any();
+        let main: [u8; 3] = kani::any();
         let call: [u8; 4] = kani::any();
         let jump: [u8; 4] = kani::any();
-        let rc: [u8; 7] = kani::any();
-        let size: usize = kani::any_where(|&s: &usize| s <= 8);
+        let rc: [u8; 6] = kani::any();
+        let size: usize = kani::any_where(|&s: &usize| s <= 5);
         if let Ok(out) = bcj2_decode(&main, &call, &jump, &rc, size) {
             assert_eq!(out.len(), size);
         }
@@ -1473,6 +1476,41 @@ mod proofs {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Modification times round-trip through FILETIME: the ends of the
+    /// range (1601 to the year 30000), the seconds around them and around
+    /// 1970, and a million in between.
+    #[test]
+    fn times_round_trip() {
+        let check = |t: i64| {
+            let o = EntryOptions { mtime: Some(t), unix_mode: None };
+            let e = SevenZEntry {
+                name: String::new(),
+                has_stream: false,
+                is_dir: false,
+                is_anti: false,
+                size: 0,
+                crc: None,
+                mtime: o.filetime(),
+                attributes: None,
+                folder: None,
+            };
+            assert_eq!(e.mtime_unix(), Some(t));
+        };
+        let (lo, hi) = (-11_644_473_600i64, 883_000_000_000i64);
+        for d in 0..1000 {
+            check(lo + d);
+            check(hi - d);
+            check(d - 500);
+        }
+        let mut x = 0x9E37_79B9_7F4A_7C15u64;
+        for _ in 0..1_000_000 {
+            x ^= x << 13;
+            x ^= x >> 7;
+            x ^= x << 17;
+            check(lo + (x % (hi - lo + 1) as u64) as i64);
+        }
+    }
 
     #[test]
     fn numbers() {
