@@ -642,9 +642,6 @@ impl DecodeTable {
     {
         let i = zvec - self.base[zn as usize];
         if 0 <= i && i < MAX_ALPHA as i32 {
-            proof { // @ghost-begin
-                assert(self.perm@[i as int] == self.perm[i as usize]);
-            } // @ghost-end
             Some(self.perm[i as usize])
         } else {
             None
