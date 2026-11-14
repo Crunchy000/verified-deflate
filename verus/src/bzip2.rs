@@ -862,10 +862,13 @@ pub fn read_stream(input: &[u8], max_output: usize) -> (r: Result<Bzip2Stream, B
     let mut out = Vec::new();
     let mut stream_crc = 0u32;
     let mut tt = Vec::new();
+    proof { // @ghost-begin
+        crate::bitio::lemma_slice_len(input);
+    } // @ghost-end
     loop
         invariant // @ghost
             1 <= level <= 9, // @ghost
-            input@.len() >= 4, // @ghost
+            4 <= input@.len() <= usize::MAX, // @ghost
             bits.wf(), // @ghost
             bits.data@.len() == input@.len() - 4, // @ghost
             out@.len() <= max_output, // @ghost
