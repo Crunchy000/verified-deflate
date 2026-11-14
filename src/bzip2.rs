@@ -25,7 +25,7 @@
 
 // The decoder is written as its Verus copy in `verus/` needs: plain
 // assignments, shifts and comparisons rather than their shorthands.
-#![allow(clippy::assign_op_pattern, clippy::manual_rotate, clippy::manual_range_contains)]
+#![allow(clippy::assign_op_pattern, clippy::manual_rotate, clippy::manual_range_contains, clippy::len_zero)]
 
 use core::fmt;
 
@@ -308,21 +308,15 @@ impl DecodeTable {
             }
             i += 1;
         }
-        let mut t = Self {
-            limit: [0; MAX_CODE_LEN + 2],
-            base: [0; MAX_CODE_LEN + 2],
-            perm: [0; MAX_ALPHA],
-            min_len: min_len as u32,
-            fast: [0; 1 << FAST_BITS],
-        };
         // The symbols, by length then by value.
+        let mut perm = [0u16; MAX_ALPHA];
         let mut pp = 0;
         let mut len = min_len;
         while len <= max_len {
             let mut sym = 0;
             while sym < lengths.len() {
                 if lengths[sym] == len && pp < MAX_ALPHA {
-                    t.perm[pp] = sym as u16;
+                    perm[pp] = sym as u16;
                     pp += 1;
                 }
                 sym += 1;
@@ -330,30 +324,33 @@ impl DecodeTable {
             len += 1;
         }
         // base[l + 1] counts the codes of length l, then accumulates.
+        let mut base = [0i32; MAX_CODE_LEN + 2];
         let mut i = 0;
         while i < lengths.len() {
             let l = lengths[i] as usize;
-            t.base[l + 1] += 1;
+            base[l + 1] += 1;
             i += 1;
         }
         let mut i = 1;
         while i < MAX_CODE_LEN + 2 {
-            t.base[i] += t.base[i - 1];
+            base[i] += base[i - 1];
             i += 1;
         }
+        let mut limit = [0i32; MAX_CODE_LEN + 2];
         let mut vec = 0i32;
         let mut i = min_len as usize;
         while i <= max_len as usize {
-            vec += t.base[i + 1] - t.base[i];
-            t.limit[i] = vec - 1;
-            vec <<= 1;
+            vec += base[i + 1] - base[i];
+            limit[i] = vec - 1;
+            vec = 2 * vec;
             i += 1;
         }
         let mut i = min_len as usize + 1;
         while i <= max_len as usize {
-            t.base[i] = ((t.limit[i - 1] + 1) << 1) - t.base[i];
+            base[i] = 2 * (limit[i - 1] + 1) - base[i];
             i += 1;
         }
+        let mut t = Self { limit, base, perm, min_len: min_len as u32, fast: [0; 1 << FAST_BITS] };
         let mut code = 0u32;
         while code < 1 << FAST_BITS {
             let mut zn = t.min_len;
@@ -411,7 +408,7 @@ impl DecodeTable {
             }
             zn += 1;
             let b = bits.read(1)?;
-            zvec = (zvec << 1) | b as i32;
+            zvec = 2 * zvec + b as i32;
         }
         match self.symbol(zn, zvec) {
             Some(sym) => Ok(sym),
@@ -464,12 +461,20 @@ pub fn is_bzip2(data: &[u8]) -> bool {
         && (data[4..10] == BLOCK_MAGIC.to_be_bytes()[2..] || data[4..10] == END_MAGIC.to_be_bytes()[2..])
 }
 
+/// Whether `data` starts with as much of [`MAGIC`] as it holds.
+fn magic_prefix(data: &[u8]) -> bool {
+    (data.len() < 1 || data[0] == b'B') && (data.len() < 2 || data[1] == b'Z') && (data.len() < 3 || data[2] == b'h')
+}
+
 /// Reads a stream's header: `BZh` and the block-size digit.
 fn stream_level(input: &[u8]) -> Result<u8, Bzip2Error> {
-    if input.len() < 4 {
-        return Err(if input.starts_with(&MAGIC[..input.len()]) { Bzip2Error::Truncated } else { Bzip2Error::NotBzip2 });
+    if !magic_prefix(input) {
+        return Err(Bzip2Error::NotBzip2);
     }
-    if input[0] != b'B' || input[1] != b'Z' || input[2] != b'h' || input[3] < b'1' || input[3] > b'9' {
+    if input.len() < 4 {
+        return Err(Bzip2Error::Truncated);
+    }
+    if input[3] < b'1' || input[3] > b'9' {
         return Err(Bzip2Error::NotBzip2);
     }
     Ok(input[3] - b'0')
@@ -617,7 +622,10 @@ fn read_block(
     let mut i = 0usize;
     while i < n_selectors {
         let mut j = 0usize;
-        while bits.bit()? {
+        loop {
+            if !bits.bit()? {
+                break;
+            }
             j += 1;
             if j >= n_groups {
                 return Err(Bzip2Error::Corrupt("bad selector"));
@@ -677,7 +685,7 @@ fn read_block(
     tt.clear();
     let mut group = 0usize;
     let mut left = 0usize;
-    let mut sym = next_symbol(bits, &tables, &selectors, &mut group, &mut left)?;
+    let mut sym = next_symbol(bits, tables.as_slice(), selectors.as_slice(), &mut group, &mut left)?;
     loop {
         if sym == eob {
             break;
@@ -689,9 +697,9 @@ fn read_block(
                 if weight >= 2 * 1024 * 1024 {
                     return Err(Bzip2Error::Corrupt("run too long"));
                 }
-                run += weight << sym;
-                weight <<= 1;
-                sym = next_symbol(bits, &tables, &selectors, &mut group, &mut left)?;
+                run += if sym == RUNB { 2 * weight } else { weight };
+                weight = 2 * weight;
+                sym = next_symbol(bits, tables.as_slice(), selectors.as_slice(), &mut group, &mut left)?;
             }
             if run > block_max - tt.len() {
                 return Err(Bzip2Error::Corrupt("block too long"));
@@ -714,7 +722,7 @@ fn read_block(
             let b = seq_to_unseq[v as usize];
             counts[b as usize] += 1;
             tt.push(b as u32);
-            sym = next_symbol(bits, &tables, &selectors, &mut group, &mut left)?;
+            sym = next_symbol(bits, tables.as_slice(), selectors.as_slice(), &mut group, &mut left)?;
         }
     }
     if orig_ptr >= tt.len() {
@@ -722,8 +730,8 @@ fn read_block(
     }
     let block = inverse_bwt(tt, &counts, orig_ptr, randomised)?;
     let start = out.len();
-    rle1_decode(&block, out, max_output)?;
-    Ok(block_crc(&out[start..]))
+    rle1_decode(block.as_slice(), out, max_output)?;
+    Ok(block_crc(&out.as_slice()[start..]))
 }
 
 /// Undoes the Burrows–Wheeler transform: `tt` holds the last column (one
@@ -732,7 +740,8 @@ fn read_block(
 /// its upper bits, the row that follows it; walking those links from the
 /// origin spells the block. Randomised blocks have their bits flipped
 /// back.
-fn inverse_bwt(tt: &mut [u32], counts: &[u32; 256], orig_ptr: usize, randomised: bool) -> Result<Vec<u8>, Bzip2Error> {
+#[allow(clippy::ptr_arg)] // a `Vec`, as the Verus copy needs
+fn inverse_bwt(tt: &mut Vec<u32>, counts: &[u32; 256], orig_ptr: usize, randomised: bool) -> Result<Vec<u8>, Bzip2Error> {
     let n = tt.len();
     // Where each byte's rows start in the sorted first column.
     let mut start = [0u32; 256];
@@ -863,12 +872,12 @@ pub fn decompress_with_limit(input: &[u8], max_output: usize) -> Result<Vec<u8>,
     let mut rest = input;
     loop {
         let s = read_stream(rest, max_output - out.len())?;
-        out.extend_from_slice(&s.data);
+        out.extend_from_slice(s.data.as_slice());
         rest = &rest[s.consumed..];
         if rest.is_empty() {
             return Ok(out);
         }
-        if !rest.starts_with(MAGIC) {
+        if rest.len() < 3 || !magic_prefix(rest) {
             return Err(Bzip2Error::TrailingData);
         }
     }
