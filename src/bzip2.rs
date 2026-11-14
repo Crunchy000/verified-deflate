@@ -741,7 +741,12 @@ fn read_block(
 /// origin spells the block. Randomised blocks have their bits flipped
 /// back.
 #[allow(clippy::ptr_arg)] // a `Vec`, as the Verus copy needs
-fn inverse_bwt(tt: &mut Vec<u32>, counts: &[u32; 256], orig_ptr: usize, randomised: bool) -> Result<Vec<u8>, Bzip2Error> {
+fn inverse_bwt(
+    tt: &mut Vec<u32>,
+    counts: &[u32; 256],
+    orig_ptr: usize,
+    randomised: bool,
+) -> Result<Vec<u8>, Bzip2Error> {
     let n = tt.len();
     // Where each byte's rows start in the sorted first column.
     let mut start = [0u32; 256];

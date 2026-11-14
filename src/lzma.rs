@@ -1304,6 +1304,8 @@ mod proofs {
 
     /// Every distance, the end marker's included, round-trips through the
     /// distance coder for every length class.
+    // The slot boundaries and a sample: `tests::distances_round_trip`.
+    #[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
     #[kani::proof]
     #[kani::unwind(28)]
     fn distances_round_trip() {
@@ -1378,6 +1380,40 @@ mod tests {
                     }
                 }
             }
+        }
+    }
+
+    /// Distances round-trip through the distance coder for every length
+    /// class: every distance below 2^16, the first, second, middle and
+    /// last two of every slot, the end marker, and 200,000 more.
+    #[test]
+    fn distances_round_trip() {
+        let fresh = || Model::new(&LzmaProps { lc: 0, lp: 0, pb: 0, dict_size: 4096 });
+        let mut dists: Vec<u32> = (0..1 << 16).collect();
+        for slot in 4..64u32 {
+            let footer = (slot >> 1) - 1;
+            let base = (2 | (slot & 1)) << footer;
+            let top = base + ((1u32 << footer) - 1);
+            dists.extend([base, base + 1, base + (top - base) / 2, top - 1, top]);
+        }
+        let mut x = 0x2545_F491_4F6C_DD1Du64;
+        for _ in 0..200_000 {
+            x ^= x << 13;
+            x ^= x >> 7;
+            x ^= x << 17;
+            dists.push(x as u32);
+        }
+        dists.push(u32::MAX);
+        let mut m = fresh();
+        let mut rc = RangeEncoder::new();
+        for (i, &d) in dists.iter().enumerate() {
+            encode_distance(&mut rc, &mut m, d, 2 + i % 5);
+        }
+        let out = rc.finish();
+        let mut m = fresh();
+        let mut d = RangeDecoder::new(&out).unwrap();
+        for (i, &want) in dists.iter().enumerate() {
+            assert_eq!(decode_distance(&mut d, &mut m, 2 + i % 5), want);
         }
     }
 

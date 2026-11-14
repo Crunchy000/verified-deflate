@@ -1185,7 +1185,12 @@ fn read_block(
     Ok(block_crc(&out.as_slice()[start..]))
 }
 
-fn inverse_bwt(tt: &mut Vec<u32>, counts: &[u32; 256], orig_ptr: usize, randomised: bool) -> Result<Vec<u8>, Bzip2Error> {
+fn inverse_bwt(
+    tt: &mut Vec<u32>,
+    counts: &[u32; 256],
+    orig_ptr: usize,
+    randomised: bool,
+) -> Result<Vec<u8>, Bzip2Error> {
     let n = tt.len();
     // Where each byte's rows start in the sorted first column.
     let mut start = [0u32; 256];

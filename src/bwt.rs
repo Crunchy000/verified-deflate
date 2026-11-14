@@ -273,6 +273,8 @@ mod proofs {
     /// SA-IS sorts every string of up to five symbols from a three-symbol
     /// alphabet (with its sentinel): the result is a permutation, in
     /// strictly increasing suffix order.
+    // Exhaustively for strings to 9 symbols: `tests::suffix_array_sorts_every_short_string`.
+    #[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
     #[kani::proof]
     #[kani::unwind(8)]
     fn suffix_array_sorts() {
@@ -297,6 +299,35 @@ mod proofs {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// SA-IS sorts every string of up to nine symbols from a three-symbol
+    /// alphabet, with its sentinel (checked on every one): the result is a
+    /// permutation, in strictly increasing suffix order.
+    #[test]
+    fn suffix_array_sorts_every_short_string() {
+        for n in 0..=9u32 {
+            for mut k in 0..3u32.pow(n) {
+                let mut t: Vec<u32> = (0..n)
+                    .map(|_| {
+                        let d = k % 3 + 1;
+                        k /= 3;
+                        d
+                    })
+                    .collect();
+                t.push(0);
+                let sa = suffix_array(&t, 4);
+                assert_eq!(sa.len(), t.len());
+                let mut seen = vec![false; t.len()];
+                for &p in &sa {
+                    assert!((p as usize) < t.len() && !seen[p as usize]);
+                    seen[p as usize] = true;
+                }
+                for i in 1..sa.len() {
+                    assert!(t[sa[i - 1] as usize..] < t[sa[i] as usize..], "{t:?}");
+                }
+            }
+        }
+    }
 
     /// `least_rotation` finds a smallest rotation, and `period` the
     /// shortest repeating unit, for every string of up to nine bytes over

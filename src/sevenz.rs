@@ -1459,6 +1459,8 @@ mod proofs {
 
     /// BCJ2 decoding never panics on any small streams and produces exactly
     /// the size asked for, or an error.
+    // Every input of every length: verus/src/sevenz.rs.
+    #[cfg(any(feature = "kani-extended", kani_sample))] // too large for CI runners
     #[kani::proof]
     #[kani::unwind(7)]
     fn bcj2_never_panics() {

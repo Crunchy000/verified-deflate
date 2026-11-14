@@ -197,7 +197,6 @@ pub fn compress(data: &[u8], opts: &LzmaOptions) -> Vec<u8> {
 #[cfg(kani)]
 mod proofs {
     use super::*;
-    use crate::lzma::LzmaProps;
 
     /// The property byte for a dictionary size is the smallest that covers
     /// it, for every size.
