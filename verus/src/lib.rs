@@ -17,13 +17,14 @@
 //! - `deflate`, with `lz77`, `bitio`, `build_lengths` and `tables`: the
 //!   encoder returns on every input, level and strategy, without
 //!   panicking, and so does the streaming encoder.
-//! - `bzip2`: the bzip2 decoder returns on every input, without
-//!   panicking, and its output stays within the caller's limit.
-//! - `zip`, with `crc32`, `inflate`, `bzip2` and their modules: the ZIP
-//!   reader returns on every byte string, without panicking, and so does
-//!   reading any entry of the archive it returns. Reading an LZMA or xz
-//!   entry takes that decoder as given (`lzma`, `xz`), until it has a
-//!   proof of its own.
+//! - `bzip2`, `lzma`, `lzma2`: the bzip2, LZMA and LZMA2 decoders return
+//!   on every input, without panicking, and their output stays within
+//!   the caller's limit.
+//! - `zip`, with `crc32`, `inflate`, `bzip2`, `lzma` and their modules:
+//!   the ZIP reader returns on every byte string, without panicking, and
+//!   so does reading any entry of the archive it returns. Reading an xz
+//!   entry takes that decoder as given (`xz`), until it has a proof of its
+//!   own.
 //! - `std_specs`: the few standard-library functions taken as given.
 //!
 //! Run with the Verus release named in `.github/workflows/verus.yml`:
@@ -42,6 +43,7 @@ pub mod huffman_decode;
 pub mod inflate;
 pub mod limit_depths;
 pub mod lzma;
+pub mod lzma2;
 pub mod lz77;
 pub mod name_is_safe;
 pub mod std_specs;

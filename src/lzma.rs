@@ -320,7 +320,8 @@ impl<'a> RangeDecoder<'a> {
         let mut m = 1usize;
         let mut k = 0;
         while k < bits {
-            m = (m << 1) | self.bit(probs, base + m) as usize;
+            let b = self.bit(probs, base + m);
+            m = (m << 1) | b as usize;
             k += 1;
         }
         m as u32 - (1 << bits)
@@ -455,7 +456,8 @@ pub(crate) fn decode_stream(
                 }
             }
             while sym < 0x100 {
-                sym = (sym << 1) | rc.bit(&mut m.probs, base + sym) as usize;
+                let b = rc.bit(&mut m.probs, base + sym);
+                sym = (sym << 1) | b as usize;
             }
             out.push(sym as u8);
             m.state = after_literal(state);
@@ -557,7 +559,8 @@ fn decode_distance(rc: &mut RangeDecoder<'_>, m: &mut Model, len: usize) -> u32 
     if slot < END_POS_MODEL_INDEX {
         base + rc.reverse_tree(&mut m.probs, DIST_SPECIAL + (base - slot) as usize, footer)
     } else {
-        let high = rc.direct(footer - ALIGN_BITS) << ALIGN_BITS;
+        let h = rc.direct(footer - ALIGN_BITS);
+        let high = h << ALIGN_BITS;
         base + high + rc.reverse_tree(&mut m.probs, DIST_ALIGN, ALIGN_BITS)
     }
 }

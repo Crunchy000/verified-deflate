@@ -139,7 +139,7 @@ pub proof fn lemma_p2_10()
 }
 
 /// `1 << s` (a `u32` shift amount) is 2^s.
-proof fn lemma_shl_usize_u32(s: u32)
+pub(crate) proof fn lemma_shl_usize_u32(s: u32)
     requires
         s <= 15,
     ensures
