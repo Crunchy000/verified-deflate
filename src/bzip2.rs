@@ -23,6 +23,10 @@
 //! assert_eq!(bzip2::decompress_with_limit(&packed, 1 << 20).unwrap(), data);
 //! ```
 
+// The decoder is written as its Verus copy in `verus/` needs: plain
+// assignments, shifts and comparisons rather than their shorthands.
+#![allow(clippy::assign_op_pattern, clippy::manual_rotate, clippy::manual_range_contains)]
+
 use core::fmt;
 
 /// Every stream starts with these bytes and a block-size digit.
@@ -98,9 +102,9 @@ impl std::error::Error for Bzip2Error {}
 // ---------------------------------------------------------------------------
 // CRC
 
-/// bzip2's CRC-32: the polynomial of zlib's CRC-32, but most significant
-/// bit first (not reflected).
-const CRC_TABLE: [u32; 256] = {
+/// bzip2's CRC-32 table: the polynomial of zlib's CRC-32, but most
+/// significant bit first (not reflected).
+const fn make_crc_table() -> [u32; 256] {
     let mut t = [0u32; 256];
     let mut i = 0;
     while i < 256 {
@@ -114,7 +118,9 @@ const CRC_TABLE: [u32; 256] = {
         i += 1;
     }
     t
-};
+}
+
+const CRC_TABLE: [u32; 256] = make_crc_table();
 
 /// A running bzip2 CRC, as libbz2 keeps it (inverted).
 #[derive(Clone, Copy)]
@@ -124,14 +130,11 @@ impl Crc {
     const fn new() -> Self {
         Self(0xFFFF_FFFF)
     }
+
     fn byte(&mut self, b: u8) {
         self.0 = (self.0 << 8) ^ CRC_TABLE[((self.0 >> 24) as u8 ^ b) as usize];
     }
-    fn bytes(&mut self, data: &[u8]) {
-        for &b in data {
-            self.byte(b);
-        }
-    }
+
     const fn finish(self) -> u32 {
         !self.0
     }
@@ -140,13 +143,18 @@ impl Crc {
 /// The bzip2 CRC of `data`, as a block header records it.
 pub fn block_crc(data: &[u8]) -> u32 {
     let mut c = Crc::new();
-    c.bytes(data);
+    let mut i = 0;
+    while i < data.len() {
+        c.byte(data[i]);
+        i += 1;
+    }
     c.finish()
 }
 
-/// The stream CRC after a block with CRC `block`.
+/// The stream CRC after a block with CRC `block`: the old one rotated
+/// left by one bit, then combined.
 const fn combine(stream: u32, block: u32) -> u32 {
-    stream.rotate_left(1) ^ block
+    ((stream << 1) | (stream >> 31)) ^ block
 }
 
 // ---------------------------------------------------------------------------
@@ -191,15 +199,21 @@ impl Randomiser {
     const fn new() -> Self {
         Self { to_go: 0, index: 0 }
     }
+
     /// The mask (0 or 1) for the next byte, as libbz2's `BZ_RAND_UPD_MASK`
-    /// then `BZ_RAND_MASK`.
+    /// then `BZ_RAND_MASK`. (Every table entry is at least 50, so the
+    /// count never wraps.)
     fn next(&mut self) -> u8 {
         if self.to_go == 0 {
-            self.to_go = RAND_NUMS[self.index];
-            self.index = (self.index + 1) % RAND_NUMS.len();
+            self.to_go = RAND_NUMS[self.index % 512];
+            self.index = (self.index + 1) % 512;
         }
-        self.to_go -= 1;
-        u8::from(self.to_go == 1)
+        self.to_go = self.to_go.wrapping_sub(1);
+        if self.to_go == 1 {
+            1
+        } else {
+            0
+        }
     }
 }
 
@@ -223,7 +237,7 @@ impl<'a> Bits<'a> {
 
     fn refill(&mut self) {
         while self.n <= 56 && self.pos < self.data.len() {
-            self.buf |= u64::from(self.data[self.pos]) << (56 - self.n);
+            self.buf = self.buf | ((self.data[self.pos] as u64) << (56 - self.n));
             self.pos += 1;
             self.n += 8;
         }
@@ -231,7 +245,6 @@ impl<'a> Bits<'a> {
 
     /// Reads `k` (1–32) bits.
     fn read(&mut self, k: u32) -> Result<u32, Bzip2Error> {
-        debug_assert!((1..=32).contains(&k));
         if self.n < k {
             self.refill();
             if self.n < k {
@@ -239,27 +252,24 @@ impl<'a> Bits<'a> {
             }
         }
         let v = (self.buf >> (64 - k)) as u32;
-        self.buf <<= k;
+        self.buf = self.buf << k;
         self.n -= k;
         Ok(v)
     }
 
     fn bit(&mut self) -> Result<bool, Bzip2Error> {
-        Ok(self.read(1)? == 1)
+        let b = self.read(1)?;
+        Ok(b == 1)
     }
 
     fn byte(&mut self) -> Result<u8, Bzip2Error> {
-        Ok(self.read(8)? as u8)
+        let b = self.read(8)?;
+        Ok(b as u8)
     }
 
     /// Bytes used so far, counting a partly read byte.
     const fn consumed(&self) -> usize {
         self.pos - (self.n / 8) as usize
-    }
-
-    /// Bits used so far.
-    const fn bit_pos(&self) -> usize {
-        self.pos * 8 - self.n as usize
     }
 }
 
@@ -282,55 +292,82 @@ struct DecodeTable {
 }
 
 impl DecodeTable {
-    /// libbz2's `BZ2_hbCreateDecodeTables`. The lengths are 1–20 but need
-    /// not form a complete, or even a valid, prefix code; decoding then
-    /// does what libbz2's does.
+    /// libbz2's `BZ2_hbCreateDecodeTables`, for 3–258 lengths of 1–20.
+    /// The lengths need not form a complete, or even a valid, prefix code;
+    /// decoding then does what libbz2's does.
     fn new(lengths: &[u8]) -> Self {
-        let min_len = lengths.iter().copied().min().unwrap_or(1);
-        let max_len = lengths.iter().copied().max().unwrap_or(1);
+        let mut min_len = 32u8;
+        let mut max_len = 0u8;
+        let mut i = 0;
+        while i < lengths.len() {
+            if lengths[i] < min_len {
+                min_len = lengths[i];
+            }
+            if lengths[i] > max_len {
+                max_len = lengths[i];
+            }
+            i += 1;
+        }
         let mut t = Self {
             limit: [0; MAX_CODE_LEN + 2],
             base: [0; MAX_CODE_LEN + 2],
             perm: [0; MAX_ALPHA],
-            min_len: u32::from(min_len),
+            min_len: min_len as u32,
             fast: [0; 1 << FAST_BITS],
         };
+        // The symbols, by length then by value.
         let mut pp = 0;
-        for len in min_len..=max_len {
-            for (sym, &l) in lengths.iter().enumerate() {
-                if l == len {
+        let mut len = min_len;
+        while len <= max_len {
+            let mut sym = 0;
+            while sym < lengths.len() {
+                if lengths[sym] == len && pp < MAX_ALPHA {
                     t.perm[pp] = sym as u16;
                     pp += 1;
                 }
+                sym += 1;
             }
+            len += 1;
         }
-        for &l in lengths {
-            t.base[l as usize + 1] += 1;
+        // base[l + 1] counts the codes of length l, then accumulates.
+        let mut i = 0;
+        while i < lengths.len() {
+            let l = lengths[i] as usize;
+            t.base[l + 1] += 1;
+            i += 1;
         }
-        for i in 1..t.base.len() {
+        let mut i = 1;
+        while i < MAX_CODE_LEN + 2 {
             t.base[i] += t.base[i - 1];
+            i += 1;
         }
         let mut vec = 0i32;
-        for i in min_len as usize..=max_len as usize {
+        let mut i = min_len as usize;
+        while i <= max_len as usize {
             vec += t.base[i + 1] - t.base[i];
             t.limit[i] = vec - 1;
             vec <<= 1;
+            i += 1;
         }
-        for i in min_len as usize + 1..=max_len as usize {
+        let mut i = min_len as usize + 1;
+        while i <= max_len as usize {
             t.base[i] = ((t.limit[i - 1] + 1) << 1) - t.base[i];
+            i += 1;
         }
-        for code in 0..1u32 << FAST_BITS {
+        let mut code = 0u32;
+        while code < 1 << FAST_BITS {
             let mut zn = t.min_len;
             while zn <= FAST_BITS {
                 let zvec = (code >> (FAST_BITS - zn)) as i32;
                 if zvec <= t.limit[zn as usize] {
                     if let Some(sym) = t.symbol(zn, zvec) {
-                        t.fast[code as usize] = (zn << 9) as u16 | sym;
+                        t.fast[code as usize] = ((zn << 9) as u16) | sym;
                     }
                     break;
                 }
                 zn += 1;
             }
+            code += 1;
         }
         t
     }
@@ -338,7 +375,7 @@ impl DecodeTable {
     /// The symbol for the `zn`-bit code `zvec`, if libbz2 accepts it.
     fn symbol(&self, zn: u32, zvec: i32) -> Option<u16> {
         let i = zvec - self.base[zn as usize];
-        if (0..MAX_ALPHA as i32).contains(&i) {
+        if 0 <= i && i < MAX_ALPHA as i32 {
             Some(self.perm[i as usize])
         } else {
             None
@@ -352,8 +389,8 @@ impl DecodeTable {
         if bits.n >= FAST_BITS {
             let e = self.fast[(bits.buf >> (64 - FAST_BITS)) as usize];
             if e != 0 {
-                let len = u32::from(e >> 9);
-                bits.buf <<= len;
+                let len = (e >> 9) as u32;
+                bits.buf = bits.buf << len;
                 bits.n -= len;
                 return Ok(e & 0x1ff);
             }
@@ -373,10 +410,34 @@ impl DecodeTable {
                 break;
             }
             zn += 1;
-            zvec = (zvec << 1) | bits.read(1)? as i32;
+            let b = bits.read(1)?;
+            zvec = (zvec << 1) | b as i32;
         }
-        self.symbol(zn, zvec).ok_or(Bzip2Error::Corrupt("invalid Huffman code"))
+        match self.symbol(zn, zvec) {
+            Some(sym) => Ok(sym),
+            None => Err(Bzip2Error::Corrupt("invalid Huffman code")),
+        }
     }
+}
+
+/// The next symbol of a block: each group of 50 is coded with the table
+/// its selector names.
+fn next_symbol(
+    bits: &mut Bits<'_>,
+    tables: &[DecodeTable],
+    selectors: &[u8],
+    group: &mut usize,
+    left: &mut usize,
+) -> Result<u16, Bzip2Error> {
+    if *left == 0 {
+        if *group >= selectors.len() {
+            return Err(Bzip2Error::Corrupt("ran out of selectors"));
+        }
+        *group += 1;
+        *left = GROUP_SIZE;
+    }
+    *left -= 1;
+    tables[selectors[*group - 1] as usize].decode(bits)
 }
 
 // ---------------------------------------------------------------------------
@@ -403,10 +464,63 @@ pub fn is_bzip2(data: &[u8]) -> bool {
         && (data[4..10] == BLOCK_MAGIC.to_be_bytes()[2..] || data[4..10] == END_MAGIC.to_be_bytes()[2..])
 }
 
+/// Reads a stream's header: `BZh` and the block-size digit.
+fn stream_level(input: &[u8]) -> Result<u8, Bzip2Error> {
+    if input.len() < 4 {
+        return Err(if input.starts_with(&MAGIC[..input.len()]) { Bzip2Error::Truncated } else { Bzip2Error::NotBzip2 });
+    }
+    if input[0] != b'B' || input[1] != b'Z' || input[2] != b'h' || input[3] < b'1' || input[3] > b'9' {
+        return Err(Bzip2Error::NotBzip2);
+    }
+    Ok(input[3] - b'0')
+}
+
+/// Reads a block's or the end marker's six magic bytes: `true` for the
+/// end of the stream.
+fn block_magic(bits: &mut Bits<'_>) -> Result<bool, Bzip2Error> {
+    let first = bits.byte()?;
+    let end = if first == 0x17 {
+        true
+    } else if first == 0x31 {
+        false
+    } else {
+        return Err(Bzip2Error::Corrupt("bad block header"));
+    };
+    let magic = if end { END_MAGIC } else { BLOCK_MAGIC };
+    let mut shift = 5u32;
+    while shift > 0 {
+        shift -= 1;
+        let b = bits.byte()?;
+        if b != (magic >> (8 * shift)) as u8 {
+            return Err(Bzip2Error::Corrupt("bad block header"));
+        }
+    }
+    Ok(end)
+}
+
 /// Decodes the bzip2 stream at the start of `input`, producing at most
 /// `max_output` bytes, and checks every CRC.
 pub fn read_stream(input: &[u8], max_output: usize) -> Result<Bzip2Stream, Bzip2Error> {
-    read_stream_impl(input, max_output, None)
+    let level = stream_level(input)?;
+    let mut bits = Bits::new(&input[4..]);
+    let mut out = Vec::new();
+    let mut stream_crc = 0u32;
+    let mut tt = Vec::new();
+    loop {
+        let end = block_magic(&mut bits)?;
+        let crc = bits.read(32)?;
+        if end {
+            if crc != stream_crc {
+                return Err(Bzip2Error::StreamCrcMismatch { expected: crc, actual: stream_crc });
+            }
+            return Ok(Bzip2Stream { data: out, consumed: 4 + bits.consumed(), level });
+        }
+        let actual = read_block(&mut bits, level, &mut tt, &mut out, max_output)?;
+        if actual != crc {
+            return Err(Bzip2Error::BlockCrcMismatch { expected: crc, actual });
+        }
+        stream_crc = combine(stream_crc, actual);
+    }
 }
 
 /// Rewrites the CRCs in the bzip2 stream at the start of `stream` (each
@@ -416,8 +530,28 @@ pub fn read_stream(input: &[u8], max_output: usize) -> Result<Bzip2Stream, Bzip2
 /// `max_output` bytes. Returns how many CRCs it wrote.
 #[doc(hidden)]
 pub fn fix_crcs(stream: &mut [u8], max_output: usize) -> usize {
+    let Ok(level) = stream_level(stream) else { return 0 };
+    // (bit offset after the header, CRC) of each CRC field.
     let mut slots = Vec::new();
-    let _ = read_stream_impl(stream, max_output, Some(&mut slots));
+    {
+        let mut bits = Bits::new(&stream[4..]);
+        let mut out = Vec::new();
+        let mut tt = Vec::new();
+        let mut stream_crc = 0u32;
+        while let Ok(end) = block_magic(&mut bits) {
+            let at = bits.pos * 8 - bits.n as usize;
+            if bits.read(32).is_err() {
+                break;
+            }
+            if end {
+                slots.push((at, stream_crc));
+                break;
+            }
+            let Ok(actual) = read_block(&mut bits, level, &mut tt, &mut out, max_output) else { break };
+            slots.push((at, actual));
+            stream_crc = combine(stream_crc, actual);
+        }
+    }
     for &(bit, crc) in &slots {
         for k in 0..32 {
             let (byte, shift) = ((32 + bit + k) / 8, 7 - (32 + bit + k) % 8);
@@ -426,59 +560,6 @@ pub fn fix_crcs(stream: &mut [u8], max_output: usize) -> usize {
         }
     }
     slots.len()
-}
-
-/// [`read_stream`]; with `fix`, CRCs are not checked but recorded, with
-/// the bit (after the four header bytes) at which each is stored.
-fn read_stream_impl(
-    input: &[u8],
-    max_output: usize,
-    mut fix: Option<&mut Vec<(usize, u32)>>,
-) -> Result<Bzip2Stream, Bzip2Error> {
-    if input.len() < 4 || &input[..3] != MAGIC || !(b'1'..=b'9').contains(&input[3]) {
-        return Err(if input.len() < 4 && MAGIC.starts_with(input) {
-            Bzip2Error::Truncated
-        } else {
-            Bzip2Error::NotBzip2
-        });
-    }
-    let level = input[3] - b'0';
-    let mut bits = Bits::new(&input[4..]);
-    let mut out = Vec::new();
-    let mut stream_crc = 0u32;
-    let mut tt = Vec::new();
-    loop {
-        let first = bits.byte()?;
-        let magic_rest = if first == 0x17 {
-            END_MAGIC
-        } else if first == 0x31 {
-            BLOCK_MAGIC
-        } else {
-            return Err(Bzip2Error::Corrupt("bad block header"));
-        };
-        for shift in (0..5).rev() {
-            if bits.byte()? != (magic_rest >> (8 * shift)) as u8 {
-                return Err(Bzip2Error::Corrupt("bad block header"));
-            }
-        }
-        let crc_at = bits.bit_pos();
-        let crc = bits.read(32)?;
-        if magic_rest == END_MAGIC {
-            if let Some(slots) = fix.as_deref_mut() {
-                slots.push((crc_at, stream_crc));
-            } else if crc != stream_crc {
-                return Err(Bzip2Error::StreamCrcMismatch { expected: crc, actual: stream_crc });
-            }
-            return Ok(Bzip2Stream { data: out, consumed: 4 + bits.consumed(), level });
-        }
-        let actual = read_block(&mut bits, level, &mut tt, &mut out, max_output)?;
-        if let Some(slots) = fix.as_deref_mut() {
-            slots.push((crc_at, actual));
-        } else if actual != crc {
-            return Err(Bzip2Error::BlockCrcMismatch { expected: crc, actual });
-        }
-        stream_crc = combine(stream_crc, actual);
-    }
 }
 
 /// Decodes one block (after its magic and CRC) onto `out`, returning the
@@ -492,7 +573,7 @@ fn read_block(
 ) -> Result<u32, Bzip2Error> {
     let randomised = bits.bit()?;
     let orig_ptr = bits.read(24)? as usize;
-    let block_max = 100_000 * usize::from(level);
+    let block_max = 100_000 * level as usize;
     if orig_ptr > 10 + block_max {
         return Err(Bzip2Error::Corrupt("origin pointer out of range"));
     }
@@ -502,16 +583,20 @@ fn read_block(
     let used16 = bits.read(16)?;
     let mut seq_to_unseq = [0u8; 256];
     let mut n_in_use = 0usize;
-    for i in 0..16 {
+    let mut i = 0usize;
+    while i < 16 {
         if used16 & (0x8000 >> i) != 0 {
             let used = bits.read(16)?;
-            for j in 0..16 {
+            let mut j = 0usize;
+            while j < 16 {
                 if used & (0x8000 >> j) != 0 {
                     seq_to_unseq[n_in_use] = (i * 16 + j) as u8;
                     n_in_use += 1;
                 }
+                j += 1;
             }
         }
+        i += 1;
     }
     if n_in_use == 0 {
         return Err(Bzip2Error::Corrupt("no byte values in use"));
@@ -520,17 +605,18 @@ fn read_block(
 
     // The selectors, move-to-front coded in unary.
     let n_groups = bits.read(3)? as usize;
-    if !(2..=MAX_GROUPS).contains(&n_groups) {
+    if n_groups < 2 || n_groups > MAX_GROUPS {
         return Err(Bzip2Error::Corrupt("bad number of Huffman tables"));
     }
     let n_selectors = bits.read(15)? as usize;
     if n_selectors == 0 {
         return Err(Bzip2Error::Corrupt("no selectors"));
     }
-    let mut selectors = Vec::with_capacity(n_selectors.min(MAX_SELECTORS));
+    let mut selectors: Vec<u8> = Vec::new();
     let mut pos: [u8; MAX_GROUPS] = [0, 1, 2, 3, 4, 5];
-    for i in 0..n_selectors {
-        let mut j = 0;
+    let mut i = 0usize;
+    while i < n_selectors {
+        let mut j = 0usize;
         while bits.bit()? {
             j += 1;
             if j >= n_groups {
@@ -539,52 +625,59 @@ fn read_block(
         }
         if i < MAX_SELECTORS {
             let v = pos[j];
-            pos.copy_within(0..j, 1);
+            let mut k = j;
+            while k > 0 {
+                pos[k] = pos[k - 1];
+                k -= 1;
+            }
             pos[0] = v;
             selectors.push(v);
         }
+        i += 1;
     }
 
     // The code lengths, delta coded.
-    let mut tables = Vec::with_capacity(n_groups);
+    let mut tables: Vec<DecodeTable> = Vec::new();
     let mut lengths = [0u8; MAX_ALPHA];
-    for _ in 0..n_groups {
+    let mut t = 0usize;
+    while t < n_groups {
         let mut curr = bits.read(5)? as i32;
-        for len in lengths.iter_mut().take(alpha_size) {
+        let mut s = 0usize;
+        while s < alpha_size {
             loop {
-                if !(1..=MAX_CODE_LEN as i32).contains(&curr) {
+                if curr < 1 || curr > MAX_CODE_LEN as i32 {
                     return Err(Bzip2Error::Corrupt("bad code length"));
                 }
                 if !bits.bit()? {
                     break;
                 }
-                curr += if bits.bit()? { -1 } else { 1 };
+                if bits.bit()? {
+                    curr -= 1;
+                } else {
+                    curr += 1;
+                }
             }
-            *len = curr as u8;
+            lengths[s] = curr as u8;
+            s += 1;
         }
         tables.push(DecodeTable::new(&lengths[..alpha_size]));
+        t += 1;
     }
 
     // The move-to-front values, with runs of the front value in RUNA and
     // RUNB, into `tt` as bytes.
     let eob = n_in_use as u16 + 1;
-    let mut mtf: [u8; 256] = core::array::from_fn(|i| i as u8);
+    let mut mtf = [0u8; 256];
+    let mut i = 0usize;
+    while i < 256 {
+        mtf[i] = i as u8;
+        i += 1;
+    }
     let mut counts = [0u32; 256];
     tt.clear();
     let mut group = 0usize;
-    let mut group_left = 0usize;
-    let mut next = |bits: &mut Bits<'_>| -> Result<u16, Bzip2Error> {
-        if group_left == 0 {
-            if group >= selectors.len() {
-                return Err(Bzip2Error::Corrupt("ran out of selectors"));
-            }
-            group += 1;
-            group_left = GROUP_SIZE;
-        }
-        group_left -= 1;
-        tables[selectors[group - 1] as usize].decode(bits)
-    };
-    let mut sym = next(bits)?;
+    let mut left = 0usize;
+    let mut sym = next_symbol(bits, &tables, &selectors, &mut group, &mut left)?;
     loop {
         if sym == eob {
             break;
@@ -598,33 +691,35 @@ fn read_block(
                 }
                 run += weight << sym;
                 weight <<= 1;
-                sym = next(bits)?;
+                sym = next_symbol(bits, &tables, &selectors, &mut group, &mut left)?;
             }
-            if tt.len() + run > block_max {
+            if run > block_max - tt.len() {
                 return Err(Bzip2Error::Corrupt("block too long"));
             }
             let b = seq_to_unseq[mtf[0] as usize];
             counts[b as usize] += run as u32;
-            tt.resize(tt.len() + run, u32::from(b));
+            tt.resize(tt.len() + run, b as u32);
         } else {
             if tt.len() >= block_max {
                 return Err(Bzip2Error::Corrupt("block too long"));
             }
             let nn = (sym - 1) as usize;
             let v = mtf[nn];
-            mtf.copy_within(0..nn, 1);
+            let mut k = nn;
+            while k > 0 {
+                mtf[k] = mtf[k - 1];
+                k -= 1;
+            }
             mtf[0] = v;
             let b = seq_to_unseq[v as usize];
             counts[b as usize] += 1;
-            tt.push(u32::from(b));
-            sym = next(bits)?;
+            tt.push(b as u32);
+            sym = next_symbol(bits, &tables, &selectors, &mut group, &mut left)?;
         }
     }
-    let n = tt.len();
-    if orig_ptr >= n {
+    if orig_ptr >= tt.len() {
         return Err(Bzip2Error::Corrupt("origin pointer out of range"));
     }
-
     let block = inverse_bwt(tt, &counts, orig_ptr, randomised)?;
     let start = out.len();
     rle1_decode(&block, out, max_output)?;
@@ -642,26 +737,39 @@ fn inverse_bwt(tt: &mut [u32], counts: &[u32; 256], orig_ptr: usize, randomised:
     // Where each byte's rows start in the sorted first column.
     let mut start = [0u32; 256];
     let mut sum = 0u32;
-    for c in 0..256 {
+    let mut c = 0usize;
+    while c < 256 {
         start[c] = sum;
         sum = sum.wrapping_add(counts[c]);
+        c += 1;
     }
-    for i in 0..n {
-        let c = (tt[i] & 0xff) as usize;
-        let row = start[c] as usize;
+    let mut i = 0usize;
+    while i < n {
+        let b = (tt[i] & 0xff) as usize;
+        let row = start[b] as usize;
         // The counts are exact, so each byte's rows stay in range.
-        let slot = tt.get_mut(row).ok_or(Bzip2Error::Corrupt("byte counts do not match the block"))?;
-        *slot |= (i as u32) << 8;
-        start[c] += 1;
+        if row >= n {
+            return Err(Bzip2Error::Corrupt("byte counts do not match the block"));
+        }
+        tt[row] = tt[row] | ((i as u32) << 8);
+        start[b] = start[b].wrapping_add(1);
+        i += 1;
     }
     let mut block = Vec::with_capacity(n);
     let mut rand = Randomiser::new();
     let mut pos = orig_ptr;
-    for _ in 0..n {
-        pos = (*tt.get(pos).ok_or(Bzip2Error::Corrupt("origin pointer out of range"))? >> 8) as usize;
-        let v = *tt.get(pos).ok_or(Bzip2Error::Corrupt("broken row link"))?;
-        let b = v as u8;
+    let mut k = 0usize;
+    while k < n {
+        if pos >= n {
+            return Err(Bzip2Error::Corrupt("broken row link"));
+        }
+        pos = (tt[pos] >> 8) as usize;
+        if pos >= n {
+            return Err(Bzip2Error::Corrupt("broken row link"));
+        }
+        let b = tt[pos] as u8;
         block.push(if randomised { b ^ rand.next() } else { b });
+        k += 1;
     }
     Ok(block)
 }
@@ -672,27 +780,30 @@ fn inverse_bwt(tt: &mut [u32], counts: &[u32; 256], orig_ptr: usize, randomised:
 /// count.
 fn rle1_decode(block: &[u8], out: &mut Vec<u8>, max_output: usize) -> Result<(), Bzip2Error> {
     let mut last = 0u8;
-    let mut run = 0;
-    for &b in block {
+    let mut run = 0u32;
+    let mut i = 0usize;
+    while i < block.len() {
+        let b = block[i];
+        i += 1;
         if run == 4 {
-            let extra = usize::from(b);
+            let extra = b as usize;
             if extra > max_output.saturating_sub(out.len()) {
                 return Err(Bzip2Error::OutputLimitExceeded);
             }
             out.resize(out.len() + extra, last);
             run = 0;
-            continue;
-        }
-        if run > 0 && b == last {
-            run += 1;
         } else {
-            last = b;
-            run = 1;
+            if run > 0 && b == last {
+                run += 1;
+            } else {
+                last = b;
+                run = 1;
+            }
+            if out.len() >= max_output {
+                return Err(Bzip2Error::OutputLimitExceeded);
+            }
+            out.push(b);
         }
-        if out.len() >= max_output {
-            return Err(Bzip2Error::OutputLimitExceeded);
-        }
-        out.push(b);
     }
     if run == 4 {
         return Err(Bzip2Error::Corrupt("block ends inside a run"));
@@ -748,15 +859,11 @@ pub fn decompress(input: &[u8]) -> Result<Vec<u8>, Bzip2Error> {
 /// after the last stream that does not start another one is an error
 /// ([`Bzip2Error::TrailingData`]).
 pub fn decompress_with_limit(input: &[u8], max_output: usize) -> Result<Vec<u8>, Bzip2Error> {
-    let mut out = Vec::new();
+    let mut out: Vec<u8> = Vec::new();
     let mut rest = input;
     loop {
         let s = read_stream(rest, max_output - out.len())?;
-        if out.is_empty() {
-            out = s.data;
-        } else {
-            out.extend_from_slice(&s.data);
-        }
+        out.extend_from_slice(&s.data);
         rest = &rest[s.consumed..];
         if rest.is_empty() {
             return Ok(out);
