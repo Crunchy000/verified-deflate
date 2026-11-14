@@ -36,6 +36,11 @@ proof fn lemma_fast_entry(zn: u32, sym: u16)
         1 <= (((zn << 9) as u16) | sym) >> 9 <= 10,
         (((zn << 9) as u16) | sym) & 0x1ff == sym,
 {
+    assert((((zn << 9) as u16) | sym) != 0) by (bit_vector)
+        requires
+            1 <= zn <= 10,
+            sym < 512,
+    ;
     assert(((((zn << 9) as u16) | sym) >> 9) == zn as u16) by (bit_vector)
         requires
             1 <= zn <= 10,
@@ -347,13 +352,16 @@ impl<'a> Bits<'a> {
         }
         proof { // @ghost-begin
             let b = self.buf;
-            assert(b >> (64 - k) < (1u64 << k)) by (bit_vector)
+            let sh: u32 = (64 - k) as u32;
+            assert(b >> sh < (1u64 << k)) by (bit_vector)
                 requires
                     1 <= k <= 32,
+                    sh == 64u32 - k,
             ;
-            assert(b >> (64 - k) <= 0xffff_ffffu64) by (bit_vector)
+            assert(b >> sh <= 0xffff_ffffu64) by (bit_vector)
                 requires
                     1 <= k <= 32,
+                    sh == 64u32 - k,
             ;
             lemma_shl(k);
         } // @ghost-end
