@@ -27,6 +27,10 @@
 //! assert_eq!(lzma::decompress_with_limit(&packed, 1 << 20).unwrap(), data);
 //! ```
 
+// The decoder is written as its Verus copy in `verus/` needs: the
+// probabilities in a `Vec` passed by reference, and plain arithmetic.
+#![allow(clippy::ptr_arg, clippy::manual_range_contains)]
+
 use core::fmt;
 
 /// The longest match.
@@ -109,7 +113,7 @@ impl LzmaProps {
     /// The five-byte form used by `.lzma` headers, 7z and ZIP: the
     /// `lc`/`lp`/`pb` byte and the dictionary size, little-endian.
     pub fn parse(b: &[u8; 5]) -> Result<Self, LzmaError> {
-        Self::from_byte(b[0], u32::from_le_bytes([b[1], b[2], b[3], b[4]]))
+        Self::from_byte(b[0], b[1] as u32 | (b[2] as u32) << 8 | (b[3] as u32) << 16 | (b[4] as u32) << 24)
     }
 
     /// The five-byte form; see [`parse`](Self::parse).
@@ -129,52 +133,54 @@ impl LzmaProps {
     /// The dictionary the decoder keeps, as liblzma sizes it: at least
     /// 4 KiB, rounded up to 16 bytes.
     fn effective_dict(&self) -> usize {
-        ((self.dict_size.max(4096) as usize).saturating_add(15)) & !15
+        let d = if self.dict_size < 4096 { 4096 } else { self.dict_size as usize };
+        d.saturating_add(15) & !15
     }
 }
 
 // ---------------------------------------------------------------------------
 // The probability model, shared by decoder and encoder
 
-#[derive(Clone)]
-struct LenModel {
-    choice: u16,
-    choice2: u16,
-    low: [[u16; 8]; POS_STATES_MAX],
-    mid: [[u16; 8]; POS_STATES_MAX],
-    high: [u16; 256],
-}
+// The probabilities live in one table, laid out as in the LZMA SDK; these
+// are where each group starts.
+/// Match or literal, by state and position state.
+const IS_MATCH: usize = 0;
+/// Repeated distance or new, by state.
+const IS_REP: usize = IS_MATCH + STATES * POS_STATES_MAX;
+const IS_REP0: usize = IS_REP + STATES;
+const IS_REP1: usize = IS_REP0 + STATES;
+const IS_REP2: usize = IS_REP1 + STATES;
+/// Short rep (one byte) or longer, by state and position state.
+const IS_REP0_LONG: usize = IS_REP2 + STATES;
+/// Distance slots: a 6-bit tree per length class.
+const DIST_SLOT: usize = IS_REP0_LONG + STATES * POS_STATES_MAX;
+/// The low bits of distances in slots 4–13.
+const DIST_SPECIAL: usize = DIST_SLOT + DIST_STATES * DIST_SLOTS;
+/// The four lowest bits of larger distances.
+const DIST_ALIGN: usize = DIST_SPECIAL + 1 + FULL_DISTANCES - END_POS_MODEL_INDEX as usize;
+/// The match length coder.
+const LEN: usize = DIST_ALIGN + (1 << ALIGN_BITS);
+/// The repeated-match length coder.
+const REP_LEN: usize = LEN + LEN_PROBS;
+/// Literals: 0x300 per context, 2^(lc + lp) contexts.
+const LITERAL: usize = REP_LEN + LEN_PROBS;
 
-impl LenModel {
-    const fn new() -> Self {
-        Self {
-            choice: PROB_INIT,
-            choice2: PROB_INIT,
-            low: [[PROB_INIT; 8]; 16],
-            mid: [[PROB_INIT; 8]; 16],
-            high: [PROB_INIT; 256],
-        }
-    }
-}
+// Within a length coder: two choice bits, then a 3-bit tree per position
+// state for lengths 2–9, another for 10–17, and an 8-bit tree for 18–273.
+const LEN_CHOICE: usize = 0;
+const LEN_CHOICE2: usize = 1;
+const LEN_LOW: usize = 2;
+const LEN_MID: usize = LEN_LOW + POS_STATES_MAX * 8;
+const LEN_HIGH: usize = LEN_MID + POS_STATES_MAX * 8;
+const LEN_PROBS: usize = LEN_HIGH + 256;
 
 /// Probabilities, state and the four most recent distances.
 #[derive(Clone)]
 pub(crate) struct Model {
     lc: u32,
-    lp_mask: usize,
-    pb_mask: usize,
-    literal: Vec<u16>,
-    is_match: [[u16; POS_STATES_MAX]; STATES],
-    is_rep: [u16; STATES],
-    is_rep0: [u16; STATES],
-    is_rep1: [u16; STATES],
-    is_rep2: [u16; STATES],
-    is_rep0_long: [[u16; POS_STATES_MAX]; STATES],
-    dist_slot: [[u16; DIST_SLOTS]; DIST_STATES],
-    dist_special: [u16; 1 + FULL_DISTANCES - END_POS_MODEL_INDEX as usize],
-    dist_align: [u16; 1 << ALIGN_BITS],
-    len: LenModel,
-    rep_len: LenModel,
+    lp: u32,
+    pb: u32,
+    probs: Vec<u16>,
     state: usize,
     reps: [u32; 4],
 }
@@ -182,21 +188,10 @@ pub(crate) struct Model {
 impl Model {
     pub(crate) fn new(props: &LzmaProps) -> Self {
         Self {
-            lc: u32::from(props.lc),
-            lp_mask: (1 << props.lp) - 1,
-            pb_mask: (1 << props.pb) - 1,
-            literal: vec![PROB_INIT; 0x300 << (props.lc + props.lp)],
-            is_match: [[PROB_INIT; 16]; STATES],
-            is_rep: [PROB_INIT; STATES],
-            is_rep0: [PROB_INIT; STATES],
-            is_rep1: [PROB_INIT; STATES],
-            is_rep2: [PROB_INIT; STATES],
-            is_rep0_long: [[PROB_INIT; 16]; STATES],
-            dist_slot: [[PROB_INIT; DIST_SLOTS]; DIST_STATES],
-            dist_special: [PROB_INIT; 1 + FULL_DISTANCES - END_POS_MODEL_INDEX as usize],
-            dist_align: [PROB_INIT; 16],
-            len: LenModel::new(),
-            rep_len: LenModel::new(),
+            lc: props.lc as u32,
+            lp: props.lp as u32,
+            pb: props.pb as u32,
+            probs: vec![PROB_INIT; LITERAL + (0x300 << (props.lc + props.lp))],
             state: 0,
             reps: [0; 4],
         }
@@ -210,7 +205,12 @@ impl Model {
     /// Where the literal probabilities for this position and previous
     /// byte start.
     fn literal_base(&self, pos: usize, prev: u8) -> usize {
-        0x300 * (((pos & self.lp_mask) << self.lc) + (usize::from(prev) >> (8 - self.lc)))
+        LITERAL + 0x300 * (((pos & ((1 << self.lp) - 1)) << self.lc) + ((prev as usize) >> (8 - self.lc)))
+    }
+
+    /// The position state: the low `pb` bits of the position.
+    fn pos_state(&self, pos: usize) -> usize {
+        pos & ((1 << self.pb) - 1)
     }
 }
 
@@ -273,84 +273,97 @@ impl<'a> RangeDecoder<'a> {
         if data[0] != 0 {
             return Err(LzmaError::Corrupt("range coder does not start with 0"));
         }
-        let code = u32::from_be_bytes([data[1], data[2], data[3], data[4]]);
+        let code = (data[1] as u32) << 24 | (data[2] as u32) << 16 | (data[3] as u32) << 8 | data[4] as u32;
         Ok(Self { data, pos: 5, range: u32::MAX, code, overrun: false })
     }
 
+    /// Loads a byte when the range has narrowed below 2^24. Past the end
+    /// of the input it loads zeros and records the overrun, after which
+    /// the decoder fails.
     #[inline(always)]
     fn normalize(&mut self) {
         if self.range < TOP {
             self.range <<= 8;
-            let b = match self.data.get(self.pos) {
-                Some(&b) => b,
-                None => {
-                    self.overrun = true;
-                    0
-                }
-            };
-            self.pos += 1;
-            self.code = (self.code << 8) | u32::from(b);
+            let mut b = 0;
+            if self.pos < self.data.len() {
+                b = self.data[self.pos];
+                self.pos += 1;
+            } else {
+                self.overrun = true;
+            }
+            self.code = (self.code << 8) | b as u32;
         }
     }
 
+    /// Decodes a bit with the adaptive probability `probs[i]`, updating
+    /// it.
     #[inline(always)]
-    fn bit(&mut self, p: &mut u16) -> u32 {
+    fn bit(&mut self, probs: &mut Vec<u16>, i: usize) -> u32 {
         self.normalize();
-        let bound = (self.range >> 11) * u32::from(*p);
+        let p = probs[i];
+        let bound = (self.range >> 11) * p as u32;
         if self.code < bound {
             self.range = bound;
-            *p += ((BIT_MODEL_TOTAL - u32::from(*p)) >> MOVE_BITS) as u16;
+            probs[i] = p + ((BIT_MODEL_TOTAL - p as u32) >> MOVE_BITS) as u16;
             0
         } else {
             self.range -= bound;
             self.code -= bound;
-            *p -= *p >> MOVE_BITS;
+            probs[i] = p - (p >> MOVE_BITS);
             1
         }
     }
 
-    fn tree(&mut self, probs: &mut [u16], bits: u32) -> u32 {
+    /// Decodes a `bits`-bit value, most significant bit first, with the
+    /// tree of probabilities at `probs[base + 1..base + 2^bits]`.
+    fn tree(&mut self, probs: &mut Vec<u16>, base: usize, bits: u32) -> u32 {
         let mut m = 1usize;
-        for _ in 0..bits {
-            m = (m << 1) | self.bit(&mut probs[m]) as usize;
+        let mut k = 0;
+        while k < bits {
+            m = (m << 1) | self.bit(probs, base + m) as usize;
+            k += 1;
         }
         m as u32 - (1 << bits)
     }
 
-    fn reverse_tree(&mut self, probs: &mut [u16], base: usize, bits: u32) -> u32 {
+    /// Decodes a `bits`-bit value, least significant bit first.
+    fn reverse_tree(&mut self, probs: &mut Vec<u16>, base: usize, bits: u32) -> u32 {
         let mut m = 1usize;
         let mut sym = 0;
-        for i in 0..bits {
-            let b = self.bit(&mut probs[base + m]);
+        let mut i = 0;
+        while i < bits {
+            let b = self.bit(probs, base + m);
             m = (m << 1) | b as usize;
             sym |= b << i;
+            i += 1;
         }
         sym
     }
 
-    /// Bits with probability one half, with liblzma's arithmetic exactly
-    /// (it differs from a plain comparison once a corrupt stream has
-    /// pushed `code` past `range`).
+    /// Decodes `bits` bits at even odds, with liblzma's arithmetic.
     fn direct(&mut self, bits: u32) -> u32 {
         let mut v = 0u32;
-        for _ in 0..bits {
+        let mut k = 0;
+        while k < bits {
             self.normalize();
             self.range >>= 1;
             self.code = self.code.wrapping_sub(self.range);
             let mask = 0u32.wrapping_sub(self.code >> 31);
             self.code = self.code.wrapping_add(self.range & mask);
             v = (v << 1).wrapping_add(mask.wrapping_add(1));
+            k += 1;
         }
         v
     }
 
-    fn len(&mut self, m: &mut LenModel, pos_state: usize) -> usize {
-        if self.bit(&mut m.choice) == 0 {
-            2 + self.tree(&mut m.low[pos_state], 3) as usize
-        } else if self.bit(&mut m.choice2) == 0 {
-            10 + self.tree(&mut m.mid[pos_state], 3) as usize
+    /// Decodes a match length (2–273) with the length coder at `base`.
+    fn len(&mut self, probs: &mut Vec<u16>, base: usize, pos_state: usize) -> usize {
+        if self.bit(probs, base + LEN_CHOICE) == 0 {
+            2 + self.tree(probs, base + LEN_LOW + pos_state * 8, 3) as usize
+        } else if self.bit(probs, base + LEN_CHOICE2) == 0 {
+            10 + self.tree(probs, base + LEN_MID + pos_state * 8, 3) as usize
         } else {
-            18 + self.tree(&mut m.high, 8) as usize
+            18 + self.tree(probs, base + LEN_HIGH, 8) as usize
         }
     }
 }
@@ -383,21 +396,23 @@ pub(crate) fn decode_stream(
     let mut rc = RangeDecoder::new(input)?;
     let dict_size = props.effective_dict();
     let start_len = out.len();
-    let (limit, mut marker_ok) = match end {
-        End::Known { size, .. } => (Some(usize::try_from(size).unwrap_or(usize::MAX)), false),
-        End::Marker => (None, true),
+    let (known, allow_marker, size) = match end {
+        End::Known { size, allow_marker } => (true, allow_marker, size),
+        End::Marker => (false, true, 0),
     };
-    let target = limit.map(|n| start_len.saturating_add(n));
-    if target.is_some_and(|t| t > max_output) {
+    let mut marker_ok = !known;
+    if known && size > (max_output - start_len) as u64 {
         return Err(LzmaError::OutputLimitExceeded);
     }
+    // Where the output stops: at the known size, or else at the limit.
+    let target = if known { start_len + size as usize } else { max_output };
     let m = model;
     loop {
         if rc.overrun {
             return Err(LzmaError::Truncated);
         }
         let pos = out.len() - dict_start;
-        if Some(out.len()) == target {
+        if known && out.len() == target {
             // In rare cases one more byte has to be read anyway.
             rc.normalize();
             if rc.overrun {
@@ -406,18 +421,19 @@ pub(crate) fn decode_stream(
             if rc.code == 0 {
                 return Ok(rc.pos);
             }
-            match end {
-                End::Known { allow_marker: true, .. } => marker_ok = true,
-                _ => return Err(LzmaError::Corrupt("data after the end of the stream")),
+            if allow_marker {
+                marker_ok = true;
+            } else {
+                return Err(LzmaError::Corrupt("data after the end of the stream"));
             }
         }
-        let full = pos.min(dict_size);
-        let pos_state = pos & m.pb_mask;
+        let full = if pos < dict_size { pos } else { dict_size };
+        let pos_state = m.pos_state(pos);
         let state = m.state;
-        if rc.bit(&mut m.is_match[state][pos_state]) == 0 {
+        if rc.bit(&mut m.probs, IS_MATCH + state * POS_STATES_MAX + pos_state) == 0 {
             // Literal.
-            if Some(out.len()) == target || out.len() >= max_output {
-                return Err(if target.is_some() {
+            if out.len() >= target {
+                return Err(if known {
                     LzmaError::Corrupt("data after the end of the stream")
                 } else {
                     LzmaError::OutputLimitExceeded
@@ -425,14 +441,13 @@ pub(crate) fn decode_stream(
             }
             let prev = if pos > 0 { out[out.len() - 1] } else { 0 };
             let base = m.literal_base(pos, prev);
-            let probs = &mut m.literal[base..base + 0x300];
             let mut sym = 1usize;
             if state >= 7 {
                 let mut match_byte = out[out.len() - m.reps[0] as usize - 1] as usize;
                 loop {
                     let match_bit = (match_byte >> 7) & 1;
                     match_byte <<= 1;
-                    let b = rc.bit(&mut probs[((1 + match_bit) << 8) + sym]) as usize;
+                    let b = rc.bit(&mut m.probs, base + ((1 + match_bit) << 8) + sym) as usize;
                     sym = (sym << 1) | b;
                     if match_bit != b || sym >= 0x100 {
                         break;
@@ -440,16 +455,16 @@ pub(crate) fn decode_stream(
                 }
             }
             while sym < 0x100 {
-                sym = (sym << 1) | rc.bit(&mut probs[sym]) as usize;
+                sym = (sym << 1) | rc.bit(&mut m.probs, base + sym) as usize;
             }
             out.push(sym as u8);
             m.state = after_literal(state);
             continue;
         }
         let len;
-        if rc.bit(&mut m.is_rep[state]) == 0 {
+        if rc.bit(&mut m.probs, IS_REP + state) == 0 {
             // Match with a new distance.
-            len = rc.len(&mut m.len, pos_state);
+            len = rc.len(&mut m.probs, LEN, pos_state);
             m.state = after_match(state);
             let dist = decode_distance(&mut rc, m, len);
             if dist == u32::MAX {
@@ -470,26 +485,25 @@ pub(crate) fn decode_stream(
             if full == 0 {
                 return Err(LzmaError::Corrupt("repeated match before any data"));
             }
-            if rc.bit(&mut m.is_rep0[state]) == 0 {
-                if rc.bit(&mut m.is_rep0_long[state][pos_state]) == 0 {
+            if rc.bit(&mut m.probs, IS_REP0 + state) == 0 {
+                if rc.bit(&mut m.probs, IS_REP0_LONG + state * POS_STATES_MAX + pos_state) == 0 {
                     // Short rep: one byte from the last distance.
-                    if Some(out.len()) == target || out.len() >= max_output {
-                        return Err(if target.is_some() {
+                    if out.len() >= target {
+                        return Err(if known {
                             LzmaError::Corrupt("data after the end of the stream")
                         } else {
                             LzmaError::OutputLimitExceeded
                         });
                     }
                     m.state = after_short_rep(state);
-                    out.push(out[out.len() - m.reps[0] as usize - 1]);
+                    let b = out[out.len() - m.reps[0] as usize - 1];
+                    out.push(b);
                     continue;
                 }
             } else {
-                let dist;
-                if rc.bit(&mut m.is_rep1[state]) == 0 {
-                    dist = m.reps[1];
-                } else {
-                    if rc.bit(&mut m.is_rep2[state]) == 0 {
+                let mut dist = m.reps[1];
+                if rc.bit(&mut m.probs, IS_REP1 + state) != 0 {
+                    if rc.bit(&mut m.probs, IS_REP2 + state) == 0 {
                         dist = m.reps[2];
                     } else {
                         dist = m.reps[3];
@@ -500,26 +514,28 @@ pub(crate) fn decode_stream(
                 m.reps[1] = m.reps[0];
                 m.reps[0] = dist;
             }
-            len = rc.len(&mut m.rep_len, pos_state);
+            len = rc.len(&mut m.probs, REP_LEN, pos_state);
             m.state = after_rep(state);
         }
         // Copy the match, as far as the end and the limit allow.
-        let room = match target {
-            Some(t) => t - out.len(),
-            None => max_output - out.len(),
-        };
-        let n = len.min(room);
+        let room = target - out.len();
+        let n = if len < room { len } else { room };
         let d = m.reps[0] as usize + 1;
         let from = out.len() - d;
         if d >= n {
-            out.extend_from_within(from..from + n);
+            let at = out.len();
+            out.resize(at + n, 0);
+            out.as_mut_slice().copy_within(from..from + n, at);
         } else {
-            for i in 0..n {
-                out.push(out[from + i]);
+            let mut i = 0;
+            while i < n {
+                let b = out[from + i];
+                out.push(b);
+                i += 1;
             }
         }
         if n < len {
-            return Err(if target.is_some() {
+            return Err(if known {
                 LzmaError::Corrupt("match runs past the end of the stream")
             } else {
                 LzmaError::OutputLimitExceeded
@@ -528,21 +544,21 @@ pub(crate) fn decode_stream(
     }
 }
 
-/// A match distance (minus one) for a match of `len` bytes: its slot,
-/// then the bits below the slot's top two, through the special, direct
-/// and alignment models. All ones is the end marker.
+/// Decodes a distance: its slot, then the bits below the slot's top two,
+/// through the special, direct and alignment models. All ones is the end
+/// marker.
 fn decode_distance(rc: &mut RangeDecoder<'_>, m: &mut Model, len: usize) -> u32 {
-    let slot = rc.tree(&mut m.dist_slot[dist_state(len)], 6);
+    let slot = rc.tree(&mut m.probs, DIST_SLOT + dist_state(len) * DIST_SLOTS, 6);
     if slot < 4 {
         return slot;
     }
     let footer = (slot >> 1) - 1;
     let base = (2 | (slot & 1)) << footer;
     if slot < END_POS_MODEL_INDEX {
-        base + rc.reverse_tree(&mut m.dist_special, (base - slot) as usize, footer)
+        base + rc.reverse_tree(&mut m.probs, DIST_SPECIAL + (base - slot) as usize, footer)
     } else {
         let high = rc.direct(footer - ALIGN_BITS) << ALIGN_BITS;
-        base + high + rc.reverse_tree(&mut m.dist_align, 0, ALIGN_BITS)
+        base + high + rc.reverse_tree(&mut m.probs, DIST_ALIGN, ALIGN_BITS)
     }
 }
 
@@ -567,10 +583,15 @@ pub fn decompress_raw(
 ) -> Result<Decompressed, LzmaError> {
     props.check()?;
     let mut model = Model::new(props);
-    let mut out = Vec::new();
+    // Room for the output if its size is known, up to 64 MiB.
+    let mut cap = 0;
     if let Some(n) = size {
-        out.reserve(usize::try_from(n).unwrap_or(0).min(max_output).min(1 << 26));
+        cap = if n < 1 << 26 { n as usize } else { 1 << 26 };
+        if cap > max_output {
+            cap = max_output;
+        }
     }
+    let mut out = Vec::with_capacity(cap);
     let end = match size {
         Some(size) => End::Known { size, allow_marker: true },
         None => End::Marker,
@@ -587,10 +608,13 @@ pub fn parse_header(input: &[u8]) -> Result<(LzmaProps, Option<u64>), LzmaError>
     }
     let props = LzmaProps::parse(&[input[0], input[1], input[2], input[3], input[4]])?;
     props.check()?;
-    let mut s = [0u8; 8];
-    s.copy_from_slice(&input[5..13]);
-    let size = u64::from_le_bytes(s);
-    Ok((props, (size != u64::MAX).then_some(size)))
+    let mut size = 0u64;
+    let mut i = 13;
+    while i > 5 {
+        i -= 1;
+        size = size << 8 | input[i] as u64;
+    }
+    Ok((props, if size == u64::MAX { None } else { Some(size) }))
 }
 
 /// Decompresses a `.lzma` file with no output limit. For untrusted input
@@ -700,19 +724,20 @@ impl RangeEncoder {
         }
     }
 
-    fn len(&mut self, m: &mut LenModel, len: usize, pos_state: usize) {
+    /// Encodes a match length with the length coder `probs`.
+    fn len(&mut self, probs: &mut [u16], len: usize, pos_state: usize) {
         let l = (len - MATCH_LEN_MIN) as u32;
         if l < 8 {
-            self.bit(&mut m.choice, 0);
-            self.tree(&mut m.low[pos_state], 3, l);
+            self.bit(&mut probs[LEN_CHOICE], 0);
+            self.tree(&mut probs[LEN_LOW + pos_state * 8..], 3, l);
         } else if l < 16 {
-            self.bit(&mut m.choice, 1);
-            self.bit(&mut m.choice2, 0);
-            self.tree(&mut m.mid[pos_state], 3, l - 8);
+            self.bit(&mut probs[LEN_CHOICE], 1);
+            self.bit(&mut probs[LEN_CHOICE2], 0);
+            self.tree(&mut probs[LEN_MID + pos_state * 8..], 3, l - 8);
         } else {
-            self.bit(&mut m.choice, 1);
-            self.bit(&mut m.choice2, 1);
-            self.tree(&mut m.high, 8, l - 16);
+            self.bit(&mut probs[LEN_CHOICE], 1);
+            self.bit(&mut probs[LEN_CHOICE2], 1);
+            self.tree(&mut probs[LEN_HIGH..], 8, l - 16);
         }
     }
 
@@ -1062,13 +1087,14 @@ impl<'a> Encoder<'a> {
         let (back, len) = self.choose();
         let p = self.pos;
         let m = &mut self.model;
-        let pos_state = p & m.pb_mask;
+        let pos_state = m.pos_state(p);
         let state = m.state;
+        let is_match = IS_MATCH + state * POS_STATES_MAX + pos_state;
         if back == u32::MAX {
-            rc.bit(&mut m.is_match[state][pos_state], 0);
+            rc.bit(&mut m.probs[is_match], 0);
             let prev = if p > 0 { self.data[p - 1] } else { 0 };
             let base = m.literal_base(p, prev);
-            let probs = &mut m.literal[base..base + 0x300];
+            let probs = &mut m.probs[base..base + 0x300];
             let byte = u32::from(self.data[p]);
             if state >= 7 {
                 // While the bits agree with the byte at the last distance,
@@ -1094,20 +1120,20 @@ impl<'a> Encoder<'a> {
             }
             m.state = after_literal(state);
         } else if back < 4 {
-            rc.bit(&mut m.is_match[state][pos_state], 1);
-            rc.bit(&mut m.is_rep[state], 1);
+            rc.bit(&mut m.probs[is_match], 1);
+            rc.bit(&mut m.probs[IS_REP + state], 1);
             let i = back as usize;
             if i == 0 {
-                rc.bit(&mut m.is_rep0[state], 0);
-                rc.bit(&mut m.is_rep0_long[state][pos_state], u32::from(len != 1));
+                rc.bit(&mut m.probs[IS_REP0 + state], 0);
+                rc.bit(&mut m.probs[IS_REP0_LONG + state * POS_STATES_MAX + pos_state], u32::from(len != 1));
             } else {
                 let dist = m.reps[i];
-                rc.bit(&mut m.is_rep0[state], 1);
+                rc.bit(&mut m.probs[IS_REP0 + state], 1);
                 if i == 1 {
-                    rc.bit(&mut m.is_rep1[state], 0);
+                    rc.bit(&mut m.probs[IS_REP1 + state], 0);
                 } else {
-                    rc.bit(&mut m.is_rep1[state], 1);
-                    rc.bit(&mut m.is_rep2[state], u32::from(i == 3));
+                    rc.bit(&mut m.probs[IS_REP1 + state], 1);
+                    rc.bit(&mut m.probs[IS_REP2 + state], u32::from(i == 3));
                     if i == 3 {
                         m.reps[3] = m.reps[2];
                     }
@@ -1119,14 +1145,14 @@ impl<'a> Encoder<'a> {
             if len == 1 {
                 m.state = after_short_rep(state);
             } else {
-                rc.len(&mut m.rep_len, len, pos_state);
+                rc.len(&mut m.probs[REP_LEN..LITERAL], len, pos_state);
                 m.state = after_rep(state);
             }
         } else {
             let dist = back - 4;
-            rc.bit(&mut m.is_match[state][pos_state], 1);
-            rc.bit(&mut m.is_rep[state], 0);
-            rc.len(&mut m.len, len, pos_state);
+            rc.bit(&mut m.probs[is_match], 1);
+            rc.bit(&mut m.probs[IS_REP + state], 0);
+            rc.len(&mut m.probs[LEN..REP_LEN], len, pos_state);
             m.state = after_match(state);
             encode_distance(rc, m, dist, len);
             m.reps = [dist, m.reps[0], m.reps[1], m.reps[2]];
@@ -1138,11 +1164,11 @@ impl<'a> Encoder<'a> {
     /// Writes the end-of-stream marker.
     pub(crate) fn encode_marker(&mut self, rc: &mut RangeEncoder) {
         let m = &mut self.model;
-        let pos_state = self.pos & m.pb_mask;
+        let pos_state = m.pos_state(self.pos);
         let state = m.state;
-        rc.bit(&mut m.is_match[state][pos_state], 1);
-        rc.bit(&mut m.is_rep[state], 0);
-        rc.len(&mut m.len, MATCH_LEN_MIN, pos_state);
+        rc.bit(&mut m.probs[IS_MATCH + state * POS_STATES_MAX + pos_state], 1);
+        rc.bit(&mut m.probs[IS_REP + state], 0);
+        rc.len(&mut m.probs[LEN..REP_LEN], MATCH_LEN_MIN, pos_state);
         m.state = after_match(state);
         encode_distance(rc, m, u32::MAX, MATCH_LEN_MIN);
     }
@@ -1150,16 +1176,16 @@ impl<'a> Encoder<'a> {
 
 fn encode_distance(rc: &mut RangeEncoder, m: &mut Model, dist: u32, len: usize) {
     let slot = dist_slot(dist);
-    rc.tree(&mut m.dist_slot[dist_state(len)], 6, slot);
+    rc.tree(&mut m.probs[DIST_SLOT + dist_state(len) * DIST_SLOTS..], 6, slot);
     if slot >= 4 {
         let footer = (slot >> 1) - 1;
         let base = (2 | (slot & 1)) << footer;
         let rest = dist - base;
         if slot < END_POS_MODEL_INDEX {
-            rc.reverse_tree(&mut m.dist_special, (base - slot) as usize, footer, rest);
+            rc.reverse_tree(&mut m.probs, DIST_SPECIAL + (base - slot) as usize, footer, rest);
         } else {
             rc.direct(rest >> ALIGN_BITS, footer - ALIGN_BITS);
-            rc.reverse_tree(&mut m.dist_align, 0, ALIGN_BITS, rest & 15);
+            rc.reverse_tree(&mut m.probs, DIST_ALIGN, ALIGN_BITS, rest & 15);
         }
     }
 }
@@ -1197,7 +1223,7 @@ pub fn decompress_zip_entry(raw: &[u8], size: usize) -> Result<Vec<u8>, LzmaErro
     if raw.len() < 9 {
         return Err(LzmaError::Truncated);
     }
-    if u16::from_le_bytes([raw[2], raw[3]]) != 5 {
+    if raw[2] != 5 || raw[3] != 0 {
         return Err(LzmaError::BadProperties);
     }
     let props = LzmaProps::parse(&[raw[4], raw[5], raw[6], raw[7], raw[8]])?;
@@ -1246,31 +1272,6 @@ mod proofs {
         (p, Model::new(&p))
     }
 
-    /// The distance models alone, fresh: the literal table, which distance
-    /// coding never reads, is left empty so that the model checker need
-    /// not build it.
-    fn distance_model() -> Model {
-        Model {
-            lc: 0,
-            lp_mask: 0,
-            pb_mask: 0,
-            literal: Vec::new(),
-            is_match: [[PROB_INIT; 16]; STATES],
-            is_rep: [PROB_INIT; STATES],
-            is_rep0: [PROB_INIT; STATES],
-            is_rep1: [PROB_INIT; STATES],
-            is_rep2: [PROB_INIT; STATES],
-            is_rep0_long: [[PROB_INIT; 16]; STATES],
-            dist_slot: [[PROB_INIT; DIST_SLOTS]; DIST_STATES],
-            dist_special: [PROB_INIT; 1 + FULL_DISTANCES - END_POS_MODEL_INDEX as usize],
-            dist_align: [PROB_INIT; 16],
-            len: LenModel::new(),
-            rep_len: LenModel::new(),
-            state: 0,
-            reps: [0; 4],
-        }
-    }
-
     /// Every distance has the slot the decoder rebuilds it from: below 4
     /// the distance itself, otherwise its two top bits' place, with the
     /// distance between the slot's base and the next.
@@ -1311,11 +1312,11 @@ mod proofs {
     fn distances_round_trip() {
         let dist: u32 = kani::any();
         let len: usize = kani::any_where(|&l: &usize| (2..=6).contains(&l));
-        let mut m = distance_model();
+        let (_, mut m) = tiny();
         let mut rc = RangeEncoder::new();
         encode_distance(&mut rc, &mut m, dist, len);
         let out = rc.finish();
-        let mut m = distance_model();
+        let (_, mut m) = tiny();
         let mut d = RangeDecoder::new(&out).unwrap();
         assert_eq!(decode_distance(&mut d, &mut m, len), dist);
     }
@@ -1366,15 +1367,14 @@ mod tests {
                         rc.direct(direct, 6);
                         let out = rc.finish();
                         assert_eq!(out[0], 0);
-                        let mut probs = [PROB_INIT; 3];
-                        let mut tree_probs = [PROB_INIT; 8];
-                        let mut rev_probs = [PROB_INIT; 16];
+                        // The decoder's three groups, in one table.
+                        let mut probs = vec![PROB_INIT; 3 + 8 + 16];
                         let mut d = RangeDecoder::new(&out).unwrap();
-                        for (k, p) in probs.iter_mut().enumerate() {
-                            assert_eq!(d.bit(p), bits >> k & 1);
+                        for k in 0..3 {
+                            assert_eq!(d.bit(&mut probs, k), bits >> k & 1);
                         }
-                        assert_eq!(d.tree(&mut tree_probs, 3), tree);
-                        assert_eq!(d.reverse_tree(&mut rev_probs, 0, 4), rev);
+                        assert_eq!(d.tree(&mut probs, 3, 3), tree);
+                        assert_eq!(d.reverse_tree(&mut probs, 11, 4), rev);
                         assert_eq!(d.direct(6), direct);
                         assert!(!d.overrun);
                     }
@@ -1423,13 +1423,13 @@ mod tests {
     fn every_length_round_trips() {
         for len in 2..=MATCH_LEN_MAX {
             for ps in 0..POS_STATES_MAX {
-                let mut m = LenModel::new();
+                let mut probs = vec![PROB_INIT; LEN_PROBS];
                 let mut rc = RangeEncoder::new();
-                rc.len(&mut m, len, ps);
+                rc.len(&mut probs, len, ps);
                 let out = rc.finish();
-                let mut m = LenModel::new();
+                let mut probs = vec![PROB_INIT; LEN_PROBS];
                 let mut d = RangeDecoder::new(&out).unwrap();
-                assert_eq!(d.len(&mut m, ps), len);
+                assert_eq!(d.len(&mut probs, 0, ps), len);
             }
         }
     }

@@ -62,12 +62,16 @@ pub(crate) fn decode_into(
 ) -> Result<usize, LzmaError> {
     let mut pos = 0;
     let mut props = LzmaProps::new(dict_size);
-    let mut model: Option<Model> = None;
+    // Valid once a chunk has given properties (`need_props` is false).
+    let mut model = Model::new(&props);
     let mut need_dict_reset = true;
     let mut need_props = true;
     let mut dict_start = out.len();
     loop {
-        let control = *input.get(pos).ok_or(LzmaError::Truncated)?;
+        if pos >= input.len() {
+            return Err(LzmaError::Truncated);
+        }
+        let control = input[pos];
         pos += 1;
         if control == 0x00 {
             return Ok(pos);
@@ -80,12 +84,18 @@ pub(crate) fn decode_into(
             return Err(LzmaError::Corrupt("LZMA2 stream does not start with a dictionary reset"));
         }
         if control >= 0x80 {
-            let h = input.get(pos..pos + 4).ok_or(LzmaError::Truncated)?;
-            let unpacked = (usize::from(control & 0x1F) << 16 | usize::from(h[0]) << 8 | usize::from(h[1])) + 1;
-            let packed = (usize::from(h[2]) << 8 | usize::from(h[3])) + 1;
+            if input.len() - pos < 4 {
+                return Err(LzmaError::Truncated);
+            }
+            let unpacked =
+                (((control & 0x1F) as usize) << 16 | (input[pos] as usize) << 8 | input[pos + 1] as usize) + 1;
+            let packed = ((input[pos + 2] as usize) << 8 | input[pos + 3] as usize) + 1;
             pos += 4;
             if control >= 0xC0 {
-                let b = *input.get(pos).ok_or(LzmaError::Truncated)?;
+                if pos >= input.len() {
+                    return Err(LzmaError::Truncated);
+                }
+                let b = input[pos];
                 pos += 1;
                 let p = LzmaProps::from_byte(b, dict_size)?;
                 if p.lc + p.lp > 4 {
@@ -93,20 +103,19 @@ pub(crate) fn decode_into(
                 }
                 props = p;
                 need_props = false;
-                model = Some(Model::new(&props));
+                model = Model::new(&props);
             } else if need_props {
                 return Err(LzmaError::Corrupt("LZMA2 chunk needs new properties"));
             } else if control >= 0xA0 {
-                if let Some(m) = model.as_mut() {
-                    m.reset(&props);
-                }
+                model.reset(&props);
             }
-            let chunk = input.get(pos..pos + packed).ok_or(LzmaError::Truncated)?;
-            let m = model.as_mut().ok_or(LzmaError::Corrupt("LZMA2 chunk needs new properties"))?;
+            if input.len() - pos < packed {
+                return Err(LzmaError::Truncated);
+            }
             let used = decode_stream(
-                m,
+                &mut model,
                 &props,
-                chunk,
+                &input[pos..pos + packed],
                 End::Known { size: unpacked as u64, allow_marker: false },
                 out,
                 dict_start,
@@ -120,14 +129,18 @@ pub(crate) fn decode_into(
             if control > 0x02 {
                 return Err(LzmaError::Corrupt("invalid LZMA2 control byte"));
             }
-            let h = input.get(pos..pos + 2).ok_or(LzmaError::Truncated)?;
-            let n = (usize::from(h[0]) << 8 | usize::from(h[1])) + 1;
+            if input.len() - pos < 2 {
+                return Err(LzmaError::Truncated);
+            }
+            let n = ((input[pos] as usize) << 8 | input[pos + 1] as usize) + 1;
             pos += 2;
-            let data = input.get(pos..pos + n).ok_or(LzmaError::Truncated)?;
+            if input.len() - pos < n {
+                return Err(LzmaError::Truncated);
+            }
             if n > max_output - out.len() {
                 return Err(LzmaError::OutputLimitExceeded);
             }
-            out.extend_from_slice(data);
+            out.extend_from_slice(&input[pos..pos + n]);
             pos += n;
         }
     }
